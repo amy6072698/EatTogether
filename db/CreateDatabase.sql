@@ -476,8 +476,8 @@ CREATE INDEX IX_UserNotifications_MemberId ON UserNotifications(MemberId);
 CREATE INDEX IX_UserNotifications_IsRead ON UserNotifications(IsRead);
 GO
 
--- 25. EmailQueue (郵件發送隊列)
-CREATE TABLE EmailQueue (
+-- 25. EmailQueues (郵件發送隊列)
+CREATE TABLE EmailQueues (
     Id INT IDENTITY(1,1) NOT NULL,
     RecipientEmail NVARCHAR(100) NOT NULL,
     Subject NVARCHAR(200) NOT NULL,
@@ -485,10 +485,10 @@ CREATE TABLE EmailQueue (
     Status INT DEFAULT 0 NOT NULL, -- 0:待處理, 1:成功, 2:失敗
     ProcessedAt DATETIME2(0) NULL,
     CreatedAt DATETIME2(0) DEFAULT GETDATE() NOT NULL,
-    CONSTRAINT PK_EmailQueue PRIMARY KEY (Id)
+    CONSTRAINT PK_EmailQueues PRIMARY KEY (Id)
 );
-CREATE INDEX IX_EmailQueue_Status ON EmailQueue(Status);
-CREATE INDEX IX_EmailQueue_Recipient ON EmailQueue(RecipientEmail);
+CREATE INDEX IX_EmailQueues_Status ON EmailQueues(Status);
+CREATE INDEX IX_EmailQueues_Recipient ON EmailQueues(RecipientEmail);
 GO
 
 -- 26. SubscriptionPreferences (會員訂閱偏好)
