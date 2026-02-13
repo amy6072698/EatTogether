@@ -1,29 +1,30 @@
 /*
  * 資料庫專題：EatTogether (義起吃)
- * 資料庫名稱：EatTogetherTest2
- * 伺服器版本：SQL Server 2025 / Azure SQL
+ * 資料庫名稱：EatTogetherDB
+ * 伺服器版本：SQL Server 2025
+ * 伺服器：.\sql2025
  * 產生時間：2026-02-11
  */
 
 USE master;
 GO
 
--- 檢查資料庫是否存在，若存在則刪除 (開發階段方便重置，正式環境請小心)
-IF EXISTS (SELECT name FROM sys.databases WHERE name = N'EatTogetherTest2')
+-- 檢查資料庫是否存在(注意資料庫名稱是否正確)，若存在則刪除 (開發階段方便重置，正式環境請小心)
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'EatTogetherDB')
 BEGIN
-    ALTER DATABASE EatTogetherTest2 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE EatTogetherTest2;
+    ALTER DATABASE EatTogetherDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE EatTogetherDB;
 END
 GO
 
-CREATE DATABASE EatTogetherTest2;
+CREATE DATABASE EatTogetherDB;
 GO
 
-USE EatTogetherTest2;
+USE EatTogetherDB;
 GO
 
 /* ==========================================================================
-   成員 A：權限與會員系統 (RBAC)
+   權限與會員系統 (RBAC)
    ========================================================================== */
 
 -- 1. Roles (角色表)
@@ -96,7 +97,7 @@ CREATE UNIQUE INDEX IX_UserRoles_User_Role ON UserRoles(UserId, RoleId);
 GO
 
 /* ==========================================================================
-   成員 B：會員管理系統 (Member Management)
+   會員管理系統 (Member Management)
    ========================================================================== */
 
 -- 6. Members (會員資料表)
@@ -120,7 +121,7 @@ CREATE INDEX IX_Members_IsDeleted ON Members(IsDeleted);
 GO
 
 /* ==========================================================================
-   成員 D：菜單與食譜系統 (需先建立，因訂單與收藏需關聯此處)
+   菜單與食譜系統 (需先建立，因訂單與收藏需關聯此處)
    ========================================================================== */
 
 -- 7. Categories (餐點分類表)
@@ -198,7 +199,7 @@ CREATE TABLE SetMealItems (
 );
 GO
 
--- [補] MemberFavorites (會員收藏表) - 依賴 Members 和 Dishes
+-- 11. MemberFavorites (會員收藏表) - 依賴 Members 和 Dishes
 CREATE TABLE MemberFavorites (
     Id INT IDENTITY(1,1) NOT NULL,
     MemberId INT NOT NULL,
@@ -212,10 +213,10 @@ CREATE UNIQUE INDEX IX_MemberFavorites_Mem_Prod ON MemberFavorites(MemberId, Pro
 GO
 
 /* ==========================================================================
-   成員 E：行銷與客服系統 (需先建立 Tables, Coupons 供訂單使用)
+   行銷與客服系統 (需先建立 Tables, Coupons 供訂單使用)
    ========================================================================== */
 
--- 11. Tables (桌位資料表)
+-- 12. Tables (桌位資料表)
 CREATE TABLE Tables (
     Id INT IDENTITY(1,1) NOT NULL,
     TableName NVARCHAR(20) NOT NULL,
@@ -228,7 +229,7 @@ CREATE TABLE Tables (
 CREATE UNIQUE INDEX IX_Tables_TableName ON Tables(TableName);
 GO
 
--- 12. Reservations (訂位紀錄表)
+-- 13. Reservations (訂位紀錄表)
 CREATE TABLE Reservations (
     Id INT IDENTITY(1,1) NOT NULL,
     BookingNumber VARCHAR(10) NOT NULL,
@@ -250,7 +251,7 @@ CREATE UNIQUE INDEX IX_Reservations_BookingNumber ON Reservations(BookingNumber)
 CREATE INDEX IX_Reservations_Date ON Reservations(ReservationDate);
 GO
 
--- 13. Coupons (優惠券設定表)
+-- 14. Coupons (優惠券設定表)
 CREATE TABLE Coupons (
     Id INT IDENTITY(1,1) NOT NULL,
     Name NVARCHAR(50) NOT NULL,
@@ -270,7 +271,7 @@ CREATE TABLE Coupons (
 CREATE UNIQUE INDEX IX_Coupons_Code ON Coupons(Code);
 GO
 
--- 14. MemberCoupons (會員領券紀錄表)
+-- 15. MemberCoupons (會員領券紀錄表)
 CREATE TABLE MemberCoupons (
     Id INT IDENTITY(1,1) NOT NULL,
     MemberId INT NOT NULL,
@@ -284,11 +285,11 @@ CREATE TABLE MemberCoupons (
 GO
 
 /* ==========================================================================
-   成員 B/C：訂單與交易系統 (相依性最高，最後建立)
+   訂單與交易系統 (相依性最高，最後建立)
    注意：Orders 和 Payments 互相關聯，這裡先建立 Table，最後再加 FK
    ========================================================================== */
 
--- 15. PreOrders (已建立的訂單 - 暫存)
+-- 16. PreOrders (已建立的訂單 - 暫存)
 CREATE TABLE PreOrders (
     Id INT IDENTITY(1,1) NOT NULL,
     OrderNumber NVARCHAR(200) NOT NULL,
@@ -316,7 +317,7 @@ CREATE UNIQUE INDEX IX_PreOrders_OrderNumber ON PreOrders(OrderNumber);
 CREATE INDEX IX_PreOrders_OrderAt ON PreOrders(OrderAt);
 GO
 
--- 16. Orders (已完成訂單主檔)
+-- 17. Orders (已完成訂單主檔)
 CREATE TABLE Orders (
     Id INT IDENTITY(1,1) NOT NULL,
     PreOrderId INT NOT NULL,
@@ -345,7 +346,7 @@ CREATE UNIQUE INDEX IX_Orders_OrderNumber ON Orders(OrderNumber);
 CREATE INDEX IX_Orders_OrderAt ON Orders(OrderAt);
 GO
 
--- 17. Payments (付款紀錄)
+-- 18. Payments (付款紀錄)
 CREATE TABLE Payments (
     Id INT IDENTITY(1,1) NOT NULL,
     OrderId INT NULL, -- 對應已完成訂單
@@ -358,7 +359,7 @@ CREATE TABLE Payments (
 );
 GO
 
--- 18. PreOrderDetails (暫存訂單明細)
+-- 19. PreOrderDetails (暫存訂單明細)
 CREATE TABLE PreOrderDetails (
     Id INT IDENTITY(1,1) NOT NULL,
     PreOrderId INT NOT NULL,
@@ -376,7 +377,7 @@ CREATE TABLE PreOrderDetails (
 );
 GO
 
--- 19. OrderDetails (正式訂單明細)
+-- 20. OrderDetails (正式訂單明細)
 CREATE TABLE OrderDetails (
     Id INT IDENTITY(1,1) NOT NULL,
     OrderId INT NOT NULL,
@@ -404,10 +405,10 @@ ALTER TABLE Payments ADD CONSTRAINT FK_Payments_PreOrders FOREIGN KEY (PreOrderI
 GO
 
 /* ==========================================================================
-   成員 F：品牌行銷與通知系統
+   品牌行銷與通知系統
    ========================================================================== */
 
--- 20. Events (活動管理表)
+-- 21. Events (活動管理表)
 CREATE TABLE Events (
     Id INT IDENTITY(1,1) NOT NULL,
     Title NVARCHAR(100) NOT NULL,
@@ -427,7 +428,7 @@ CREATE INDEX IX_Events_Status ON Events(Status);
 CREATE INDEX IX_Events_StartDate ON Events(StartDate);
 GO
 
--- 21. ArticleCategories (文章分類表)
+-- 22. ArticleCategories (文章分類表)
 CREATE TABLE ArticleCategories (
     Id INT IDENTITY(1,1) NOT NULL,
     Name NVARCHAR(50) NOT NULL,
@@ -439,7 +440,7 @@ CREATE UNIQUE INDEX IX_ArticleCategories_Name ON ArticleCategories(Name);
 CREATE INDEX IX_ArticleCategories_Sort ON ArticleCategories(SortOrder);
 GO
 
--- 22. Articles (文章/消息管理表)
+-- 23. Articles (文章/消息管理表)
 CREATE TABLE Articles (
     Id INT IDENTITY(1,1) NOT NULL,
     CategoryId INT NOT NULL,
@@ -459,7 +460,7 @@ CREATE INDEX IX_Articles_PublishDate ON Articles(PublishDate);
 CREATE INDEX IX_Articles_Status ON Articles(Status);
 GO
 
--- 23. UserNotifications (會員通知表)
+-- 24. UserNotifications (會員通知表)
 CREATE TABLE UserNotifications (
     Id INT IDENTITY(1,1) NOT NULL,
     MemberId INT NOT NULL,
@@ -475,7 +476,7 @@ CREATE INDEX IX_UserNotifications_MemberId ON UserNotifications(MemberId);
 CREATE INDEX IX_UserNotifications_IsRead ON UserNotifications(IsRead);
 GO
 
--- 24. EmailQueue (郵件發送隊列)
+-- 25. EmailQueue (郵件發送隊列)
 CREATE TABLE EmailQueue (
     Id INT IDENTITY(1,1) NOT NULL,
     RecipientEmail NVARCHAR(100) NOT NULL,
@@ -490,7 +491,7 @@ CREATE INDEX IX_EmailQueue_Status ON EmailQueue(Status);
 CREATE INDEX IX_EmailQueue_Recipient ON EmailQueue(RecipientEmail);
 GO
 
--- 25. SubscriptionPreferences (會員訂閱偏好)
+-- 26. SubscriptionPreferences (會員訂閱偏好)
 CREATE TABLE SubscriptionPreferences (
     Id INT IDENTITY(1,1) NOT NULL,
     MemberId INT NOT NULL,
