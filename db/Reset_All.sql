@@ -43,7 +43,7 @@ PRINT '>>> [Phase 1] 匯入基礎資料...';
 :r $(Path)\03_Users.sql
 
 -- 會員
---:r $(Path)\04_Members.sql
+:r $(Path)\04_Members.sql
 
 -- 菜單
 --:r $(Path)\05_Categories.sql
