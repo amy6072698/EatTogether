@@ -65,7 +65,7 @@ PRINT '>>> [Phase 1] 匯入基礎資料...';
 PRINT '>>> [Phase 2] 匯入依賴型資料...';
 
 -- 權限關聯
---:r $(Path)\13_UserRoles.sql
+:r $(Path)\13_UserRoles.sql
 --:r $(Path)\14_RoleFunctions.sql
 
 -- 菜單細項
