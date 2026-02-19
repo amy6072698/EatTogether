@@ -18,7 +18,7 @@
 -- 1. 設定檔案路徑變數
 -- =============================================
 -- 預設為當前目錄 (.)，如果執行失敗，請將下行改成絕對路徑，例如 "C:\Users\User\Desktop\DB_Scripts"
-:setvar Path "C:\Users\User\Desktop\資展全端班\Test2\EatTogetherTest2\db"
+:setvar Path "C:\Users\User\Desktop\資展全端班\EatTogetherProject\EatTogether\db"
 
 -- =============================================
 -- 2. 重建資料庫結構 (Schema)
