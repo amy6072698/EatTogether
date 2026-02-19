@@ -40,7 +40,7 @@ PRINT '>>> [Phase 1] 匯入基礎資料...';
 -- 權限
 :r $(Path)\01_Roles.sql
 :r $(Path)\02_Functions.sql
---:r $(Path)\03_Users.sql
+:r $(Path)\03_Users.sql
 
 -- 會員
 --:r $(Path)\04_Members.sql
