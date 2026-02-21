@@ -46,8 +46,8 @@ PRINT '>>> [Phase 1] 匯入基礎資料...';
 :r $(Path)\04_Members.sql
 
 -- 菜單
-:r $(Path)\05_Categories.sql
-:r $(Path)\06_SetMeals.sql
+--:r $(Path)\05_Categories.sql
+--:r $(Path)\06_SetMeals.sql
 
 -- 行銷與桌位
 --:r $(Path)\07_Tables.sql
@@ -69,7 +69,7 @@ PRINT '>>> [Phase 2] 匯入依賴型資料...';
 :r $(Path)\14_RoleFunctions.sql
 
 -- 菜單細項
-:r $(Path)\15_Dishes.sql
+--:r $(Path)\15_Dishes.sql
 
 -- 文章與訂閱
 --:r $(Path)\16_Articles.sql
