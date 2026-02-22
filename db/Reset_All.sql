@@ -50,9 +50,9 @@ PRINT '>>> [Phase 1] 匯入基礎資料...';
 --:r $(Path)\06_SetMeals.sql
 
 -- 行銷與桌位
---:r $(Path)\07_Tables.sql
---:r $(Path)\08_Coupons.sql
---:r $(Path)\09_Reservations.sql
+:r $(Path)\07_Tables.sql
+:r $(Path)\08_Coupons.sql
+:r $(Path)\09_Reservations.sql
 
 -- 品牌與活動
 --:r $(Path)\10_Events.sql
@@ -87,7 +87,7 @@ PRINT '>>> [Phase 3] 匯入複合關聯資料...';
 --:r $(Path)\19_MemberFavorites.sql
 
 -- 領券
---:r $(Path)\20_MemberCoupons.sql
+:r $(Path)\20_MemberCoupons.sql
 
 -- 通知
 --:r $(Path)\21_UserNotifications.sql
