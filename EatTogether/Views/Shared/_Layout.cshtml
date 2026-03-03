@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Tw">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>@ViewData["Title"] | 餐廳管理系統</title>
+
+    <!-- 引入第三方資源 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+
+    <!-- 自訂全站的 CSS 樣式 -->
+    <link href="~/css/styles.css" rel="stylesheet" />
+    
+    <!-- 插入各頁面的 CSS -->
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark d-flex justify-content-between">
+        <div>    
+            <a class="navbar-brand ps-3 fw-bold" asp-controller="Home" asp-action="Index">義起吃 Eat Together</a>
+            <button class="btn btn-link btn-sm order-1 order-lg-0 ms-4 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+        </div>
+
+        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li>
+                        <!-- 之後串登出功能時改這裡 -->
+                        <a class="dropdown-item"
+                           asp-controller="Auth" asp-action="Logout">登出</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <!-- Sidenav Menu-->
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">人員管理</div>
+
+                        <a class="nav-link collapsed active" href="#" data-bs-toggle="collapse" data-bs-target="#collapseUser" aria-expanded="false" aria-controls="collapseUser">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
+                            員工管理
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse show" id="collapseUser" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">員工管理</a>
+                                <a class="nav-link" asp-controller="Users" asp-action="Permission">權限管理</a>
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMember" aria-expanded="false" aria-controls="collapseMember">
+                            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                            會員管理
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseMember" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="Members" asp-action="Index">會員管理</a>
+                            </nav>
+                        </div>
+
+                        <div class="sb-sidenav-menu-heading">菜單管理</div>
+
+                        
+
+                        <div class="sb-sidenav-menu-heading">訂單管理</div>
+                        
+
+
+                        <div class="sb-sidenav-menu-heading">預約管理</div>
+                        
+
+
+                        <div class="sb-sidenav-menu-heading">行銷管理</div>
+                        
+
+                        
+
+
+
+                        <div class="sb-sidenav-footer-blank"></div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div id="layoutSidenav_content">
+            <!-- Main-->
+            <main>
+                <!-- 每個 View 的內容會渲染在這裡 -->
+                @RenderBody()
+            </main>
+
+            <!-- Footer -->
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">義起吃 Eat Together &copy;2026 Copyrights All Rights Reserved</div>
+                        <div class="text-muted">
+                            本專題僅為學習用途，不做任何商業使用。
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+            
+        
+
+    <!-- 引入第三方資源 -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 自訂全站的 JS -->
+    <script src="~/js/scripts.js"></script>
+
+    <!-- 插入各頁面的 JS -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
