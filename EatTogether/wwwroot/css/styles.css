@@ -3806,6 +3806,22 @@ textarea.form-control-lg {
   color: var(--bs-navbar-brand-hover-color);
 }
 
+/* 新增自訂的頭像樣式 */
+.navbar-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.navbar-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 .navbar-nav {
   --bs-nav-link-padding-x: 0;
   --bs-nav-link-padding-y: 0.5rem;
