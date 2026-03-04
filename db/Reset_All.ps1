@@ -8,8 +8,17 @@
 # 自動抓取腳本所在目錄，組員不需要手動修改路徑
 $path = $PSScriptRoot
 
-# SQL Server 實例名稱
-$server = ".\sql2025"
+# 執行前詢問連線資訊，組員輸入自己的設定即可
+$inputServer = Read-Host "請輸入 SQL Server 實例名稱 (直接按 Enter 使用預設值 .\sql2025)"
+$server = if ($inputServer -ne "") { $inputServer } else { ".\sql2025" }
+
+$inputUser = Read-Host "請輸入登入帳號 (直接按 Enter 使用預設值 sa)"
+$dbUser = if ($inputUser -ne "") { $inputUser } else { "sa" }
+
+$securePass = Read-Host "請輸入登入密碼" -AsSecureString
+$dbPass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePass)
+)
 
 # CreateDatabase.sql 需要連到 master 才能 DROP/CREATE 資料庫
 # 其餘所有資料檔案都連到 EatTogetherDB
@@ -54,6 +63,7 @@ $files = @(
 
     # --- Phase 3: 複合與關聯資料 ---
     # "18_SetMealItems.sql",
+    # "18_1_Products.sql",
     # "19_MemberFavorites.sql",
     "20_MemberCoupons.sql",
     "21_UserNotifications.sql"
@@ -115,7 +125,7 @@ foreach ($file in $files) {
     $utf8Bom  = [System.Text.UTF8Encoding]::new($true)
     [System.IO.File]::WriteAllText($tempFile, $sql, $utf8Bom)
 
-    sqlcmd -S $server -d $currentDb -i $tempFile -f 65001
+    sqlcmd -S $server -U $dbUser -P $dbPass -d $currentDb -i $tempFile -f 65001 -C
 
     # 清除暫存檔
     Remove-Item $tempFile -Force
