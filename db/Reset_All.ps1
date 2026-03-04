@@ -62,8 +62,8 @@ $files = @(
     "17_SubscriptionPreferences.sql",
 
     # --- Phase 3: 複合與關聯資料 ---
-    # "18_SetMealItems.sql",
-    # "18_1_Products.sql",
+    "18_SetMealItems.sql",
+    "18_1_Products.sql",
     # "19_MemberFavorites.sql",
     "20_MemberCoupons.sql",
     "21_UserNotifications.sql"
