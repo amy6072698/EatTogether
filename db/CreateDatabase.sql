@@ -1,7 +1,16 @@
-USE [master]
+USE master;
 GO
-/****** Object:  Database [EatTogetherDB]    Script Date: 2026/3/4 下午 01:55:19 ******/
-CREATE DATABASE [EatTogetherDB]
+
+-- 檢查資料庫是否存在(注意資料庫名稱是否正確)，若存在則刪除 (開發階段方便重置，正式環境請小心)
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'EatTogetherDB')
+BEGIN
+    ALTER DATABASE EatTogetherDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE EatTogetherDB;
+END
+GO
+
+CREATE DATABASE EatTogetherDB
+
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'EatTogetherDB', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.SQL2025\MSSQL\DATA\EatTogetherDB.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
