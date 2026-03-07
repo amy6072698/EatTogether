@@ -725,17 +725,3 @@ yarn-error.log
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/csharp,vuejs,aspnetcore,visualstudiocode,visualstudio
-
-# ===== 專案自訂補充 =====
-
-# ASP.NET Core 敏感設定
-appsettings.Development.json
-appsettings.Production.json
-
-# Vue / Vite 環境變數（可能含敏感資訊）
-.env
-.env.local
-.env.*.local
-
-# macOS（如果組員有用 Mac）
-.DS_Store
