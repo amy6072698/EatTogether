@@ -1,31 +1,111 @@
-﻿-- 18_1_Products.sql
--- Seed Data for Products
+-- 18_1_Products.sql
+-- Seed Data for Products (追加模式，逐筆檢查避免重複)
 -- 依賴：15_Dishes.sql、06_SetMeals.sql 必須先執行
 
-IF NOT EXISTS (SELECT 1 FROM dbo.Products)
-BEGIN
-    DECLARE @TomatoId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName    = N'義式番茄義大利麵');
-    DECLARE @CreamId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName    = N'奶油培根燉飯');
-    DECLARE @PlatterId   int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName    = N'分享拼盤');
-    DECLARE @FamilyId    int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'全家分享餐');
-    DECLARE @ValentineId int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'情人節限定套餐');
-    DECLARE @CNYId       int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'過年限定套餐');
+DECLARE @TomatoId          int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'義式番茄義大利麵');
+DECLARE @CreamId           int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'奶油培根燉飯');
+DECLARE @PlatterId         int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'分享拼盤');
+DECLARE @BasilSeafoodId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'青醬海鮮義大利麵');
+DECLARE @TruffleId         int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'松露野菇燉飯');
+DECLARE @ChickenLegId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'香烤雞腿排');
+DECLARE @BBQRibsId         int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'BBQ豬肋排');
+DECLARE @SalmonId          int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'香煎鮭魚排');
+DECLARE @MargheritaId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'瑪格麗特披薩');
+DECLARE @BeefPattId        int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'牛肉漢堡排');
+DECLARE @ClubSandwichId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'總匯三明治');
+DECLARE @MexicoWrapId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'墨西哥雞肉捲');
+DECLARE @ThaiPorkId        int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'泰式打拋豬飯');
+DECLARE @KarageId          int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'日式唐揚雞定食');
+DECLARE @KoreanRiceId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'韓式石鍋拌飯');
+DECLARE @MacAndCheeseId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'起司焗烤通心粉');
+DECLARE @GarlicShrimpId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'蒜香奶油蝦義大利麵');
+DECLARE @FrenchSteakId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'法式洋蔥湯牛排');
+DECLARE @HerbChickenId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'香草烤半雞');
+DECLARE @SeafoodPizzaId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'海鮮總匯披薩');
+DECLARE @DuckSaladId       int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'燻鴨胸沙拉');
+DECLARE @SpicyLasagnaId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'辣味肉醬千層麵');
+DECLARE @CodFilletId       int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'檸檬奶油鱈魚排');
+DECLARE @RedWineBeefId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'紅酒燉牛肉飯');
+DECLARE @BaconQuicheId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'培根菠菜鹹派');
+DECLARE @TomatoChickenId   int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'番茄羅勒燉雞');
+DECLARE @CrispyPorkId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'脆皮烤豬五花飯');
+DECLARE @BakedSeafoodId    int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'焗烤海鮮飯');
+DECLARE @HawaiiPizzaId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'夏威夷雞肉披薩');
+DECLARE @ChefSpecialId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'季節限定主廚套餐');
+DECLARE @LobsterId         int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'龍蝦奶油義大利麵');
+DECLARE @ColaId            int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'可樂');
+DECLARE @OrangeJuiceId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'柳橙汁');
+DECLARE @MilkTeaId         int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'招牌鮮奶茶');
+DECLARE @MatchaLatteId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'抹茶拿鐵');
+DECLARE @AmericanoId       int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'美式黑咖啡');
+DECLARE @CappuccinoId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'卡布奇諾');
+DECLARE @StrawberryShakeId int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'草莓奶昔');
+DECLARE @WatermelonJuiceId int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'西瓜汁');
+DECLARE @HotCocoaId        int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'熱可可');
+DECLARE @HoneyLemonId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'蜂蜜檸檬氣泡水');
+DECLARE @TiramisuId        int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'提拉米蘇');
+DECLARE @LavaChocId        int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'巧克力熔岩蛋糕');
+DECLARE @CremeBruleeId     int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'法式烤布蕾');
+DECLARE @MilleCrepeId      int = (SELECT TOP 1 Id FROM dbo.Dishes   WHERE DishName = N'草莓千層蛋糕');
+DECLARE @FamilyId    int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'全家分享餐');
+DECLARE @ValentineId int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'情人節限定套餐');
+DECLARE @CNYId       int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'過年限定套餐');
+DECLARE @BizLunchId  int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'商務午餐套餐');
+DECLARE @CoupleId    int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'歡樂雙人套餐');
+DECLARE @AfternoonId int = (SELECT TOP 1 Id FROM dbo.SetMeals WHERE SetMealName = N'下午茶甜蜜套餐');
 
-    IF @TomatoId IS NULL OR @CreamId IS NULL OR @PlatterId IS NULL
-        THROW 50011, 'Seed failed: Dishes not found. Please run 15_Dishes.sql first.', 1;
+-- ==================== 單點 Dishes (45筆) ====================
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @TomatoId)          INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @TomatoId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @CreamId)           INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @CreamId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @PlatterId)         INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @PlatterId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @BasilSeafoodId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @BasilSeafoodId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @TruffleId)         INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @TruffleId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @ChickenLegId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @ChickenLegId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @BBQRibsId)         INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @BBQRibsId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @SalmonId)          INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @SalmonId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MargheritaId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MargheritaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @BeefPattId)        INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @BeefPattId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @ClubSandwichId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @ClubSandwichId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MexicoWrapId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MexicoWrapId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @ThaiPorkId)        INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @ThaiPorkId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @KarageId)          INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @KarageId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @KoreanRiceId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @KoreanRiceId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MacAndCheeseId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MacAndCheeseId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @GarlicShrimpId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @GarlicShrimpId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @FrenchSteakId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @FrenchSteakId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @HerbChickenId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @HerbChickenId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @SeafoodPizzaId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @SeafoodPizzaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @DuckSaladId)       INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @DuckSaladId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @SpicyLasagnaId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @SpicyLasagnaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @CodFilletId)       INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @CodFilletId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @RedWineBeefId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @RedWineBeefId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @BaconQuicheId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @BaconQuicheId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @TomatoChickenId)   INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @TomatoChickenId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @CrispyPorkId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @CrispyPorkId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @BakedSeafoodId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @BakedSeafoodId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @HawaiiPizzaId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @HawaiiPizzaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @ChefSpecialId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @ChefSpecialId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @LobsterId)         INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @LobsterId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @ColaId)            INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @ColaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @OrangeJuiceId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @OrangeJuiceId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MilkTeaId)         INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MilkTeaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MatchaLatteId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MatchaLatteId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @AmericanoId)       INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @AmericanoId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @CappuccinoId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @CappuccinoId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @StrawberryShakeId) INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @StrawberryShakeId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @WatermelonJuiceId) INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @WatermelonJuiceId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @HotCocoaId)        INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @HotCocoaId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @HoneyLemonId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @HoneyLemonId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @TiramisuId)        INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @TiramisuId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @LavaChocId)        INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @LavaChocId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @CremeBruleeId)     INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @CremeBruleeId, NULL);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE DishId = @MilleCrepeId)      INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'Dish', @MilleCrepeId, NULL);
 
-    IF @FamilyId IS NULL OR @ValentineId IS NULL OR @CNYId IS NULL
-        THROW 50012, 'Seed failed: SetMeals not found. Please run 06_SetMeals.sql first.', 1;
-
-    INSERT INTO dbo.Products (ProductType, DishId, SetMealId)
-    VALUES
-    -- 單點
-    (N'Dish',    @TomatoId,  NULL        ),
-    (N'Dish',    @CreamId,   NULL        ),
-    (N'Dish',    @PlatterId, NULL        ),
-    -- 套餐
-    (N'SetMeal', NULL,       @FamilyId   ),
-    (N'SetMeal', NULL,       @ValentineId),
-    (N'SetMeal', NULL,       @CNYId      );
-END
+-- ==================== 套餐 SetMeals (6個) ====================
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @FamilyId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @FamilyId);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @ValentineId) INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @ValentineId);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @CNYId)       INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @CNYId);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @BizLunchId)  INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @BizLunchId);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @CoupleId)    INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @CoupleId);
+IF NOT EXISTS (SELECT 1 FROM dbo.Products WHERE SetMealId = @AfternoonId) INSERT INTO dbo.Products (ProductType, DishId, SetMealId) VALUES (N'SetMeal', NULL, @AfternoonId);
 GO
