@@ -22,7 +22,6 @@ $dbPass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
 
 # CreateDatabase.sql 需要連到 master 才能 DROP/CREATE 資料庫
 # 其餘所有資料檔案都連到 EatTogetherDB
-# 這樣組員不需要在每個 sql 檔案裡寫 USE EatTogetherDB
 $dbForCreate = "master"
 $dbForData   = "EatTogetherDB"
 
@@ -66,13 +65,13 @@ $files = @(
     "18_1_Products.sql",
     # "19_MemberFavorites.sql",
     "20_MemberCoupons.sql",
-    "21_UserNotifications.sql"
+    "21_UserNotifications.sql",
 
-    # --- Phase 4: 核心交易資料 ---
+    # --- Phase 4: 核心交易資料 (順序重要！) ---
     "22_PreOrders.sql",
     "23_PreOrderDetails.sql",
     "24_Payments.sql",
-    "25_(更新 Payments).sql"
+    "25_(更新 Payments).sql",
     "26_Orders.sql",
     "27_OrderDetails.sql"
 
