@@ -69,11 +69,12 @@ $files = @(
     "21_UserNotifications.sql"
 
     # --- Phase 4: 核心交易資料 ---
-    # "22_Payments.sql",
-    # "23_PreOrders.sql",
-    # "24_Orders.sql",
-    # "25_PreOrderDetails.sql",
-    # "26_OrderDetails.sql",
+    "22_PreOrders.sql",
+    "23_PreOrderDetails.sql",
+    "24_Payments.sql",
+    "25_(更新 Payments).sql"
+    "26_Orders.sql",
+    "27_OrderDetails.sql"
 
     # --- Phase 5: 修復循環參照 ---
     # "99_Update_Payment_FK.sql"
