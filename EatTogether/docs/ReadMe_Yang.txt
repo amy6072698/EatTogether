@@ -1,11 +1,11 @@
-[]共用基礎
+[V]共用基礎
 	-- Result class
 		Result
 		IsSuccess, ErrorMessage
 		static Success()
 		static Fail(msg)
 
-[]資料庫建置
+[V]資料庫建置
 	-- 連結資料庫、設定 EF Models(檔案"EfModels/appsettings.json/Program.cs(DbContext DI)")
 	-- 建立 Categories 資料表(含 ParentCategoryId、DisplayOrder)
 	-- 建立 Dishes 資料表("FK → Categories IsLimited + 日期範圍")
@@ -13,7 +13,7 @@
 	-- 建立 SetMealItems 資料表(OptionGroupNo + PickLimit 互斥邏輯)
 	-- 建立 Products 資料表(DishId / SetMealId 互斥 CHECK)
 
-[]菜單分類管理
+[working]菜單分類管理
 	-- 建立 CategoryDto & CategoryViewModel 擴充方法
 		CategoryDto
 		CategoryViewModel

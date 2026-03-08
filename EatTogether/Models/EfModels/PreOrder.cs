@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace EatTogether.Models.EfModels;
+
+public partial class PreOrder
+{
+    public int Id { get; set; }
+
+    public string OrderNumber { get; set; } = null!;
+
+    public int? MemberId { get; set; }
+
+    public bool InOrOut { get; set; }
+
+    public int? TableId { get; set; }
+
+    public int? UserId { get; set; }
+
+    public DateTime OrderAt { get; set; }
+
+    public int? CouponId { get; set; }
+
+    public int OriginalAmount { get; set; }
+
+    public int DiscountAmount { get; set; }
+
+    public int TotalAmount { get; set; }
+
+    public string? Note { get; set; }
+
+    public int? PaymentId { get; set; }
+
+    public string PayMethod { get; set; } = null!;
+
+    public int DoneOrCancel { get; set; }
+
+    public virtual Coupon? Coupon { get; set; }
+
+    public virtual Member? Member { get; set; }
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public virtual Payment? Payment { get; set; }
+
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<PreOrderDetail> PreOrderDetails { get; set; } = new List<PreOrderDetail>();
+
+    public virtual Table? Table { get; set; }
+
+    public virtual User? User { get; set; }
+}
