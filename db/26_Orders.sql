@@ -44,3 +44,10 @@ INNER JOIN [dbo].[Payments] AS PY ON P.[PaymentId] = PY.[Id]
 WHERE P.[DoneOrCancel] = 1  -- 僅選取主單完成者
   AND PY.[DoneOrCancel] = 1; -- 僅選取支付成功者
 GO
+
+UPDATE PY
+SET PY.[OrderId] = O.[Id]
+FROM [dbo].[Payments] AS PY
+INNER JOIN [dbo].[Orders] AS O ON PY.[PreOrderId] = O.[PreOrderId]
+WHERE O.[PaymentId] = PY.[Id];  -- 確保只更新對應的付款紀錄
+GO
