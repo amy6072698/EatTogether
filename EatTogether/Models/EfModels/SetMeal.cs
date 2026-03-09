@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace EatTogether.Models.EfModels;
+
+public partial class SetMeal
+{
+    public int Id { get; set; }
+
+    public string SetMealName { get; set; } = null!;
+
+    public string DiscountType { get; set; } = null!;
+
+    public decimal DiscountValue { get; set; }
+
+    public bool IsActive { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public decimal? SetPrice { get; set; }
+
+    public string? Description { get; set; }
+
+    public string? ImageUrl { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<SetMealItem> SetMealItems { get; set; } = new List<SetMealItem>();
+}
