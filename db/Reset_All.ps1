@@ -116,8 +116,15 @@ foreach ($file in $files) {
         $sql = [System.Text.Encoding]::BigEndianUnicode.GetString($bytes, 2, $bytes.Length - 2)
         Write-Host "    [編碼] UTF-16 BE" -ForegroundColor DarkGray
     } else {
-        $sql = [System.Text.Encoding]::Default.GetString($bytes)
-        Write-Host "    [編碼] Big5 (SSMS 預設)" -ForegroundColor DarkGray
+        # 無 BOM：先嘗試 UTF-8，失敗則 fallback 到 Big5
+        try {
+            $utf8Strict = [System.Text.UTF8Encoding]::new($false, $true)
+            $sql = $utf8Strict.GetString($bytes)
+            Write-Host "    [編碼] UTF-8 without BOM" -ForegroundColor DarkGray
+        } catch {
+            $sql = [System.Text.Encoding]::Default.GetString($bytes)
+            Write-Host "    [編碼] Big5 (SSMS 預設)" -ForegroundColor DarkGray
+        }
     }
 
     # 寫入暫存檔再讓 sqlcmd 用 -i 讀取（管線傳入無法正確處理 GO）
