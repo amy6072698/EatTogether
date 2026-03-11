@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
 {
@@ -39,5 +40,7 @@ namespace EatTogether.Models.ViewModels
 
 		[Display(Name = "更新時間")]
 		public DateTime? UpdatedAt { get; set; }
+
+		public List<SelectListItem> ParentCategoryOptions { get; set; } = new(); // 用於下拉選單的分類選項
 	}
 }
