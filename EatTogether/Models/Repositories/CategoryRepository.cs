@@ -5,9 +5,9 @@ namespace EatTogether.Models.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly EatTogetherContext _context;
+        private readonly EatTogetherDBContext _context;
 
-        public CategoryRepository(EatTogetherContext context) 
+        public CategoryRepository(EatTogetherDBContext context) 
         {
             _context = context;
         }

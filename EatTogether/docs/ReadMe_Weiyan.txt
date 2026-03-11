@@ -2,7 +2,7 @@
 
 開發活動機制
 [working]add 活動新增頁面 url:/Events/Create
-	[working]add ViewModel, Dto
+	[V]add ViewModel, Dto
 		EventCreateViewModel class
 			Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 
@@ -17,20 +17,20 @@
 			→Event ToEntity(this EventsCreateDto  dto)	
 
 
-	[]add Service/Repository
+	[V]add Service/Repository
 		IEventRepository interface
-			void Create (EventsCreateDto  dto)
+			void Create (EventCreateDto  dto)
 
 		EventRepository 實作 IEventRepository 
 			ctor(EatTogetherContext context)
 
 		EventService
 			ctor(IEventRepository  repo)
-			void Create(EventsCreateDto   dto)
+			void Create(EventCreateDto   dto)
 
 		在 Program.cs 註冊IEventRepository , EventRepository,  service
 
-	[]add EventsController
+	[working]add EventsController
 		Create()
 		ctor(EventService eventService)
 		Create(EventCreateViewModel  vm)[Autorize]

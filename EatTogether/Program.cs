@@ -1,3 +1,8 @@
+using EatTogether.Models.EfModels;
+using EatTogether.Models.Repositories;
+using EatTogether.Models.Services;
+using Microsoft.EntityFrameworkCore;
+
 namespace EatTogether
 {
     public class Program
@@ -9,7 +14,24 @@ namespace EatTogether
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            var app = builder.Build();
+
+			builder.Services.AddDbContext<EatTogetherDBContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+
+
+			// µù¥UIProductRepository, ProductRepository, ProductService ¨ì DI ®e¾¹
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
+			builder.Services.AddScoped<EventService>();
+
+
+
+
+			var app = builder.Build();
+
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
