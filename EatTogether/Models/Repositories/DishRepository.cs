@@ -6,9 +6,9 @@ namespace EatTogether.Models.Repositories
 {
     public class DishRepository : IDishRepository
     {
-        private readonly EatTogetherContext _context;
+        private readonly EatTogetherDBContext _context;
 
-        public DishRepository(EatTogetherContext context) 
+        public DishRepository(EatTogetherDBContext context) 
         {
             _context = context;
         }

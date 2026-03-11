@@ -1,4 +1,5 @@
 ﻿using EatTogether.Models.Services;
+using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

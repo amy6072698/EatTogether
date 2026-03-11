@@ -15,9 +15,11 @@ namespace EatTogether
             builder.Services.AddControllersWithViews();
 
 			// µù¥U¨ìDBContext
-			builder.Services.AddDbContext<EatTogetherContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("EatTogetherDB")));
+			builder.Services.AddDbContext<EatTogetherDBContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+        
 			// µù¥URepository
 			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 			builder.Services.AddScoped<IDishRepository, DishRepository>();
