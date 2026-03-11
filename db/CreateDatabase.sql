@@ -9,8 +9,9 @@ BEGIN
 END
 GO
 
-CREATE DATABASE EatTogetherDB
+CREATE DATABASE EatTogetherDB;
 GO
+
 ALTER DATABASE [EatTogetherDB] SET COMPATIBILITY_LEVEL = 170
 GO
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
@@ -86,7 +87,7 @@ ALTER DATABASE [EatTogetherDB] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLE
 GO
 USE [EatTogetherDB]
 GO
-/****** Object:  Table [dbo].[ArticleCategories]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[ArticleCategories]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -102,7 +103,7 @@ CREATE TABLE [dbo].[ArticleCategories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Articles]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Articles]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -124,7 +125,7 @@ CREATE TABLE [dbo].[Articles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Categories]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Categories]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -144,7 +145,7 @@ CREATE TABLE [dbo].[Categories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Coupons]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Coupons]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -166,7 +167,7 @@ CREATE TABLE [dbo].[Coupons](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Dishes]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Dishes]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -191,7 +192,7 @@ CREATE TABLE [dbo].[Dishes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[EmailQueues]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[EmailQueues]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -210,7 +211,7 @@ CREATE TABLE [dbo].[EmailQueues](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Events]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Events]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -232,7 +233,7 @@ CREATE TABLE [dbo].[Events](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Functions]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Functions]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -243,13 +244,14 @@ CREATE TABLE [dbo].[Functions](
 	[FunctionName] [varchar](50) NOT NULL,
 	[DisplayName] [nvarchar](50) NOT NULL,
 	[Description] [nvarchar](200) NULL,
+	[IsOwnerOnly] [bit] NOT NULL,
  CONSTRAINT [PK_Functions] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MemberCoupons]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[MemberCoupons]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -266,7 +268,7 @@ CREATE TABLE [dbo].[MemberCoupons](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MemberFavorites]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[MemberFavorites]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -282,7 +284,7 @@ CREATE TABLE [dbo].[MemberFavorites](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Members]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Members]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -292,20 +294,23 @@ CREATE TABLE [dbo].[Members](
 	[Account] [varchar](100) NOT NULL,
 	[Name] [nvarchar](50) NOT NULL,
 	[Email] [varchar](100) NOT NULL,
-	[Password] [varbinary](128) NOT NULL,
-	[Phone] [varchar](10) NOT NULL,
+	[HashedPassword] [varchar](70) NOT NULL,
+	[Phone] [varchar](10) NULL,
 	[BirthDate] [date] NULL,
 	[IsBlacklisted] [bit] NOT NULL,
 	[CreatedAt] [datetime2](0) NOT NULL,
 	[IsDeleted] [bit] NOT NULL,
 	[DeletedAt] [datetime2](0) NULL,
+	[IsConfirmed] [bit] NOT NULL,
+	[AvatarFileName] [varchar](100) NULL,
+	[BlacklistReason] [nvarchar](200) NULL,
  CONSTRAINT [PK_Members] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[OrderDetails]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[OrderDetails]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -324,7 +329,7 @@ CREATE TABLE [dbo].[OrderDetails](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Orders]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Orders]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -351,7 +356,25 @@ CREATE TABLE [dbo].[Orders](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Payments]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[PasswordResetTokens]    Script Date: 2026/3/11 下午 10:31:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PasswordResetTokens](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[Token] [varchar](32) NOT NULL,
+	[ExpiresAt] [datetime2](0) NOT NULL,
+	[IsUsed] [bit] NOT NULL,
+	[CreatedAt] [datetime2](0) NOT NULL,
+ CONSTRAINT [PK_PasswordResetTokens] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Payments]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -369,7 +392,7 @@ CREATE TABLE [dbo].[Payments](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PreOrderDetails]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[PreOrderDetails]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -389,7 +412,7 @@ CREATE TABLE [dbo].[PreOrderDetails](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PreOrders]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[PreOrders]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -416,7 +439,7 @@ CREATE TABLE [dbo].[PreOrders](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Products]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Products]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -432,7 +455,7 @@ CREATE TABLE [dbo].[Products](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Reservations]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Reservations]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -455,7 +478,7 @@ CREATE TABLE [dbo].[Reservations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RoleFunctions]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[RoleFunctions]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -470,7 +493,7 @@ CREATE TABLE [dbo].[RoleFunctions](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -486,7 +509,7 @@ CREATE TABLE [dbo].[Roles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SetMealItems]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[SetMealItems]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -506,7 +529,7 @@ CREATE TABLE [dbo].[SetMealItems](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SetMeals]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[SetMeals]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -528,7 +551,7 @@ CREATE TABLE [dbo].[SetMeals](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SubscriptionPreferences]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[SubscriptionPreferences]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -545,7 +568,7 @@ CREATE TABLE [dbo].[SubscriptionPreferences](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Tables]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Tables]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -561,7 +584,7 @@ CREATE TABLE [dbo].[Tables](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserNotifications]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[UserNotifications]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -579,7 +602,7 @@ CREATE TABLE [dbo].[UserNotifications](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UserRoles]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -594,7 +617,7 @@ CREATE TABLE [dbo].[UserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 2026/3/4 下午 01:55:19 ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 2026/3/11 下午 10:31:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -602,17 +625,16 @@ GO
 CREATE TABLE [dbo].[Users](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[Account] [varchar](50) NOT NULL,
-	[Password] [varbinary](128) NOT NULL,
+	[HashedPassword] [varchar](70) NOT NULL,
 	[EmployeeNumber] [varchar](20) NOT NULL,
 	[Name] [nvarchar](50) NOT NULL,
 	[Email] [varchar](100) NOT NULL,
 	[Phone] [varchar](10) NOT NULL,
 	[HireDate] [date] NOT NULL,
-	[TerminationDate] [date] NULL,
 	[CreatedAt] [datetime2](0) NOT NULL,
 	[IsActive] [bit] NOT NULL,
 	[IsDeleted] [bit] NOT NULL,
-	[DeletedAt] [datetime2](0) NULL,
+	[MustChangePassword] [bit] NOT NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -621,25 +643,25 @@ CREATE TABLE [dbo].[Users](
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_ArticleCategories_Name]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_ArticleCategories_Name]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_ArticleCategories_Name] ON [dbo].[ArticleCategories]
 (
 	[Name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_ArticleCategories_Sort]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_ArticleCategories_Sort]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_ArticleCategories_Sort] ON [dbo].[ArticleCategories]
 (
 	[SortOrder] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Articles_PublishDate]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Articles_PublishDate]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Articles_PublishDate] ON [dbo].[Articles]
 (
 	[PublishDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Articles_Status]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Articles_Status]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Articles_Status] ON [dbo].[Articles]
 (
 	[Status] ASC
@@ -647,7 +669,7 @@ CREATE NONCLUSTERED INDEX [IX_Articles_Status] ON [dbo].[Articles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Coupons_Code]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Coupons_Code]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Coupons_Code] ON [dbo].[Coupons]
 (
 	[Code] ASC
@@ -655,25 +677,25 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Coupons_Code] ON [dbo].[Coupons]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_EmailQueues_Recipient]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_EmailQueues_Recipient]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_EmailQueues_Recipient] ON [dbo].[EmailQueues]
 (
 	[RecipientEmail] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_EmailQueues_Status]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_EmailQueues_Status]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_EmailQueues_Status] ON [dbo].[EmailQueues]
 (
 	[Status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Events_StartDate]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Events_StartDate]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Events_StartDate] ON [dbo].[Events]
 (
 	[StartDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Events_Status]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Events_Status]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Events_Status] ON [dbo].[Events]
 (
 	[Status] ASC
@@ -681,13 +703,13 @@ CREATE NONCLUSTERED INDEX [IX_Events_Status] ON [dbo].[Events]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Functions_FunctionName]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Functions_FunctionName]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Functions_FunctionName] ON [dbo].[Functions]
 (
 	[FunctionName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_MemberFavorites_Mem_Prod]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_MemberFavorites_Mem_Prod]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_MemberFavorites_Mem_Prod] ON [dbo].[MemberFavorites]
 (
 	[MemberId] ASC,
@@ -696,7 +718,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_MemberFavorites_Mem_Prod] ON [dbo].[MemberF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Members_Account]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Members_Account]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Members_Account] ON [dbo].[Members]
 (
 	[Account] ASC
@@ -704,19 +726,19 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Members_Account] ON [dbo].[Members]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Members_Email]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Members_Email]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Members_Email] ON [dbo].[Members]
 (
 	[Email] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Members_IsDeleted]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Members_IsDeleted]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Members_IsDeleted] ON [dbo].[Members]
 (
 	[IsDeleted] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Orders_OrderAt]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Orders_OrderAt]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Orders_OrderAt] ON [dbo].[Orders]
 (
 	[OrderAt] ASC
@@ -724,13 +746,27 @@ CREATE NONCLUSTERED INDEX [IX_Orders_OrderAt] ON [dbo].[Orders]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Orders_OrderNumber]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Orders_OrderNumber]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Orders_OrderNumber] ON [dbo].[Orders]
 (
 	[OrderNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_PreOrders_OrderAt]    Script Date: 2026/3/4 下午 01:55:20 ******/
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_PasswordResetTokens_Token]    Script Date: 2026/3/11 下午 10:31:03 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_PasswordResetTokens_Token] ON [dbo].[PasswordResetTokens]
+(
+	[Token] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PasswordResetTokens_UserId]    Script Date: 2026/3/11 下午 10:31:03 ******/
+CREATE NONCLUSTERED INDEX [IX_PasswordResetTokens_UserId] ON [dbo].[PasswordResetTokens]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PreOrders_OrderAt]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_PreOrders_OrderAt] ON [dbo].[PreOrders]
 (
 	[OrderAt] ASC
@@ -738,7 +774,7 @@ CREATE NONCLUSTERED INDEX [IX_PreOrders_OrderAt] ON [dbo].[PreOrders]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_PreOrders_OrderNumber]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_PreOrders_OrderNumber]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_PreOrders_OrderNumber] ON [dbo].[PreOrders]
 (
 	[OrderNumber] ASC
@@ -746,19 +782,19 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_PreOrders_OrderNumber] ON [dbo].[PreOrders]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Reservations_BookingNumber]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Reservations_BookingNumber]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Reservations_BookingNumber] ON [dbo].[Reservations]
 (
 	[BookingNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Reservations_Date]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Reservations_Date]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_Reservations_Date] ON [dbo].[Reservations]
 (
 	[ReservationDate] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RoleFunctions_Role_Func]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_RoleFunctions_Role_Func]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_RoleFunctions_Role_Func] ON [dbo].[RoleFunctions]
 (
 	[RoleId] ASC,
@@ -767,7 +803,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_RoleFunctions_Role_Func] ON [dbo].[RoleFunc
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Roles_RoleName]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Roles_RoleName]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Roles_RoleName] ON [dbo].[Roles]
 (
 	[RoleName] ASC
@@ -775,25 +811,25 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Roles_RoleName] ON [dbo].[Roles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Tables_TableName]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Tables_TableName]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Tables_TableName] ON [dbo].[Tables]
 (
 	[TableName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserNotifications_IsRead]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_UserNotifications_IsRead]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_UserNotifications_IsRead] ON [dbo].[UserNotifications]
 (
 	[IsRead] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserNotifications_MemberId]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_UserNotifications_MemberId]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE NONCLUSTERED INDEX [IX_UserNotifications_MemberId] ON [dbo].[UserNotifications]
 (
 	[MemberId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_UserRoles_User_Role]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_UserRoles_User_Role]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserRoles_User_Role] ON [dbo].[UserRoles]
 (
 	[UserId] ASC,
@@ -802,7 +838,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_UserRoles_User_Role] ON [dbo].[UserRoles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Users_Account]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Users_Account]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_Account] ON [dbo].[Users]
 (
 	[Account] ASC
@@ -810,7 +846,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_Account] ON [dbo].[Users]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Users_Email]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Users_Email]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_Email] ON [dbo].[Users]
 (
 	[Email] ASC
@@ -818,7 +854,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_Email] ON [dbo].[Users]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_Users_EmployeeNumber]    Script Date: 2026/3/4 下午 01:55:20 ******/
+/****** Object:  Index [IX_Users_EmployeeNumber]    Script Date: 2026/3/11 下午 10:31:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Users_EmployeeNumber] ON [dbo].[Users]
 (
 	[EmployeeNumber] ASC
@@ -862,15 +898,23 @@ ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [DiscountValue]
 GO
 ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [Status]
 GO
+ALTER TABLE [dbo].[Functions] ADD  CONSTRAINT [DF_Functions_IsOwnerOnly]  DEFAULT ((0)) FOR [IsOwnerOnly]
+GO
 ALTER TABLE [dbo].[MemberCoupons] ADD  DEFAULT ((0)) FOR [IsUsed]
 GO
 ALTER TABLE [dbo].[MemberFavorites] ADD  DEFAULT (getdate()) FOR [CreatedAt]
 GO
-ALTER TABLE [dbo].[Members] ADD  DEFAULT ((0)) FOR [IsBlacklisted]
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF__Members__IsBlack__10566F31]  DEFAULT ((0)) FOR [IsBlacklisted]
 GO
-ALTER TABLE [dbo].[Members] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF__Members__Created__114A936A]  DEFAULT (getdate()) FOR [CreatedAt]
 GO
-ALTER TABLE [dbo].[Members] ADD  DEFAULT ((0)) FOR [IsDeleted]
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF__Members__IsDelet__123EB7A3]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF_Members_IsConfirmed]  DEFAULT ((0)) FOR [IsConfirmed]
+GO
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF_Members_AvatarFileName]  DEFAULT (NULL) FOR [AvatarFileName]
+GO
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF_Members_BlacklistReason]  DEFAULT (NULL) FOR [BlacklistReason]
 GO
 ALTER TABLE [dbo].[OrderDetails] ADD  DEFAULT ((1)) FOR [Qty]
 GO
@@ -883,6 +927,10 @@ GO
 ALTER TABLE [dbo].[Orders] ADD  DEFAULT ((0)) FOR [DiscountAmount]
 GO
 ALTER TABLE [dbo].[Orders] ADD  DEFAULT ((0)) FOR [TotalAmount]
+GO
+ALTER TABLE [dbo].[PasswordResetTokens] ADD  CONSTRAINT [DF_PasswordResetTokens_IsUsed]  DEFAULT ((0)) FOR [IsUsed]
+GO
+ALTER TABLE [dbo].[PasswordResetTokens] ADD  CONSTRAINT [DF_PasswordResetTokens_CreatedAt]  DEFAULT (getdate()) FOR [CreatedAt]
 GO
 ALTER TABLE [dbo].[Payments] ADD  DEFAULT (getdate()) FOR [PaidAt]
 GO
@@ -938,11 +986,13 @@ ALTER TABLE [dbo].[UserNotifications] ADD  DEFAULT ((0)) FOR [IsRead]
 GO
 ALTER TABLE [dbo].[UserNotifications] ADD  DEFAULT (getdate()) FOR [CreatedAt]
 GO
-ALTER TABLE [dbo].[Users] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__CreatedAt__32AB8735]  DEFAULT (getdate()) FOR [CreatedAt]
 GO
-ALTER TABLE [dbo].[Users] ADD  DEFAULT ((1)) FOR [IsActive]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__IsActive__339FAB6E]  DEFAULT ((1)) FOR [IsActive]
 GO
-ALTER TABLE [dbo].[Users] ADD  DEFAULT ((0)) FOR [IsDeleted]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__IsDeleted__3493CFA7]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_MustChangePassword]  DEFAULT ((0)) FOR [MustChangePassword]
 GO
 ALTER TABLE [dbo].[Articles]  WITH CHECK ADD  CONSTRAINT [FK_Articles_Categories] FOREIGN KEY([CategoryId])
 REFERENCES [dbo].[ArticleCategories] ([Id])
@@ -1023,6 +1073,11 @@ ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_Orders_Users] FOREIGN
 REFERENCES [dbo].[Users] ([Id])
 GO
 ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_Orders_Users]
+GO
+ALTER TABLE [dbo].[PasswordResetTokens]  WITH CHECK ADD  CONSTRAINT [FK_PasswordResetTokens_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[PasswordResetTokens] CHECK CONSTRAINT [FK_PasswordResetTokens_Users]
 GO
 ALTER TABLE [dbo].[Payments]  WITH CHECK ADD  CONSTRAINT [FK_Payments_Orders] FOREIGN KEY([OrderId])
 REFERENCES [dbo].[Orders] ([Id])
