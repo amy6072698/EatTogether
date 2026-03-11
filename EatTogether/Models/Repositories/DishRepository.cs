@@ -1,5 +1,6 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Repositories
 {
@@ -11,49 +12,50 @@ namespace EatTogether.Models.Repositories
         {
             _context = context;
         }
-        public void Create(DishDto dto)
-        {
-            var dish = new Dish
-            {
-                CategoryId = dto.CategoryId,
-                DishName = dto.DishName,
-                Description = dto.Description,
-                Price = dto.Price,
-                ImageUrl = dto.ImageUrl,
-                IsTakeOut = dto.IsTakeOut,
-                IsLimited = dto.IsLimited,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Dishes.Add(dish);
-            _context.SaveChanges();
-        }
 
-        public IEnumerable<DishDto> GetAll()
-        {
-            return _context.Dishes
-                .Where(d => d.IsActive)
-                .Select(d => new DishDto
-                {
-                    Id = d.Id,
-                    DishName = d.DishName,
-                    Description = d.Description,
-                    Price = d.Price,
-                    CategoryId = d.CategoryId,
-                    CategoryName = d.Category != null ? d.Category.CategoryName : null,
-                    ImageUrl = d.ImageUrl,
-                    IsActive = d.IsActive,
-                    CreatedAt = d.CreatedAt,
-                    UpdatedAt = d.UpdatedAt
-                })
-                .ToList();
-        }
+		public async Task CreateAsync(DishDto dto)
+		{
+			var dish = new Dish
+			{
+				CategoryId = dto.CategoryId,
+				DishName = dto.DishName,
+				Description = dto.Description,
+				Price = dto.Price,
+				ImageUrl = dto.ImageUrl,
+				IsTakeOut = dto.IsTakeOut,
+				IsLimited = dto.IsLimited,
+				StartDate = dto.StartDate,
+				EndDate = dto.EndDate,
+				IsActive = true,
+				CreatedAt = DateTime.UtcNow
+			};
+			_context.Dishes.Add(dish);
+			await _context.SaveChangesAsync();
+		}
 
-        public DishDto? GetById(int id)
+		public async Task<IEnumerable<DishDto>> GetAllAsync()
+		{
+			return await _context.Dishes
+			   .Where(d => d.IsActive)
+			   .Select(d => new DishDto
+			   {
+				   Id = d.Id,
+				   DishName = d.DishName,
+				   Description = d.Description,
+				   Price = d.Price,
+				   CategoryId = d.CategoryId,
+				   CategoryName = d.Category != null ? d.Category.CategoryName : null,
+				   ImageUrl = d.ImageUrl,
+				   IsActive = d.IsActive,
+				   CreatedAt = d.CreatedAt,
+				   UpdatedAt = d.UpdatedAt
+			   })
+			   .ToListAsync();
+		}
+
+		public async Task<DishDto?> GetByIdAsync(int id)
         {
-            return _context.Dishes
+            return await _context.Dishes
                 .Where(d => d.Id == id && d.IsActive)
                 .Select(d => new DishDto
                 {
@@ -72,38 +74,38 @@ namespace EatTogether.Models.Repositories
                     CreatedAt = d.CreatedAt,
                     UpdatedAt = d.UpdatedAt
                 })
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public void SoftDelete(int id)
-        {
-            var dish = _context.Dishes.Find(id);
-            if (dish == null) return;
+		public async Task SoftDeleteAsync(int id)
+		{
+			var dish = await _context.Dishes.FindAsync(id);
+			if (dish == null) return;
 
-            dish.IsActive = false;
-            dish.UpdatedAt = DateTime.UtcNow;
+			dish.IsActive = false;
+			dish.UpdatedAt = DateTime.UtcNow;
 
-            _context.SaveChanges();
-        }
+			await _context.SaveChangesAsync();
+		}
 
-        public void Update(DishDto dto)
-        {
-            var dish = _context.Dishes.Find(dto.Id);
-            if (dish == null)return;
-            {
-                dish.CategoryId = dto.CategoryId;
-                dish.DishName = dto.DishName;
-                dish.Description = dto.Description;
-                dish.Price = dto.Price;
-                dish.ImageUrl = dto.ImageUrl;
-                dish.IsTakeOut = dto.IsTakeOut;
-                dish.IsLimited = dto.IsLimited;
-                dish.StartDate = dto.StartDate;
-                dish.EndDate = dto.EndDate;
-                dish.UpdatedAt = DateTime.UtcNow;
+		public async Task UpdateAsync(DishDto dto)
+		{
+			var dish = await _context.Dishes.FindAsync(dto.Id);
+			if (dish == null) return;
+			{
+				dish.CategoryId = dto.CategoryId;
+				dish.DishName = dto.DishName;
+				dish.Description = dto.Description;
+				dish.Price = dto.Price;
+				dish.ImageUrl = dto.ImageUrl;
+				dish.IsTakeOut = dto.IsTakeOut;
+				dish.IsLimited = dto.IsLimited;
+				dish.StartDate = dto.StartDate;
+				dish.EndDate = dto.EndDate;
+				dish.UpdatedAt = DateTime.UtcNow;
 
-                _context.SaveChanges();
-            }
-        }
-    }
+				await _context.SaveChangesAsync();
+			}
+		}
+	}
 }
