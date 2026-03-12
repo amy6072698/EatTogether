@@ -39,7 +39,7 @@
 
 
 [working]add 活動首頁 url: /Events/Index
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[working]add ViewModel, Dto 
 		EventViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 	

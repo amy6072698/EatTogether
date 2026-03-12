@@ -6,7 +6,7 @@ namespace EatTogether.Models.ViewModels
 	public class EventCreateViewModel
 	{
 
-		public int Id { get; set; }
+		//public int Id { get; set; }
 
 		[Display(Name ="標題")]
 		[Required(ErrorMessage ="{0}必填")]

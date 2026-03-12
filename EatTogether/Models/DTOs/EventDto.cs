@@ -1,8 +1,8 @@
 ﻿namespace EatTogether.Models.DTOs
 {
-	public class EventCreateDto
+	public class EventDto
 	{
-		//public int Id { get; set; }
+		public int Id { get; set; }
 
 		public string Title { get; set; }
 

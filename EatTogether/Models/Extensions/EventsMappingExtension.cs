@@ -11,7 +11,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new EventCreateDto
 			{
-				Id = vm.Id,
+				//Id = vm.Id,
 				Title = vm.Title,
 				Summary = vm.Summary,
 				MinSpend = vm.MinSpend,
@@ -28,7 +28,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new Event
 			{
-				Id = dto.Id,
+				//Id = dto.Id,
 				Title = dto.Title,
 				Summary = dto.Summary,
 				MinSpend = dto.MinSpend,
