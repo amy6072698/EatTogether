@@ -10,9 +10,7 @@ namespace EatTogether.Models.Services
 		public EventService(IEventRepository repo)
 		{
 			_repo = repo;
-		}
-
-		
+		}	
 
 
 
@@ -23,8 +21,12 @@ namespace EatTogether.Models.Services
 			return true;
 		}
 
+		public List<EventDto> GetAllForIndex()
+		{
+			return _repo.GetAll();
+		}
 
 
-		
+
 	}
 }

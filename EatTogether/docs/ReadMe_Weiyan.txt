@@ -39,7 +39,7 @@
 
 
 [working]add 活動首頁 url: /Events/Index
-	[working]add ViewModel, Dto 
+	[V]add ViewModel, Dto 
 		EventViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 	
@@ -47,11 +47,11 @@
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 			
 
-	[]modify EventRepository
+	[working]modify EventRepository
 		IEventRepository interface
 			add IEnumerable<EventDto> GetAll()
 
-	[]modify 	EventService
+	[working]modify 	EventService
 			List<EventDto> GetAllForIndex()
 
 	[]modify EventsController
