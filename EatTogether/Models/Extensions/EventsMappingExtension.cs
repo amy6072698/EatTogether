@@ -56,6 +56,46 @@ namespace EatTogether.Models.Extensions
 
 
 
+		//活動列表 dto -> vm
+		//→ ToViewModel(this EventDto dto)
+		//// Entity → Dto（Repository 讀取用）
+		//EventDto ToDto(this Event entity)
+
+		public static EventViewModel ToVm(this EventDto dto)
+		{
+			return new EventViewModel
+			{
+				Id = dto.Id,
+				Title = dto.Title,
+				Summary = dto.Summary,
+				MinSpend = dto.MinSpend,
+				StartDate = dto.StartDate,
+				EndDate = dto.EndDate,
+				RewardItem = dto.RewardItem,
+				DiscountType = dto.DiscountType,
+				DiscountValue = dto.DiscountValue,
+				Status = dto.Status
+			};
+		}
+
+		public static EventDto ToDto(this Event entity)
+		{
+			return new EventDto
+			{
+				Id = entity.Id,
+				Title = entity.Title,
+				Summary = entity.Summary,
+				MinSpend = entity.MinSpend,
+				StartDate = entity.StartDate,
+				EndDate = entity.EndDate,
+				RewardItem = entity.RewardItem,
+				DiscountType = entity.DiscountType,
+				DiscountValue = entity.DiscountValue,
+				Status = entity.Status
+			};
+		}
+
+
 		//活動編輯
 		//	vm<-> dto
 		//→ ToDto(this EventEditViewModel vm)

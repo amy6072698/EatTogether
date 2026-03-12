@@ -38,7 +38,11 @@ namespace EatTogether.Controllers
 
 		public IActionResult Index()
 		{
-			return View();
+			var events = _service
+				.GetAllForIndex()
+				.Select(x => x.ToVm())
+				.ToList();
+			return View(events);
 		}
 	}
 }

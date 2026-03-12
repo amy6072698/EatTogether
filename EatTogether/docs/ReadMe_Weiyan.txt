@@ -47,21 +47,28 @@
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 			
 
-	[working]modify EventRepository
+	[V]modify EventRepository
 		IEventRepository interface
 			add IEnumerable<EventDto> GetAll()
 
-	[working]modify 	EventService
+	[V]modify 	EventService
 			List<EventDto> GetAllForIndex()
 
-	[]modify EventsController
+	[working]modify EventsMappingExtension
+		活動列表 dto -> vm
+		→ ToViewModel(this EventDto dto)
+		// Entity → Dto（Repository 讀取用）
+		EventDto ToDto(this Event entity)
+
+
+	[working]modify EventsController
 		add IActionResult index action[Autorize]
 			Index.cshtml
 
 	**活動狀態:進行中、未開始、已結束
 
 	[]美化頁面
-
+	
 
 
 []add 活動編輯 url: /Events/Edit?eventsId=00
