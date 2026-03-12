@@ -29,7 +29,16 @@ namespace EatTogether
 			builder.Services.AddScoped<DishService>();
 
 
-			var app = builder.Build();
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+            builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+            builder.Services.AddScoped<IMemberCouponRepository, MemberCouponRepository>();
+            builder.Services.AddScoped<TableService>();
+            builder.Services.AddScoped<ReservationService>();
+            builder.Services.AddScoped<CouponService>(); ;
+
+
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
