@@ -11,7 +11,7 @@ public partial class User
 
     public string Account { get; set; }
 
-    public byte[] Password { get; set; }
+    public string HashedPassword { get; set; }
 
     public string EmployeeNumber { get; set; }
 
@@ -23,17 +23,17 @@ public partial class User
 
     public DateOnly HireDate { get; set; }
 
-    public DateOnly? TerminationDate { get; set; }
-
     public DateTime CreatedAt { get; set; }
 
     public bool IsActive { get; set; }
 
     public bool IsDeleted { get; set; }
 
-    public DateTime? DeletedAt { get; set; }
+    public bool MustChangePassword { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 
     public virtual ICollection<PreOrder> PreOrders { get; set; } = new List<PreOrder>();
 

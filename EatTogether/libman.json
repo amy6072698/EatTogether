@@ -1,0 +1,58 @@
+{
+  "version": "3.0",
+  "defaultProvider": "unpkg",
+  "libraries": [
+    {
+        "library": "datatables.net@2.3.7",
+        "destination": "wwwroot/lib/datatables.net/",
+        "files": [
+            "js/dataTables.min.js"
+        ]
+    },
+    {
+        "library": "datatables.net-bs5@2.3.7",
+        "destination": "wwwroot/lib/datatables.net-bs5/",
+        "files": [
+            "js/dataTables.bootstrap5.min.js",
+            "css/dataTables.bootstrap5.min.css"
+        ]
+    },
+    {
+        "library": "sweetalert2@11.26.22",
+        "destination": "wwwroot/lib/sweetalert2/",
+        "files": [
+            "dist/sweetalert2.all.min.js"
+        ]
+    },
+    {
+        "library": "flatpickr@4.6.13",
+        "destination": "wwwroot/lib/flatpickr/",
+        "files": [
+            "dist/flatpickr.min.js",
+            "dist/flatpickr.min.css"
+        ]
+    },
+    {
+        "library": "chart.js@4.5.1",
+        "destination": "wwwroot/lib/chart.js/",
+        "files": [
+            "dist/chart.umd.min.js"
+        ]
+    },
+    {
+        "library": "jquery@3.7.1",
+        "destination": "wwwroot/lib/jquery/",
+        "files": [
+            "dist/jquery.min.js"
+        ]
+    },
+    {
+        "library": "bootstrap@5.3.8",
+        "destination": "wwwroot/lib/bootstrap/",
+        "files": [
+            "dist/css/bootstrap.min.css",
+            "dist/js/bootstrap.bundle.min.js"
+        ]
+    }
+  ]
+}
