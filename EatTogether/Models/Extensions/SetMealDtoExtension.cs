@@ -3,7 +3,7 @@ using EatTogether.Models.EfModels;
 
 namespace EatTogether.Models.Extensions
 {
-	public static class SetMealDtoExtension
+	public static class SetmealdtoExtension
 	{
 		public static Setmealdto ToDo(this SetMeal setMeal)
 		{

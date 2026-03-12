@@ -1,0 +1,117 @@
+﻿@model IEnumerable<EatTogether.Models.ViewModels.SetMealViewModel>
+@{
+    ViewData["Title"] = "套餐管理";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">套餐管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">套餐管理</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-table me-1"></i>套餐列表</div>
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>新增套餐
+            </a>
+        </div>
+        <div class="card-body">
+            <div id="alertBox"></div>
+            <table id="setMealTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>套餐名稱</th>
+                        <th>折扣類型</th>
+                        <th>折扣值</th>
+                        <th>套餐定價</th>
+                        <th>包含餐點數</th>
+                        <th>狀態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.SetMealName</td>
+                            <td>
+                                @if (item.DiscountType == "percent")
+                                {
+                                    <span class="badge bg-info text-dark">百分比</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">固定折扣</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.DiscountType == "percent")
+                                {
+                                    @($"{item.DiscountValue}%")
+                                }
+                                else
+                                {
+                                    @($"${item.DiscountValue}")
+                                }
+                            </td>
+                            <td>@(item.SetPrice.HasValue ? $"${item.SetPrice}" : "—")</td>
+                            <td>@item.Items.Count 項</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">啟用</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">停用</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> 編輯
+                                </a>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="disableSetMeal(@item.Id)">
+                                    <i class="fas fa-trash"></i> 停用
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
+    <script>
+        const dataTable = new simpleDatatables.DataTable("#setMealTable");
+
+        async function disableSetMeal(id) {
+            if (!confirm("確定要停用此套餐嗎？")) return;
+
+            const res = await fetch(`/SetMeals/Disable/${id}`, { method: "POST" });
+
+            if (res.ok) {
+                showAlert("success", "停用成功");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert("danger", "停用失敗，請稍後再試");
+            }
+        }
+
+        function showAlert(type, message) {
+            document.getElementById("alertBox").innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+        }
+    </script>
+}
