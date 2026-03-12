@@ -1,0 +1,125 @@
+﻿@model EatTogether.Models.ViewModels.TableEditViewModel
+@{
+    ViewData["Title"] = "編輯桌位";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">編輯桌位</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">桌位管理</a></li>
+        <li class="breadcrumb-item active">編輯桌位</li>
+    </ol>
+
+    <div class="row g-4" style="max-width: 720px;">
+
+        <!-- 左：編輯表單 -->
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-edit me-1"></i>修改桌位資訊
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Status" />
+
+                        <div class="mb-3">
+                            <label asp-for="TableName" class="form-label">
+                                桌位名稱 <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TableName" class="form-control"
+                                   placeholder="如 A5、OUT4、VIP3" />
+                            <span asp-validation-for="TableName" class="text-danger small"></span>
+                            <div class="form-text">名稱不可與其他桌位重複</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SeatCount" class="form-label">
+                                座位數 <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="SeatCount" type="number" min="1" class="form-control" />
+                            <span asp-validation-for="SeatCount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>儲存修改
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>返回列表
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右：目前狀態 + 危險區刪除 -->
+        <div class="col-md-5">
+
+            <!-- 目前狀態（唯讀顯示） -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>目前狀態
+                </div>
+                <div class="card-body text-center py-4">
+                    <div class="fs-1 fw-bold mb-2">@Model.TableName</div>
+                    <div class="text-muted mb-3">@Model.SeatCount 人桌</div>
+                    @{
+                        var badgeClass = Model.Status switch
+                        {
+                            0 => "bg-success",
+                            1 => "bg-warning text-dark",
+                            2 => "bg-secondary",
+                            _ => "bg-light text-dark"
+                        };
+                    }
+                    <span class="badge @badgeClass fs-6 px-3 py-2">@Model.StatusText</span>
+                    <div class="form-text mt-3">
+                        狀態切換請回到桌位列表操作
+                    </div>
+                </div>
+            </div>
+
+            <!-- 刪除區塊 -->
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle me-1"></i>危險區域
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">
+                        刪除後無法復原。
+                        @if (Model.Status == 1)
+                        {
+                            <span class="text-danger fw-semibold">
+                                此桌位目前用餐中，無法刪除。
+                            </span>
+                        }
+                    </p>
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                          onsubmit="return confirmDelete('@Model.TableName')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger w-100"
+                                @(Model.Status == 1 ? "disabled" : "")>
+                            <i class="fas fa-trash me-1"></i>刪除此桌位
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function confirmDelete(name) {
+            return confirm(`確定要刪除桌位「${name}」嗎？此操作無法還原。`);
+        }
+    </script>
+}

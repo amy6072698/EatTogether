@@ -1,0 +1,170 @@
+﻿@model EatTogether.Models.ViewModels.ReservationSearchViewModel
+@{
+    ViewData["Title"] = "訂位管理";
+    bool isToday = Model.SearchDate.HasValue &&
+                   Model.SearchDate.Value.Date == DateTime.Today;
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">訂位管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">訂位管理</li>
+    </ol>
+
+    <!-- 篩選 -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-search me-1"></i>搜尋訂位</div>
+            <a asp-action="Create" class="btn btn-success btn-sm">
+                <i class="fas fa-plus me-1"></i>新增訂位
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">預約日期</label>
+                        <input type="date" name="searchDate" class="form-control"
+                               value="@Model.SearchDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">狀態</label>
+                        <select name="statusFilter" class="form-select">
+                            <option value="">全部</option>
+                            <option value="0" selected="@(Model.StatusFilter == 0)">訂位中</option>
+                            <option value="1" selected="@(Model.StatusFilter == 1)">已報到</option>
+                            <option value="2" selected="@(Model.StatusFilter == 2)">已取消</option>
+                            <option value="3" selected="@(Model.StatusFilter == 3)">NoShow</option>
+                        </select>
+                    </div>
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>查詢
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary ms-1">重置</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 今日提示 -->
+    @if (isToday && Model.Results.Any())
+    {
+        var todayCount = Model.Results.Count();
+        var arrivedCount = Model.Results.Count(r => r.Status == 1);
+        var pendingCount = Model.Results.Count(r => r.Status == 0);
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-calendar-check me-2"></i>
+            今日（@DateTime.Today.ToString("yyyy/M/d")）共有 <strong>@todayCount 筆</strong>訂位，
+            其中 <strong>@arrivedCount 筆</strong>已報到、<strong>@pendingCount 筆</strong>訂位中
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 資料表 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-calendar-alt me-1"></i>訂位列表
+        </div>
+        <div class="card-body">
+            <div id="alertBox"></div>
+            <table id="reservationTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>訂位代號</th>
+                        <th>姓名</th>
+                        <th>電話</th>
+                        <th>預約時間</th>
+                        <th>人數</th>
+                        <th>狀態</th>
+                        <th>備註</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Results)
+                    {
+                        <tr>
+                            <td><code>@r.BookingNumber</code></td>
+                            <td class="fw-semibold">@r.Name</td>
+                            <td>@r.Phone</td>
+                            <td>@r.ReservationDate.ToString("yyyy/M/d HH:mm")</td>
+                            <td>
+                                <i class="fas fa-user me-1 text-muted"></i>@r.AdultsCount
+                                @if (r.ChildrenCount > 0)
+                                {
+                                    <span class="text-muted ms-1">
+                                        <i class="fas fa-child me-1"></i>@r.ChildrenCount
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @r.StatusBadgeClass">@r.StatusText</span>
+                            </td>
+                            <td class="small text-muted">
+                                @(string.IsNullOrEmpty(r.Remark) ? "—" : r.Remark)
+                            </td>
+                            <td>
+                                @if (r.Status == 0)
+                                {
+                                    <button class="btn btn-success btn-sm me-1"
+                                            onclick="updateStatus(@r.Id, 1)" title="報到">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm me-1"
+                                            onclick="updateStatus(@r.Id, 2)" title="取消">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                }
+                                @if (r.Status != 2 && r.Status != 3)
+                                {
+                                    <button class="btn btn-secondary btn-sm"
+                                            onclick="updateStatus(@r.Id, 3)" title="NoShow">
+                                        <i class="fas fa-user-slash"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
+    <script>
+        const dataTable = new simpleDatatables.DataTable("#reservationTable");
+
+        function updateStatus(id, status) {
+            const msgs = { 1:'確認報到？', 2:'確定取消此訂位？', 3:'標記為 NoShow？' };
+            if (!confirm(msgs[status])) return;
+
+            fetch('/Reservations/UpdateStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', '狀態更新成功');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showAlert('danger', data.message);
+                }
+            });
+        }
+
+        function showAlert(type, message) {
+            document.getElementById('alertBox').innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+        }
+    </script>
+}
