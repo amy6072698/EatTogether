@@ -39,6 +39,8 @@ public partial class EatTogetherDBContext : DbContext
 
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
+    public virtual DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<PreOrder> PreOrders { get; set; }
@@ -209,6 +211,7 @@ public partial class EatTogetherDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.IsOwnerOnly).HasAnnotation("Relational:DefaultConstraintName", "DF_Functions_IsOwnerOnly");
         });
 
         modelBuilder.Entity<Member>(entity =>
@@ -223,22 +226,35 @@ public partial class EatTogetherDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.AvatarFileName)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasDefaultValueSql("(NULL)")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_Members_AvatarFileName");
+            entity.Property(e => e.BlacklistReason)
+                .HasMaxLength(200)
+                .HasDefaultValueSql("(NULL)")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_Members_BlacklistReason");
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
-                .HasDefaultValueSql("(getdate())");
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Members__Created__114A936A");
             entity.Property(e => e.DeletedAt).HasPrecision(0);
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.HashedPassword)
+                .IsRequired()
+                .HasMaxLength(70)
+                .IsUnicode(false);
+            entity.Property(e => e.IsBlacklisted).HasAnnotation("Relational:DefaultConstraintName", "DF__Members__IsBlack__10566F31");
+            entity.Property(e => e.IsConfirmed).HasAnnotation("Relational:DefaultConstraintName", "DF_Members_IsConfirmed");
+            entity.Property(e => e.IsDeleted).HasAnnotation("Relational:DefaultConstraintName", "DF__Members__IsDelet__123EB7A3");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50);
-            entity.Property(e => e.Password)
-                .IsRequired()
-                .HasMaxLength(128);
             entity.Property(e => e.Phone)
-                .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false);
         });
@@ -337,6 +353,29 @@ public partial class EatTogetherDBContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_OrderDetails_Products");
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasIndex(e => e.Token, "IX_PasswordResetTokens_Token").IsUnique();
+
+            entity.HasIndex(e => e.UserId, "IX_PasswordResetTokens_UserId");
+
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PasswordResetTokens_CreatedAt");
+            entity.Property(e => e.ExpiresAt).HasPrecision(0);
+            entity.Property(e => e.IsUsed).HasAnnotation("Relational:DefaultConstraintName", "DF_PasswordResetTokens_IsUsed");
+            entity.Property(e => e.Token)
+                .IsRequired()
+                .HasMaxLength(32)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.User).WithMany(p => p.PasswordResetTokens)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PasswordResetTokens_Users");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -554,8 +593,8 @@ public partial class EatTogetherDBContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
-                .HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.DeletedAt).HasPrecision(0);
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Users__CreatedAt__32AB8735");
             entity.Property(e => e.Email)
                 .IsRequired()
                 .HasMaxLength(100)
@@ -564,13 +603,18 @@ public partial class EatTogetherDBContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.HashedPassword)
+                .IsRequired()
+                .HasMaxLength(70)
+                .IsUnicode(false);
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Users__IsActive__339FAB6E");
+            entity.Property(e => e.IsDeleted).HasAnnotation("Relational:DefaultConstraintName", "DF__Users__IsDeleted__3493CFA7");
+            entity.Property(e => e.MustChangePassword).HasAnnotation("Relational:DefaultConstraintName", "DF_Users_MustChangePassword");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50);
-            entity.Property(e => e.Password)
-                .IsRequired()
-                .HasMaxLength(128);
             entity.Property(e => e.Phone)
                 .IsRequired()
                 .HasMaxLength(10)

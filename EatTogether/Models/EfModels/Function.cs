@@ -17,5 +17,7 @@ public partial class Function
 
     public string Description { get; set; }
 
+    public bool IsOwnerOnly { get; set; }
+
     public virtual ICollection<RoleFunction> RoleFunctions { get; set; } = new List<RoleFunction>();
 }
