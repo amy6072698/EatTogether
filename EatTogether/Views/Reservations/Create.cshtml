@@ -64,7 +64,8 @@
                     <label asp-for="ReservationDate" class="form-label">
                         預約日期時間 <span class="text-danger">*</span>
                     </label>
-                    <input asp-for="ReservationDate" type="datetime-local" class="form-control" />
+                    <input asp-for="ReservationDate" type="datetime-local"
+                           class="form-control" id="reservationDateInput" />
                     <span asp-validation-for="ReservationDate" class="text-danger small"></span>
                     <div class="form-text">
                         <i class="fas fa-info-circle me-1"></i>
@@ -112,4 +113,17 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // 若欄位為空（預設 0001/01/01），自動填入今日日期時間
+        window.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('reservationDateInput');
+            if (!input.value || input.value.startsWith('0001')) {
+                const now = new Date();
+                // 格式：yyyy-MM-ddTHH:mm
+                const pad = n => String(n).padStart(2, '0');
+                const localStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                input.value = localStr;
+            }
+        });
+    </script>
 }
