@@ -14,7 +14,11 @@ namespace EatTogether
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            var app = builder.Build();
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
+			builder.Services.AddScoped<EventService>();
+
+
+			var app = builder.Build();
 
 
 
