@@ -15,7 +15,7 @@ public partial class Member
 
     public string Email { get; set; }
 
-    public byte[] Password { get; set; }
+    public string HashedPassword { get; set; }
 
     public string Phone { get; set; }
 
@@ -28,6 +28,12 @@ public partial class Member
     public bool IsDeleted { get; set; }
 
     public DateTime? DeletedAt { get; set; }
+
+    public bool IsConfirmed { get; set; }
+
+    public string AvatarFileName { get; set; }
+
+    public string BlacklistReason { get; set; }
 
     public virtual ICollection<MemberCoupon> MemberCoupons { get; set; } = new List<MemberCoupon>();
 
