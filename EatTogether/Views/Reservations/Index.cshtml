@@ -118,7 +118,7 @@
                                         <i class="fas fa-times"></i>
                                     </button>
                                 }
-                                @if (r.Status != 2 && r.Status != 3)
+                                @if (r.Status == 0)
                                 {
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="updateStatus(@r.Id, 3)" title="NoShow">
@@ -137,7 +137,18 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
     <script>
-        const dataTable = new simpleDatatables.DataTable("#reservationTable");
+        const dataTable = new simpleDatatables.DataTable("#reservationTable", {
+            labels: {
+                placeholder: "搜尋...",
+                searchTitle: "搜尋",
+                perPage: "每頁顯示",
+                noRows: "無資料",
+                info: "顯示第 {start} 至 {end} 筆，共 {rows} 筆",
+                loading: "載入中...",
+                infoFiltered: "（從 {rowsTotal} 筆中篩選）",
+                noResults: "無符合資料"
+            }
+        });
 
         function updateStatus(id, status) {
             const msgs = { 1:'確認報到？', 2:'確定取消此訂位？', 3:'標記為 NoShow？' };
