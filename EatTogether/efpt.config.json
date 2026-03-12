@@ -8,7 +8,6 @@
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Models\\EfModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "EatTogether",

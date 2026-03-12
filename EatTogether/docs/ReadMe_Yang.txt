@@ -13,10 +13,10 @@
 	-- 建立 SetMealItems 資料表(OptionGroupNo + PickLimit 互斥邏輯)
 	-- 建立 Products 資料表(DishId / SetMealId 互斥 CHECK)
 
-[working]菜單分類管理
+[V]菜單分類管理
 	-- 建立 CategoryDto & CategoryViewModel 擴充方法
 		CategoryDto
-		CategoryViewModel
+		CategoryViewModel 哈
 		ToViewModel()
 		CategoryDtoExtension
 
@@ -36,7 +36,7 @@
 		Categories/Create.cshtml
 		Categories/Edit.cshtml
 
-[working]餐點管理
+[V]餐點管理
 	--建立 DishDto / DishViewModel 擴充方法
 		DishDto
 		DishViewModel

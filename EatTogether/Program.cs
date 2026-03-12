@@ -14,21 +14,7 @@ namespace EatTogether
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-
-			builder.Services.AddDbContext<EatTogetherDBContext>(options =>
-				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
-
-
-			// µù¥UIProductRepository, ProductRepository, ProductService ¨ì DI ®e¾¹
-			builder.Services.AddScoped<IEventRepository, EventRepository>();
-			builder.Services.AddScoped<EventService>();
-
-
-
-
-			var app = builder.Build();
+            var app = builder.Build();
 
 
 
