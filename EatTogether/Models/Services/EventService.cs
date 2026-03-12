@@ -12,10 +12,19 @@ namespace EatTogether.Models.Services
 			_repo = repo;
 		}
 
-		public void Create(EventCreateDto dto)
+		
+
+
+
+		public bool Create(EventCreateDto dto)
 		{
 			_repo.Create(dto);
 			Console.WriteLine("新增完成");  //考慮新增一個result services
+			return true;
 		}
+
+
+
+		
 	}
 }

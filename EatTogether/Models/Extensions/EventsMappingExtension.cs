@@ -20,7 +20,7 @@ namespace EatTogether.Models.Extensions
 				RewardItem = vm.RewardItem,
 				DiscountType = vm.DiscountType,
 				DiscountValue = vm.DiscountValue,
-				Status = vm.Status
+				Status = CalculateStatus(vm.StartDate, vm.EndDate)
 			};
 		}
 
@@ -37,14 +37,28 @@ namespace EatTogether.Models.Extensions
 				RewardItem = dto.RewardItem,
 				DiscountType = dto.DiscountType,
 				DiscountValue = dto.DiscountValue,
-				Status = dto.Status
+				Status = CalculateStatus(dto.StartDate, dto.EndDate)
 			};
 		}
+
+		// 自動計算狀態的方法
+		private static int CalculateStatus(DateTime startDate, DateTime endDate)
+		{
+			var today = DateTime.Today;
+
+			if (today < startDate)
+				return 0; // 未開始
+			else if (today >= startDate && today <= endDate)
+				return 1; // 進行中
+			else
+				return 2; // 已結束
+		}
+
 
 
 		//活動編輯
 		//	vm<-> dto
- 		//→ ToDto(this EventEditViewModel vm)
+		//→ ToDto(this EventEditViewModel vm)
 		//→ ToViewModel(this AEventEditDto dto)
 		//	// Dto → Entity（Repository 寫入用）
 		//	→Event ToEntity(this EventEditDto dto)

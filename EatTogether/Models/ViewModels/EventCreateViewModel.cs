@@ -5,6 +5,7 @@ namespace EatTogether.Models.ViewModels
 {
 	public class EventCreateViewModel
 	{
+
 		public int Id { get; set; }
 
 		[Display(Name ="標題")]
@@ -14,7 +15,7 @@ namespace EatTogether.Models.ViewModels
 
 		[Display(Name = "摘要")]
 		[StringLength(50)]
-		public string Summary { get; set; }
+		public string? Summary { get; set; }
 
 		[Display(Name = "門檻")]
 		[Required(ErrorMessage = "{0}必填")]
@@ -33,19 +34,29 @@ namespace EatTogether.Models.ViewModels
 
 		[Display(Name = "贈品")]
 		[StringLength(100)]
-		public string RewardItem { get; set; }
+		public string? RewardItem { get; set; }
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]
-		public string DiscountType { get; set; }
+		public string? DiscountType { get; set; }
 
 		[Display(Name = "折扣金額")]
 		[Required(ErrorMessage = "{0}必填")]
 		public decimal DiscountValue { get; set; }
 
 		[Display(Name = "狀態")]
-		[Required(ErrorMessage = "{0}必填")]
 		public int Status { get; set; }
+
+
+		// 後端驗證：開始日期不能是過去
+		public IEnumerable<ValidationResult> Validate(ValidationContext context)
+		{
+			if (StartDate.Date < DateTime.Today)
+				yield return new ValidationResult("開始日期不能早於今天", new[] { nameof(StartDate) });
+
+			if (EndDate.Date < StartDate.Date)
+				yield return new ValidationResult("結束日期不能早於開始日期", new[] { nameof(EndDate) });
+		}
 
 	}
 }

@@ -11,7 +11,6 @@
     <Folder Include="Models\DTOs\" />
     <Folder Include="Models\Services\" />
     <Folder Include="Models\Repositories\" />
-    <Folder Include="Models\ViewModels\" />
   </ItemGroup>
 
   <ItemGroup>
