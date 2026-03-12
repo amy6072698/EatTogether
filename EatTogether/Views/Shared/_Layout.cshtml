@@ -91,6 +91,17 @@
 
                         <div class="sb-sidenav-menu-heading">菜單管理</div>
 
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDish" aria-expanded="false" aria-controls="collapseUser">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
+                            菜名
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseDish" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="Categories" asp-action="Index">類別</a>
+                                <a class="nav-link" asp-controller="Dishes" asp-action="Index">餐點</a>
+                            </nav>
+                        </div>
 
 
                         <div class="sb-sidenav-menu-heading">訂單管理</div>

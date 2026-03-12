@@ -59,11 +59,11 @@
 		Dishes/Create.cshtml
 		Dishes/Edit.cshtml
 
-[]套餐管理
-	--建立 SetMealDto / SetMealItemDto
-		SetMealDto
+[V]套餐管理
+	--建立 Setmealdto / SetMealItemDto
+		Setmealdto
 		SetMealItemDto
-		SetMealDtoExtension
+		SetmealdtoExtension
 
 	--建立 SetMealViewModel / SetMealItemViewModel
 		SetMealViewModel

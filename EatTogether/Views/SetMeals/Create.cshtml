@@ -1,0 +1,142 @@
+﻿@model EatTogether.Models.ViewModels.SetMealViewModel
+@{
+    ViewData["Title"] = "新增套餐";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">新增套餐</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">套餐管理</a></li>
+        <li class="breadcrumb-item active">新增套餐</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-plus me-1"></i>新增套餐
+        </div>
+        <div class="card-body">
+            <div id="alertBox"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">套餐名稱 <span class="text-danger">*</span></label>
+                    <input type="text" id="SetMealName" class="form-control" placeholder="請輸入套餐名稱" />
+                    <div class="text-danger small" id="SetMealName-error"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">套餐定價</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="SetPrice" class="form-control" placeholder="0" min="0" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">折扣類型 <span class="text-danger">*</span></label>
+                    <select id="DiscountType" class="form-select" onchange="updateDiscountLabel()">
+                        @foreach (var option in Model.DiscountTypeOptions)
+                        {
+                            <option value="@option.Value">@option.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" id="discountLabel">折扣值（%） <span class="text-danger">*</span></label>
+                    <input type="number" id="DiscountValue" class="form-control" placeholder="0" min="0" />
+                    <div class="text-danger small" id="DiscountValue-error"></div>
+                </div>
+
+                <div class="col-12 mb-3">
+                    <label class="form-label">描述</label>
+                    <textarea id="Description" class="form-control" rows="3"
+                              placeholder="請輸入套餐描述（選填）"></textarea>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">圖片網址</label>
+                    <input type="text" id="ImageUrl" class="form-control" placeholder="請輸入圖片網址（選填）" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">其他設定</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="IsActive" checked />
+                        <label class="form-check-label" for="IsActive">啟用</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary" onclick="submitCreate()">
+                    <i class="fas fa-save me-1"></i>儲存
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateDiscountLabel() {
+            const type = document.getElementById("DiscountType").value;
+            document.getElementById("discountLabel").innerHTML =
+                type === "percent"
+                    ? '折扣值（%） <span class="text-danger">*</span>'
+                    : '折扣值（元） <span class="text-danger">*</span>';
+        }
+
+        async function submitCreate() {
+            clearErrors();
+
+            const data = {
+                SetMealName:   document.getElementById("SetMealName").value,
+                DiscountType:  document.getElementById("DiscountType").value,
+                DiscountValue: parseFloat(document.getElementById("DiscountValue").value) || 0,
+                SetPrice:      parseFloat(document.getElementById("SetPrice").value) || null,
+                Description:   document.getElementById("Description").value || null,
+                ImageUrl:      document.getElementById("ImageUrl").value || null,
+                IsActive:      document.getElementById("IsActive").checked
+            };
+
+            const res = await fetch("/SetMeals/Create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                window.location.href = "/SetMeals";
+            } else if (res.status === 400) {
+                const errors = await res.json();
+                showErrors(errors);
+            } else {
+                showAlert("danger", "儲存失敗，請稍後再試");
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll(".text-danger.small").forEach(el => el.textContent = "");
+        }
+
+        function showErrors(errors) {
+            for (const [key, messages] of Object.entries(errors)) {
+                const el = document.getElementById(`${key}-error`);
+                if (el) el.textContent = messages.join(", ");
+            }
+        }
+
+        function showAlert(type, message) {
+            document.getElementById("alertBox").innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+        }
+    </script>
+}
