@@ -24,7 +24,6 @@ namespace EatTogether
 			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 			builder.Services.AddScoped<IDishRepository, DishRepository>();
 			builder.Services.AddScoped<ISetMealRepository, SetMealRepository>();
-			builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 			// µù¥UService
 			builder.Services.AddScoped<CategoryService>();
@@ -46,12 +45,14 @@ namespace EatTogether
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<CouponService>(); ;
+            
+
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
 			builder.Services.AddScoped<EventService>();
 
 
 
-
-            var app = builder.Build();
+			var app = builder.Build();
 
 
 
