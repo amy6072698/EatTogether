@@ -1,0 +1,668 @@
+@model List<EatTogether.Models.ViewModels.PreOrderListItemViewModel>
+
+@{
+    ViewData["Title"] = "待處理訂單";
+    var expanded = Model.Take(3).ToList();
+    var listed = Model.Skip(3).ToList();
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html, body {
+        height: 100%;
+        font-family: 'Noto Sans TC', sans-serif;
+        background: #f0f2f5;
+    }
+
+    /* ════════════════════════════════
+           整體佈局：全螢幕，不留白
+        ════════════════════════════════ */
+    .board {
+        display: flex;
+        flex-direction: column;
+        height: 88vh;
+        overflow: hidden;
+    }
+
+    /* ── 頂部 Header ── */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        background: #fff;
+        border-bottom: 1px solid #e8e8e8;
+        flex-shrink: 0;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    .badge-count {
+        background: #c0392b;
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 20px;
+    }
+
+    /* ── 主體區域 ── */
+    .main-area {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        flex-direction: row-reverse; /* 右到左：expanded 在右，list 在左 */
+    }
+
+    /* ════════════════════════════════
+           右側：前3筆展開卡片
+        ════════════════════════════════ */
+    .expanded-area {
+        display: flex;
+        flex-direction: row-reverse; /* 第1筆最右，第3筆最左 */
+        gap: 0;
+        flex-shrink: 0;
+        overflow: hidden;
+        border-left: 1px solid #e8e8e8;
+    }
+
+    .exp-card {
+        width: 330px;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-left: 1px solid #e8e8e8;
+        overflow: hidden;
+        max-height: calc(100vh - 60px);
+    }
+
+        .exp-card:last-child {
+            border-left: none;
+        }
+
+    /* ── 卡片標頭 ── */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 2px solid #f0f0f0;
+        background: #fafafa;
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .card-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .card-order-number {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .table-badge {
+        font-size: 0.78rem;
+        color: #fff;
+        background: #2c3e50;
+        padding: 1px 8px;
+        border-radius: 20px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+        .table-badge.takeout {
+            background: #7f8c8d;
+        }
+
+    .order-time {
+        font-size: 0.78rem;
+        color: #aaa;
+    }
+
+    .pending-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #e67e22;
+        background: #fef9f0;
+        border: 1px solid #f5cba7;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+        .pending-badge.done {
+            color: #27ae60;
+            background: #f0fff4;
+            border-color: #a9dfbf;
+        }
+
+    /* ── 卡片內容（可捲動）── */
+    .card-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 14px 14px;
+    }
+
+        .card-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+    .note-box {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        background: #fff8e1;
+        border-left: 3px solid #f39c12;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.82rem;
+        color: #7d6608;
+        font-weight: 500;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 9px 10px;
+        border-radius: 10px;
+        margin-top: 8px;
+        background: #fafafa;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .detail-item:hover {
+            border-color: #ddd;
+            background: #f5f5f5;
+        }
+
+        .detail-item.status-done {
+            opacity: 0.45;
+            background: #f0fff4;
+            border-color: #a9dfbf;
+            cursor: default;
+        }
+
+        .detail-item.status-cancel {
+            opacity: 0.45;
+            background: #fdf2f2;
+            border-color: #f5c6cb;
+            text-decoration: line-through;
+            cursor: default;
+        }
+
+    .detail-icon {
+        font-size: 0.9rem;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+
+    .detail-name {
+        font-weight: 500;
+        color: #1a1a1a;
+        font-size: 0.88rem;
+    }
+
+    .detail-qty {
+        color: #888;
+        font-size: 0.8rem;
+    }
+
+    .action-btns {
+        display: none;
+        gap: 8px;
+        margin-top: 6px;
+        padding: 0 4px 4px;
+        justify-content: flex-end;
+    }
+
+        .action-btns.show {
+            display: flex;
+        }
+
+    .btn-done {
+        padding: 5px 12px;
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .btn-done:hover {
+            background: #219a52;
+        }
+
+    .btn-cancel {
+        padding: 5px 12px;
+        background: #fff;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: #fdf2f2;
+        }
+
+    /* ════════════════════════════════
+           左側：其餘訂單 List（可捲動）
+        ════════════════════════════════ */
+    .list-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+    }
+
+        .list-area::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .list-area::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+    .list-section-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 2px;
+        flex-shrink: 0;
+    }
+
+    /* list 中每筆訂單 */
+    .list-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e8e8e8;
+        overflow: hidden;
+        flex-shrink: 0;
+        transition: box-shadow 0.2s;
+    }
+
+        .list-card:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        }
+
+        .list-card.all-done {
+            animation: fadeOut 0.6s forwards;
+        }
+
+    @@keyframes fadeOut {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+        .list-header:hover {
+            background: #fafafa;
+        }
+
+    .list-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .list-order-number {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1a1a1a;
+        white-space: nowrap;
+    }
+
+    .list-header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .chevron {
+        color: #bbb;
+        font-size: 0.85rem;
+        transition: transform 0.2s;
+    }
+
+    .list-card.list-expanded .chevron {
+        transform: rotate(180deg);
+    }
+
+    .list-detail-area {
+        display: none;
+        padding: 0 14px 12px;
+        border-top: 1px solid #f5f5f5;
+    }
+
+    .list-card.list-expanded .list-detail-area {
+        display: block;
+    }
+
+    /* 空白狀態 */
+    .empty-list {
+        text-align: center;
+        padding: 40px 20px;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .refresh-hint {
+        font-size: 0.78rem;
+        color: #ccc;
+        text-align: center;
+        flex-shrink: 0;
+        padding-top: 4px;
+    }
+</style>
+
+<div class="board">
+
+    <!-- Header -->
+    <div class="top-bar">
+        <div class="page-title">🍽️ 待處理訂單</div>
+        <span class="badge-count" id="totalBadge">共 @Model.Count 筆</span>
+    </div>
+
+    <!-- 主體 -->
+    <div class="main-area">
+
+        <!-- 右側：前3筆展開 -->
+        <div class="expanded-area" id="expandedArea">
+            @for (int i = 0; i < expanded.Count; i++)
+            {
+                var order = expanded[i];
+                int pendingCount = order.Items.Count(x => x.Status == 0);
+
+                <div class="exp-card" id="card-@order.PreOrderId" data-preorder-id="@order.PreOrderId" data-pending="@pendingCount">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <span class="card-order-number">@order.OrderNumber</span>
+                            <div class="card-meta">
+                                @if (order.InOrOut)
+                                {
+                                    <span class="table-badge">🪑 桌@(order.TableName)</span>
+                                }
+                                else
+                                {
+                                    <span class="table-badge takeout">🥡 外帶</span>
+                                }
+                                <span class="order-time">@order.OrderAt.ToString("HH:mm")</span>
+                            </div>
+                        </div>
+                        <span class="pending-badge @(pendingCount == 0 ? "done" : "")" id="badge-@order.PreOrderId">
+                            @(pendingCount == 0 ? "✅ 全部完成" : $"⏳ {pendingCount} 份")
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(order.Note))
+                        {
+                            <div class="note-box">⚠️ @order.Note</div>
+                        }
+                        @foreach (var item in order.Items)
+                        {
+                            string sc = item.Status == 1 ? "status-done" : item.Status == 2 ? "status-cancel" : "";
+                            string icon = item.Status == 1 ? "✅" : item.Status == 2 ? "❌" : "⏳";
+
+                            <div class="detail-item @sc"
+                                 id="item-@item.DetailId"
+                                 data-detail-id="@item.DetailId"
+                                 data-status="@item.Status"
+                                 data-preorder-id="@order.PreOrderId"
+                                 onclick="selectItem(this)">
+                                <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                <div>
+                                    <div class="detail-name">@item.ProductName</div>
+                                    <div class="detail-qty">× @item.Qty 份</div>
+                                </div>
+                            </div>
+                            <div class="action-btns" id="actions-@item.DetailId">
+                                <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
+                                <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- 左側：其餘訂單 List -->
+        <div class="list-area" id="listArea">
+            @if (!listed.Any())
+            {
+                <div class="empty-list">沒有其他訂單</div>
+            }
+            else
+            {
+                <div class="list-section-title">其他訂單（@listed.Count 筆）</div>
+
+                @for (int i = 0; i < listed.Count; i++)
+                {
+                    var order = listed[i];
+                    int pendingCount = order.Items.Count(x => x.Status == 0);
+
+                    <div class="list-card" id="lcard-@order.PreOrderId" data-preorder-id="@order.PreOrderId" data-pending="@pendingCount">
+                        <div class="list-header" onclick="toggleListCard(@order.PreOrderId)">
+                            <div class="list-header-left">
+                                <span class="list-order-number">@order.OrderNumber</span>
+                                @if (order.InOrOut)
+                                {
+                                    <span class="table-badge">🪑 桌@(order.TableName)</span>
+                                }
+                                else
+                                {
+                                    <span class="table-badge takeout">🥡 外帶</span>
+                                }
+                                <span class="order-time">@order.OrderAt.ToString("HH:mm")</span>
+                            </div>
+                            <div class="list-header-right">
+                                <span class="pending-badge @(pendingCount == 0 ? "done" : "")" id="badge-@order.PreOrderId">
+                                    @(pendingCount == 0 ? "✅ 全部完成" : $"⏳ {pendingCount} 份")
+                                </span>
+                                <span class="chevron">▼</span>
+                            </div>
+                        </div>
+                        <div class="list-detail-area" id="list-details-@order.PreOrderId">
+                            @if (!string.IsNullOrEmpty(order.Note))
+                            {
+                                <div class="note-box" style="margin-top:10px;">⚠️ @order.Note</div>
+                            }
+                            @foreach (var item in order.Items)
+                            {
+                                string sc = item.Status == 1 ? "status-done" : item.Status == 2 ? "status-cancel" : "";
+                                string icon = item.Status == 1 ? "✅" : item.Status == 2 ? "❌" : "⏳";
+
+                                <div class="detail-item @sc"
+                                     id="item-@item.DetailId"
+                                     data-detail-id="@item.DetailId"
+                                     data-status="@item.Status"
+                                     data-preorder-id="@order.PreOrderId"
+                                     onclick="selectItem(this)">
+                                    <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                    <div>
+                                        <div class="detail-name">@item.ProductName</div>
+                                        <div class="detail-qty">× @item.Qty 份</div>
+                                    </div>
+                                </div>
+                                <div class="action-btns" id="actions-@item.DetailId">
+                                    <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
+                                    <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            <div class="refresh-hint">頁面每 30 秒自動重新整理</div>
+        </div>
+
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+    let selectedDetailId = null;
+
+    function toggleListCard(preOrderId) {
+        const card = document.getElementById('lcard-' + preOrderId);
+        card.classList.toggle('list-expanded');
+    }
+
+    function selectItem(el) {
+        const detailId = el.dataset.detailId;
+        const status   = parseInt(el.dataset.status);
+        if (status === 1 || status === 2) return;
+
+        if (selectedDetailId === detailId) {
+            hideActions(detailId);
+            selectedDetailId = null;
+            return;
+        }
+
+        if (selectedDetailId) hideActions(selectedDetailId);
+        selectedDetailId = detailId;
+
+        const actions = document.getElementById('actions-' + detailId);
+        actions.classList.add('show');
+        setTimeout(() => actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    function hideActions(detailId) {
+        const el = document.getElementById('actions-' + detailId);
+        if (el) el.classList.remove('show');
+    }
+
+    async function updateStatus(event, detailId, status, preOrderId) {
+        event.stopPropagation();
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const res = await fetch('/PreOrders/UpdateDetailStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': token ?? ''
+            },
+            body: `detailId=${detailId}&status=${status}`
+        });
+
+        const data = await res.json();
+        if (!data.success) return;
+
+        const item = document.getElementById('item-' + detailId);
+        item.dataset.status = status;
+
+        if (status === 1) {
+            item.classList.remove('status-cancel');
+            item.classList.add('status-done');
+            document.getElementById('icon-' + detailId).textContent = '✅';
+        } else {
+            item.classList.remove('status-done');
+            item.classList.add('status-cancel');
+            document.getElementById('icon-' + detailId).textContent = '❌';
+        }
+
+        const detailArea = item.closest('.card-body, .list-detail-area');
+        const actionDiv = document.getElementById('actions-' + detailId);
+        detailArea.appendChild(item);
+        detailArea.appendChild(actionDiv);
+
+        hideActions(detailId);
+        selectedDetailId = null;
+        updatePendingCount(preOrderId);
+    }
+
+    function updatePendingCount(preOrderId) {
+        const card = document.getElementById('card-' + preOrderId)
+                  || document.getElementById('lcard-' + preOrderId);
+        const items = card.querySelectorAll('.detail-item');
+        let pending = 0;
+        items.forEach(item => { if (parseInt(item.dataset.status) === 0) pending++; });
+
+        const badge = document.getElementById('badge-' + preOrderId);
+        card.dataset.pending = pending;
+
+        if (pending === 0) {
+            badge.textContent = '✅ 全部完成';
+            badge.classList.add('done');
+            setTimeout(() => {
+                card.classList.add('all-done');
+                setTimeout(() => { card.remove(); updateTotalBadge(); }, 600);
+            }, 800);
+        } else {
+            badge.textContent = `⏳ ${pending} 份`;
+            badge.classList.remove('done');
+        }
+    }
+
+    function updateTotalBadge() {
+        const remaining = document.querySelectorAll('.exp-card, .list-card').length;
+        document.getElementById('totalBadge').textContent = `共 ${remaining} 筆`;
+    }
+
+    setTimeout(() => location.reload(), 30000);
+</script>

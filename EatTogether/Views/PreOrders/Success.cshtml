@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "點餐成功";
+}
+
+<div style="text-align:center;padding:60px 20px;font-family:'Noto Sans TC',sans-serif">
+    <div style="font-size:4rem;margin-bottom:16px">✅</div>
+    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:12px">點餐成功！</h2>
+    <div style="font-size:1.2rem;color:#c0392b;background:#fff5f5;
+                padding:12px 32px;border-radius:10px;display:inline-block;margin:12px 0 24px">
+        訂單編號：@TempData["OrderNumber"]
+    </div>
+    <p style="color:#888;margin-bottom:24px">餐點準備中，請稍候</p>
+    <a href="/PreOrders/Create">
+        <button style="padding:13px 32px;background:#c0392b;color:#fff;border:none;
+                       border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer">
+            再次點餐
+        </button>
+    </a>
+</div>

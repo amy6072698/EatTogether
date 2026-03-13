@@ -19,7 +19,7 @@
     <!-- 插入各頁面的 CSS -->
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body class="sb-nav-fixed">
     @{
         var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
         var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
@@ -116,6 +116,17 @@
 
 
                         <div class="sb-sidenav-menu-heading">訂單管理</div>
+                        <a class="nav-link @(inUser ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="@(inUser ? "true" : "false")" aria-controls="collapseOrders">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
+                            訂單管理
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse @(inUser ? "show" : "")" id="collapseOrders" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link @(ctrl == "Users" && action == "Index" ? "active" : "")" asp-controller="PreOrders" asp-action="PreOrderList">待處理訂單</a>
+                                <a class="nav-link" asp-controller="Payments" asp-action="Create">結帳</a>
+                            </nav>
+                        </div>
 
                         <a class="nav-link @(ctrl == "Tables" ? "active" : "")" asp-controller="Tables" asp-action="Index">
                             <div class="sb-nav-link-icon"><i class="fas fa-border-all"></i></div>
