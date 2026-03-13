@@ -31,7 +31,6 @@ namespace EatTogether.Models.ViewModels
 		public string? DiscountType { get; set; }
 
 		[Display(Name = "折扣金額")]
-		[DisplayFormat(DataFormatString = "{0:0}", ApplyFormatInEditMode = false)]
 		public decimal DiscountValue { get; set; }
 
 		[Display(Name = "狀態")]

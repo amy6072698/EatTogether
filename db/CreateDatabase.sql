@@ -219,7 +219,7 @@ GO
 CREATE TABLE [dbo].[Events](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[Title] [nvarchar](100) NOT NULL,
-	[Summary] [nvarchar](50) NULL,
+	[Summary] [nvarchar](50) NOT NULL,
 	[MinSpend] [int] NOT NULL,
 	[StartDate] [datetime2](0) NOT NULL,
 	[EndDate] [datetime2](0) NOT NULL,

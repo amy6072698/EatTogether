@@ -14,8 +14,9 @@ namespace EatTogether.Models.ViewModels
 		public string Title { get; set; }
 
 		[Display(Name = "摘要")]
+		[Required(ErrorMessage = "{0}必填")]
 		[StringLength(50)]
-		public string? Summary { get; set; }
+		public string Summary { get; set; }
 
 		[Display(Name = "門檻")]
 		[Required(ErrorMessage = "{0}必填")]
@@ -27,10 +28,21 @@ namespace EatTogether.Models.ViewModels
 		[DataType(DataType.Date)]
 		public DateTime StartDate { get; set; }
 
+		//[Display(Name = "結束日期")]
+		//[Required(ErrorMessage = "{0}必填")]
+		//[DataType(DataType.Date)]
+		//public DateTime EndDate { get; set; }
+
+		private DateTime _endDate;
 		[Display(Name = "結束日期")]
 		[Required(ErrorMessage = "{0}必填")]
 		[DataType(DataType.Date)]
-		public DateTime EndDate { get; set; }
+		public DateTime EndDate
+		{
+			get => _endDate;
+			set => _endDate = value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+		}
+
 
 		[Display(Name = "贈品")]
 		[StringLength(100)]

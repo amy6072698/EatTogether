@@ -96,7 +96,14 @@
                     @Html.DisplayFor(modelItem => item.EndDate)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.RewardItem)
+                    @{
+                        // 如果類別不是 Gift，或是 Gift 但內容是空的，就顯示 "-"
+                        string rewardDisplay = (item.DiscountType == "Gift" && !string.IsNullOrEmpty(item.RewardItem))
+                        ? item.RewardItem
+                        : "-";
+                    }
+                    @rewardDisplay
+
                 </td>
                 <td>
                     @{
@@ -110,7 +117,21 @@
                     }
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DiscountValue)
+
+                    @{
+                        string discountDisplay = "";
+                        if (item.DiscountType == "Percent")
+                        {
+                            var percent = (item.DiscountValue * 100).ToString("0");
+                            discountDisplay = $"{percent} 折";
+                        }
+                        else
+                        {
+                            discountDisplay = item.DiscountValue.ToString("0");
+                        }
+                    }
+                    @discountDisplay
+
                 </td>
                 <td>
                     @{
