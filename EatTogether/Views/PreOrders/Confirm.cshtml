@@ -1,0 +1,538 @@
+﻿@model EatTogether.Models.ViewModels.ConfirmPreOrderViewModel
+
+@{
+    ViewData["Title"] = "確認訂單";
+    // 之後做登入後改成 User.Identity.IsAuthenticated
+    bool isMember = false;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: #f5f0eb;
+    }
+
+    .confirm-wrap {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 16px 60px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+
+    .page-sub {
+        color: #888;
+        margin-bottom: 32px;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 16px;
+        border: 1px solid #eee;
+    }
+
+    .section-title {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        font-size: 0.95rem;
+        color: #555;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row strong {
+            color: #1a1a1a;
+        }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.95rem;
+        transition: opacity 0.2s;
+    }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-row.removed {
+            opacity: 0.3;
+        }
+
+    .item-name {
+        color: #1a1a1a;
+        font-weight: 500;
+    }
+
+    .item-unit {
+        color: #aaa;
+        font-size: 0.82rem;
+        margin-top: 2px;
+    }
+
+    .item-price {
+        color: #c0392b;
+        font-weight: 700;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .qty-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .qty-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        background: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555;
+        transition: all 0.15s;
+        line-height: 1;
+    }
+
+        .qty-btn:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        .qty-btn.minus:hover {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+    .qty-display {
+        width: 32px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a1a;
+    }
+
+    .coupon-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .form-control {
+        flex: 1;
+        padding: 11px 14px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #c0392b;
+        }
+
+    .btn-coupon {
+        padding: 11px 20px;
+        background: #1a1a1a;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+    }
+
+        .btn-coupon:hover {
+            background: #333;
+        }
+
+    .coupon-msg {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        display: none;
+    }
+
+        .coupon-msg.ok {
+            color: #27ae60;
+        }
+
+        .coupon-msg.err {
+            color: #c0392b;
+        }
+
+    .member-only-hint {
+        font-size: 0.88rem;
+        color: #aaa;
+        text-align: center;
+        padding: 8px 0;
+    }
+
+        .member-only-hint a {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+
+    .amount-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+        .amount-row.discount {
+            color: #27ae60;
+        }
+
+        .amount-row.total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            border-top: 2px solid #eee;
+            margin-top: 8px;
+            padding-top: 14px;
+        }
+
+            .amount-row.total span:last-child {
+                color: #c0392b;
+            }
+
+    .btn-wrap {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .btn-back {
+        flex: 1;
+        padding: 15px;
+        background: #fff;
+        color: #555;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-back:hover {
+            border-color: #aaa;
+            color: #333;
+        }
+
+    .btn-submit {
+        flex: 2;
+        padding: 15px;
+        background: #c0392b;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .btn-submit:hover {
+            background: #a93226;
+        }
+
+        .btn-submit:disabled {
+            background: #ddd;
+            cursor: not-allowed;
+        }
+
+    .empty-warning {
+        display: none;
+        color: #c0392b;
+        font-size: 0.88rem;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    .pay-wrap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .pay-btn {
+        padding: 16px 8px;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-family: inherit;
+        font-weight: 500;
+        color: #555;
+        transition: all 0.2s;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .pay-btn .icon {
+            font-size: 1.6rem;
+        }
+
+        .pay-btn:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        .pay-btn.active {
+            border-color: #c0392b;
+            background: #fff5f5;
+            color: #c0392b;
+            font-weight: 700;
+        }
+</style>
+
+<div class="confirm-wrap">
+    <div class="page-title">🛒 確認訂單</div>
+    <div class="page-sub">確認餐點內容後送出</div>
+
+    <form asp-action="Submit" method="post" id="confirmForm">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="TableId" value="@Model.TableId" />
+        <input type="hidden" name="InOrOut" value="@Model.InOrOut.ToString().ToLower()" />
+        <input type="hidden" name="Note" value="@Model.Note" />
+        <input type="hidden" name="DiscountAmount" id="discountAmount" value="0" />
+
+        <!-- 訂單資訊 -->
+        <div class="card">
+            <div class="section-title">訂單資訊</div>
+            <div class="info-row">
+                <span>用餐方式</span>
+                <strong>@(Model.InOrOut ? "🪑 內用" : "🥡 外帶")</strong>
+            </div>
+            @if (Model.InOrOut && Model.TableId > 0)
+            {
+                <div class="info-row">
+                    <span>桌號</span>
+                    <strong>桌 @Model.TableId</strong>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.Note))
+            {
+                <div class="info-row">
+                    <span>備註</span>
+                    <strong>@Model.Note</strong>
+                </div>
+            }
+        </div>
+
+        <!-- 餐點清單 -->
+        <div class="card">
+            <div class="section-title">餐點明細</div>
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                <div class="item-row" id="row-@i">
+                    <input type="hidden" name="Items[@i].ProductId" value="@Model.Items[i].ProductId" />
+                    <input type="hidden" name="Items[@i].ProductName" value="@Model.Items[i].ProductName" />
+                    <input type="hidden" name="Items[@i].UnitPrice" value="@Model.Items[i].UnitPrice" />
+                    <input type="hidden" id="qty-hidden-@i" name="Items[@i].Qty" value="@Model.Items[i].Qty" />
+
+                    <div>
+                        <div class="item-name">@Model.Items[i].ProductName</div>
+                        <div class="item-unit">NT$ @Model.Items[i].UnitPrice / 份</div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:16px">
+                        <div class="qty-wrap">
+                            <button type="button" class="qty-btn minus" onclick="changeQty(@i, -1)">−</button>
+                            <div class="qty-display" id="qty-display-@i">@Model.Items[i].Qty</div>
+                            <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
+                        </div>
+                        <div class="item-price" id="subtotal-@i">
+                            NT$ @(Model.Items[i].Qty * Model.Items[i].UnitPrice)
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- 優惠券（登入會員才顯示） -->
+        <div class="card">
+            <div class="section-title">優惠折扣碼</div>
+            @if (isMember)
+            {
+                <div class="coupon-row">
+                    <input type="text" class="form-control" id="couponInput"
+                           name="CouponCode" placeholder="請輸入折扣碼" />
+                    <button type="button" class="btn-coupon" onclick="applyCoupon()">套用</button>
+                </div>
+                <p id="couponMsg" class="coupon-msg"></p>
+            }
+            else
+            {
+                <div class="member-only-hint">
+                    🔒 <a href="/Members/Login">登入會員</a> 即可使用優惠折扣碼
+                </div>
+            }
+        </div>
+
+        <!-- 金額 -->
+        <div class="card">
+            <div class="section-title">金額明細</div>
+            <div class="amount-row">
+                <span>餐點金額</span>
+                <span>NT$ <span id="originalAmount">@Model.OriginalAmount</span></span>
+            </div>
+            <div class="amount-row discount">
+                <span>折扣金額</span>
+                <span>− NT$ <span id="discountDisplay">0</span></span>
+            </div>
+            <div class="amount-row total">
+                <span>最後金額</span>
+                <span>NT$ <span id="totalAmount">@Model.OriginalAmount</span></span>
+            </div>
+        </div>
+
+        <!-- 付款方式 -->
+        <div class="card">
+            <div class="section-title">付款方式</div>
+            <div class="pay-wrap">
+                <button type="button" class="pay-btn active" id="pay-Cash"
+                        onclick="setPayMethod('Cash')">
+                    <span class="icon">💵</span>現金
+                </button>
+                <button type="button" class="pay-btn" id="pay-Card"
+                        onclick="setPayMethod('Card')">
+                    <span class="icon">💳</span>刷卡
+                </button>
+                <button type="button" class="pay-btn" id="pay-Other"
+                        onclick="setPayMethod('Other')">
+                    <span class="icon">📱</span>行動支付
+                </button>
+            </div>
+            <input type="hidden" name="PayMethod" id="payMethodInput" value="Cash" />
+        </div>
+
+        <div class="empty-warning" id="emptyWarning">⚠️ 請至少保留一項餐點</div>
+
+        <div class="btn-wrap">
+            <button type="button" class="btn-back" onclick="history.back()">← 返回修改</button>
+            <button type="submit" class="btn-submit" id="submitBtn">送出訂單 ✓</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const unitPrices = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.UnitPrice)))];
+    const qtys       = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.Qty)))];
+
+    function changeQty(idx, delta) {
+        qtys[idx] = Math.max(0, qtys[idx] + delta);
+
+        document.getElementById('qty-display-' + idx).textContent = qtys[idx];
+        document.getElementById('qty-hidden-'  + idx).value       = qtys[idx];
+
+        // 數量 0 → 淡化該列（視為刪除）
+        document.getElementById('row-' + idx).classList.toggle('removed', qtys[idx] === 0);
+
+        // 更新小計
+        document.getElementById('subtotal-' + idx).textContent =
+            'NT$ ' + (qtys[idx] * unitPrices[idx]);
+
+        recalculate();
+    }
+
+    function recalculate() {
+        let original = 0;
+        qtys.forEach((q, i) => { original += q * unitPrices[i]; });
+
+        const discount = parseInt(document.getElementById('discountAmount').value || 0);
+        document.getElementById('originalAmount').textContent = original;
+        document.getElementById('totalAmount').textContent    = original - discount;
+
+        // 全部為 0 → 鎖住送出
+        const hasItem = qtys.some(q => q > 0);
+        document.getElementById('submitBtn').disabled           = !hasItem;
+        document.getElementById('emptyWarning').style.display  = hasItem ? 'none' : 'block';
+    }
+
+    function applyCoupon() {
+        const code     = document.getElementById('couponInput').value.trim();
+        const msg      = document.getElementById('couponMsg');
+        const original = parseInt(document.getElementById('originalAmount').textContent);
+
+        if (code === 'DISCOUNT10') {
+            const discount = Math.floor(original * 0.1);
+            setDiscount(discount);
+            msg.className   = 'coupon-msg ok';
+            msg.textContent = '✅ 折扣 10% 已套用！';
+            msg.style.display = 'block';
+        } else if (code === '') {
+            setDiscount(0);
+            msg.style.display = 'none';
+        } else {
+            setDiscount(0);
+            msg.className   = 'coupon-msg err';
+            msg.textContent = '❌ 折扣碼無效';
+            msg.style.display = 'block';
+        }
+    }
+
+    function setDiscount(amount) {
+        document.getElementById('discountAmount').value        = amount;
+        document.getElementById('discountDisplay').textContent = amount;
+        const original = parseInt(document.getElementById('originalAmount').textContent);
+        document.getElementById('totalAmount').textContent     = original - amount;
+    }
+
+        function setPayMethod(method) {
+        document.getElementById('payMethodInput').value = method;
+        ['Cash', 'Card', 'Other'].forEach(m => {
+            document.getElementById('pay-' + m).classList.toggle('active', m === method);
+        });
+    }
+</script>
