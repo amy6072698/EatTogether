@@ -125,10 +125,16 @@ namespace EatTogether.Controllers
         }
 
         // List------------------------------------------------------------------------------
-        public async Task<IActionResult> PreOrderList()
+        public async Task<IActionResult> TodayPreOrderList()
         {
             var vms = await _service.GetPendingPreOrdersAsync();
             return View(vms);
+        }
+        public async Task<IActionResult> AllOrders(PreOrderListQueryViewModel query)
+        {
+            if (query.Page < 1) query.Page = 1;
+            var vm = await _service.GetAllPreOrdersAsync(query);
+            return View(vm);
         }
 
         // AJAX：更新 Detail 狀態
@@ -137,6 +143,13 @@ namespace EatTogether.Controllers
         {
             await _service.UpdatePreOrderDetailStatusAsync(detailId, status);
             return Json(new { success = true });
+        }
+
+        public async Task<IActionResult> Detail(int id)
+        {
+            var vm = await _service.GetPreOrderDetailAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
     }
 }
