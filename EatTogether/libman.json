@@ -29,7 +29,8 @@
         "destination": "wwwroot/lib/flatpickr/",
         "files": [
             "dist/flatpickr.min.js",
-            "dist/flatpickr.min.css"
+            "dist/flatpickr.min.css",
+            "dist/l10n/zh-tw.js"
         ]
     },
     {

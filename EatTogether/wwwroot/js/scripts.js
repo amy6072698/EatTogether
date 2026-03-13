@@ -21,6 +21,22 @@ if (sidebarToggle) {
     });
 }
 
+// Navbar 員工字母頭像隨機背景色
+const userInitialEl = document.querySelector('.navbar-user-initial');
+if (userInitialEl) {
+    const avatarColors = [
+        '#C9A96E', '#8B5E3C', '#A0522D', '#6B4226',
+        '#B07D4E', '#7A4F2D', '#9C6B3C', '#5C3317'
+    ];
+    const name = userInitialEl.dataset.name || '';
+    // 依名字雜湊決定顏色，確保同一使用者每次顏色相同
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = (hash * 31 + name.charCodeAt(i)) & 0xffffffff;
+    }
+    userInitialEl.style.backgroundColor = avatarColors[Math.abs(hash) % avatarColors.length];
+}
+
     
 
 

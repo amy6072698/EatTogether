@@ -546,7 +546,16 @@ function initResetPasswordPage() {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                window.location.href = '/Auth/PasswordResetSuccess?from=reset';
+                Swal.fire({
+                    icon: 'success',
+                    title: '密碼重設完成',
+                    html: '<p>您的密碼已成功更新，<br>請使用新密碼重新登入系統</p>',
+                    confirmButtonText: '前往登入',
+                    confirmButtonColor: '#d4b84a',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = '/Auth/Login';
+                });
             } else {
                 showAlert('danger', data.message || '密碼重設失敗，請稍後再試');
                 setButtonLoading('reset-submit-btn', false, '確定重設');
@@ -556,40 +565,6 @@ function initResetPasswordPage() {
             setButtonLoading('reset-submit-btn', false, '確定重設');
         }
     });
-}
-
-/* ============================================================
-   密碼重設完成頁面
-   ============================================================ */
-function initPasswordResetSuccessPage() {
-    const dashboardBtn = document.querySelector('#go-dashboard-btn');
-    const loginBtn     = document.querySelector('#go-login-btn');
-
-    if (dashboardBtn) {
-        dashboardBtn.addEventListener('click', function () {
-            window.location.href = '/Dashboard';
-        });
-    }
-
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function () {
-            window.location.href = '/Auth/Login';
-        });
-    }
-
-    // 倒數自動跳轉（ForceChange 版本，5 秒後進入 Dashboard）
-    const countdown = document.querySelector('#countdown');
-    if (countdown && countdown.dataset.autoDirect === 'dashboard') {
-        let seconds = 5;
-        const timer = setInterval(function () {
-            seconds--;
-            countdown.textContent = seconds;
-            if (seconds <= 0) {
-                clearInterval(timer);
-                window.location.href = '/Dashboard';
-            }
-        }, 1000);
-    }
 }
 
 /* ============================================================
@@ -609,9 +584,6 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
         case 'reset-password':
             initResetPasswordPage();
-            break;
-        case 'password-reset-success':
-            initPasswordResetSuccessPage();
             break;
     }
 });

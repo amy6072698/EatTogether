@@ -11,11 +11,11 @@
     --brand-gold-light:  #faedb0;
     --brand-brown:       #1A0D08;
 
-    /* 後台主色（與 styles.css 對齊） */
-    --bg-dark:           #212529;   /* sb-sidenav-dark 背景 */
-    --bg-darker:         #1a1d20;
-    --bg-darkest:        #141618;
-    --surface-dark:      #2c3034;   /* 卡片稍亮一層 */
+    /* 後台主色（與 styles.css 品牌色對齊） */
+    --bg-dark:           #1A0D08;   /* 品牌深棕黑 */
+    --bg-darker:         #120905;   /* 較深變體 */
+    --bg-darkest:        #0e0806;   /* 最深變體 */
+    --surface-dark:      #2a1508;   /* 暖棕淺層 */
 
     /* 文字 */
     --text-on-dark:      rgba(255, 255, 255, 0.85);
@@ -52,7 +52,7 @@
     background:
         radial-gradient(ellipse at 15% 40%, rgba(245, 216, 122, 0.06) 0%, transparent 55%),
         radial-gradient(ellipse at 85% 70%, rgba(26, 13, 8, 0.6) 0%, transparent 50%),
-        linear-gradient(160deg, #141618 0%, #1a1d20 45%, #212529 100%);
+        linear-gradient(160deg, #0e0806 0%, #1A0D08 45%, #2a1508 100%);
     display: flex;
     align-items: center;
     justify-content: center;
