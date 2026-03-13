@@ -190,7 +190,9 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.EndDate).HasPrecision(0);
             entity.Property(e => e.RewardItem).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasPrecision(0);
-            entity.Property(e => e.Summary).HasMaxLength(50);
+            entity.Property(e => e.Summary)
+                .IsRequired()
+                .HasMaxLength(50);
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(100);

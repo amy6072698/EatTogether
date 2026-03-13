@@ -23,13 +23,39 @@ namespace EatTogether
 			// µù¥URepository
 			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 			builder.Services.AddScoped<IDishRepository, DishRepository>();
+			builder.Services.AddScoped<ISetMealRepository, SetMealRepository>();
 
 			// µù¥UService
 			builder.Services.AddScoped<CategoryService>();
 			builder.Services.AddScoped<DishService>();
+			builder.Services.AddScoped<SetMealService>();
+
+
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+            builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+            builder.Services.AddScoped<IMemberCouponRepository, MemberCouponRepository>();
+            builder.Services.AddScoped<TableService>();
+            builder.Services.AddScoped<ReservationService>();
+            builder.Services.AddScoped<CouponService>();
+
+            // ªY¬Xµù¥U
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IPreOrderRepository, PreOrderRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<CouponService>(); ;
+            
+
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
+			builder.Services.AddScoped<EventService>();
+
 
 
 			var app = builder.Build();
+
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

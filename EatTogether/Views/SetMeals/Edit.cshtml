@@ -1,0 +1,327 @@
+﻿@model EatTogether.Models.ViewModels.SetMealViewModel
+@{
+    ViewData["Title"] = "編輯套餐";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">編輯套餐</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">套餐管理</a></li>
+        <li class="breadcrumb-item active">編輯套餐</li>
+    </ol>
+
+    <!-- 套餐基本資料 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-edit me-1"></i>套餐基本資料
+        </div>
+        <div class="card-body">
+            <div id="alertBox"></div>
+            <input type="hidden" id="Id" value="@Model.Id" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">套餐名稱 <span class="text-danger">*</span></label>
+                    <input type="text" id="SetMealName" class="form-control" value="@Model.SetMealName" />
+                    <div class="text-danger small" id="SetMealName-error"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">套餐定價</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="SetPrice" class="form-control" value="@Model.SetPrice" min="0" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">折扣類型 <span class="text-danger">*</span></label>
+                    <select id="DiscountType" class="form-select" onchange="updateDiscountLabel()">
+                        @foreach (var option in Model.DiscountTypeOptions)
+                        {
+                            if (option.Value == Model.DiscountType)
+                            {
+                                <option value="@option.Value" selected>@option.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@option.Value">@option.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" id="discountLabel">
+                        @(Model.DiscountType == "percent" ? "折扣值（%）" : "折扣值（元）")
+                        <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" id="DiscountValue" class="form-control"
+                           value="@Model.DiscountValue" min="0" />
+                    <div class="text-danger small" id="DiscountValue-error"></div>
+                </div>
+
+                <div class="col-12 mb-3">
+                    <label class="form-label">描述</label>
+                    <textarea id="Description" class="form-control" rows="3">@Model.Description</textarea>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">圖片網址</label>
+                    <input type="text" id="ImageUrl" class="form-control" value="@Model.ImageUrl" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">其他設定</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="IsActive"
+                               @(Model.IsActive ? "checked" : "") />
+                        <label class="form-check-label" for="IsActive">啟用</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3 text-muted small">
+                建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <span class="ms-3">最後更新：@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                }
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary" onclick="submitEdit()">
+                    <i class="fas fa-save me-1"></i>儲存基本資料
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 套餐餐點明細 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-list me-1"></i>套餐包含餐點
+        </div>
+        <div class="card-body">
+            <div id="itemAlertBox"></div>
+
+            <table class="table table-bordered table-hover mb-4">
+                <thead>
+                    <tr>
+                        <th>餐點名稱</th>
+                        <th>單價</th>
+                        <th>數量</th>
+                        <th>是否選擇性</th>
+                        <th>群組編號</th>
+                        <th>選取上限</th>
+                        <th>顯示順序</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="itemTableBody">
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr id="item-@item.Id">
+                            <td>@item.DishName</td>
+                            <td>$@item.DishPrice</td>
+                            <td>@item.Quantity</td>
+                            <td>
+                                @if (item.IsOptional)
+                                {
+                                    <span class="badge bg-warning text-dark">選擇性</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">固定</span>
+                                }
+                            </td>
+                            <td>@(item.OptionGroupNo?.ToString() ?? "—")</td>
+                            <td>@(item.PickLimit?.ToString() ?? "—")</td>
+                            <td>@item.DisplayOrder</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="removeItem(@item.Id)">
+                                    <i class="fas fa-trash"></i> 移除
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <h6 class="fw-bold">新增餐點到套餐</h6>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">選擇餐點</label>
+                    <select id="newDishId" class="form-select">
+                        <option value="">請選擇餐點</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">數量</label>
+                    <input type="number" id="newQuantity" class="form-control" value="1" min="1" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">類型</label>
+                    <select id="newIsOptional" class="form-select" onchange="toggleOptionalFields()">
+                        <option value="false">固定包含</option>
+                        <option value="true">選擇性</option>
+                    </select>
+                </div>
+                <div class="col-md-1" id="groupNoField" style="display:none">
+                    <label class="form-label">群組</label>
+                    <input type="number" id="newOptionGroupNo" class="form-control" value="1" min="1" />
+                </div>
+                <div class="col-md-1" id="pickLimitField" style="display:none">
+                    <label class="form-label">上限</label>
+                    <input type="number" id="newPickLimit" class="form-control" value="1" min="1" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">順序</label>
+                    <input type="number" id="newDisplayOrder" class="form-control" value="1" min="1" />
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-success w-100" onclick="addItem()">
+                        <i class="fas fa-plus me-1"></i>新增
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const setMealId = @Model.Id;
+
+        async function loadDishOptions() {
+            const res = await fetch("/Dishes/GetAllJson");
+            if (!res.ok) return;
+            const dishes = await res.json();
+            const select = document.getElementById("newDishId");
+            dishes.forEach(d => {
+                const option = document.createElement("option");
+                option.value = d.id;
+                option.text  = `${d.dishName}（$${d.price}）`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateDiscountLabel() {
+            const type = document.getElementById("DiscountType").value;
+            document.getElementById("discountLabel").innerHTML =
+                type === "percent"
+                    ? '折扣值（%） <span class="text-danger">*</span>'
+                    : '折扣值（元） <span class="text-danger">*</span>';
+        }
+
+        function toggleOptionalFields() {
+            const isOptional = document.getElementById("newIsOptional").value === "true";
+            document.getElementById("groupNoField").style.display   = isOptional ? "" : "none";
+            document.getElementById("pickLimitField").style.display = isOptional ? "" : "none";
+        }
+
+        async function submitEdit() {
+            clearErrors();
+            const id = document.getElementById("Id").value;
+
+            const data = {
+                Id:            parseInt(id),
+                SetMealName:   document.getElementById("SetMealName").value,
+                DiscountType:  document.getElementById("DiscountType").value,
+                DiscountValue: parseFloat(document.getElementById("DiscountValue").value) || 0,
+                SetPrice:      parseFloat(document.getElementById("SetPrice").value) || null,
+                Description:   document.getElementById("Description").value || null,
+                ImageUrl:      document.getElementById("ImageUrl").value || null,
+                IsActive:      document.getElementById("IsActive").checked
+            };
+
+            const res = await fetch(`/SetMeals/Edit/${id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                showAlert("alertBox", "success", "儲存成功");
+            } else if (res.status === 400) {
+                const errors = await res.json();
+                showErrors(errors);
+            } else {
+                showAlert("alertBox", "danger", "儲存失敗，請稍後再試");
+            }
+        }
+
+        async function addItem() {
+            const dishId     = document.getElementById("newDishId").value;
+            const isOptional = document.getElementById("newIsOptional").value === "true";
+
+            if (!dishId) {
+                showAlert("itemAlertBox", "warning", "請選擇餐點");
+                return;
+            }
+
+            const data = {
+                SetMealId:     setMealId,
+                DishId:        parseInt(dishId),
+                Quantity:      parseInt(document.getElementById("newQuantity").value),
+                IsOptional:    isOptional,
+                OptionGroupNo: isOptional ? parseInt(document.getElementById("newOptionGroupNo").value) : null,
+                PickLimit:     isOptional ? parseInt(document.getElementById("newPickLimit").value) : null,
+                DisplayOrder:  parseInt(document.getElementById("newDisplayOrder").value)
+            };
+
+            const res = await fetch("/SetMeals/AddItem", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                showAlert("itemAlertBox", "success", "新增成功");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const err = await res.json();
+                showAlert("itemAlertBox", "danger", err.message || "新增失敗");
+            }
+        }
+
+        async function removeItem(itemId) {
+            if (!confirm("確定要移除此餐點嗎？")) return;
+
+            const res = await fetch(`/SetMeals/RemoveItem/${itemId}`, { method: "POST" });
+
+            if (res.ok) {
+                document.getElementById(`item-${itemId}`)?.remove();
+                showAlert("itemAlertBox", "success", "移除成功");
+            } else {
+                showAlert("itemAlertBox", "danger", "移除失敗");
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll(".text-danger.small").forEach(el => el.textContent = "");
+        }
+
+        function showErrors(errors) {
+            for (const [key, messages] of Object.entries(errors)) {
+                const el = document.getElementById(`${key}-error`);
+                if (el) el.textContent = messages.join(", ");
+            }
+        }
+
+        function showAlert(boxId, type, message) {
+            document.getElementById(boxId).innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+        }
+
+        loadDishOptions();
+    </script>
+}

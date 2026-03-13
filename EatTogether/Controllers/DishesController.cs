@@ -82,5 +82,12 @@ namespace EatTogether.Controllers
 				})
 				.ToList();
 		}
+
+		// Get: /Dishes/GetAllJson
+		public async Task<IActionResult> GetAllJson()
+		{
+			var dtos = await _dishService.GetAllAsync();
+			return Json(dtos.Select(d => new { id = d.Id, dishName = d.DishName, price = d.Price }));
+		}
 	}
 }

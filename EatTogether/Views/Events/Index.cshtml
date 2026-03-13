@@ -1,0 +1,205 @@
+﻿@model IEnumerable<EatTogether.Models.ViewModels.EventViewModel>
+
+@{
+    ViewData["Title"] = "活動列表";
+}
+
+
+
+@section Styles{
+
+    <style>
+        /* 讓 DataTables 的長度選擇器與我們的篩選按鈕排在同一行 */
+        .dataTables_length {
+            display: flex !important;
+            align-items: center;
+            gap: 15px; /* 設定間距 */
+            margin-bottom: 10px;
+        }
+
+        /* 讓篩選按鈕不要跟文字擠在一起 */
+        #filter-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+}
+
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>活動列表</h1>
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+    <div id="filter-container" class="d-inline-block ms-3">
+        <strong>篩選狀態：</strong>
+        <button type="button" class="btn btn-sm btn-outline-dark filter-btn" data-status="">全部</button> |
+        <button type="button" class="btn btn-sm btn-outline-success filter-btn" data-status="進行中">進行中</button> |
+        <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" data-status="未開始">未開始</button> |
+        <button type="button" class="btn btn-sm btn-outline-danger filter-btn" data-status="已結束">已結束</button>
+    </div>
+    <table class="table w-100" id="indexList">
+        <thead>
+            <tr>
+                @* <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th> *@
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Summary)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MinSpend)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.StartDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EndDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RewardItem)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DiscountType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DiscountValue)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Status)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+    @foreach (var item in Model) {
+            <tr>
+                @* <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td> *@
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Summary)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MinSpend)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+                <td>
+                    @{
+                        // 如果類別不是 Gift，或是 Gift 但內容是空的，就顯示 "-"
+                        string rewardDisplay = (item.DiscountType == "Gift" && !string.IsNullOrEmpty(item.RewardItem))
+                        ? item.RewardItem
+                        : "-";
+                    }
+                    @rewardDisplay
+
+                </td>
+                <td>
+                    @{
+                        string discountTypeDisplay = item.DiscountType switch
+                        {
+                            "FixedAmount" => "折抵金額",
+                            "Percent" => "打折",
+                            "Gift" => "贈品"
+                        };
+                            @discountTypeDisplay
+                    }
+                </td>
+                <td>
+
+                    @{
+                        string discountDisplay = "";
+                        if (item.DiscountType == "Percent")
+                        {
+                            var percent = (item.DiscountValue * 100).ToString("0");
+                            discountDisplay = $"{percent} 折";
+                        }
+                        else
+                        {
+                            discountDisplay = item.DiscountValue.ToString("0");
+                        }
+                    }
+                    @discountDisplay
+
+                </td>
+                <td>
+                    @{
+                        string statusName = item.Status switch
+                        {
+                            0 => "未開始",
+                            1 => "進行中",
+                            2 => "已結束"
+                        };
+                        string badgeClass = item.Status switch
+                        {
+                            0 => "bg-secondary",
+                            1 => "bg-success",
+                            2 => "bg-danger"
+                        };
+                    }
+                    <span class="badge @badgeClass">@statusName</span>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil"></i> 編輯
+                    </a>
+                </td>
+            </tr>
+    }
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            var table = $('#indexList').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/zh-HANT.json" // 中文化
+                },
+                "pageLength": 10, 
+                "order": [[ 0, "desc" ]], 
+                //將篩選狀態標籤移進dataTables格式裡
+                "retrieve": true,
+                "initComplete": function(settings, json) {
+                $("#filter-container").appendTo($(".dataTables_length"));
+                }
+            });
+
+
+            // 監聽篩選按鈕點擊事件
+            $('.filter-btn').on('click', function () {
+                var status = $(this).data('status');
+
+                // 「狀態」那一欄.search(status) 進行搜尋，.draw() 重新繪製表格
+                table.column(8).search(status).draw();
+
+                //切換按鈕樣式
+                $('.filter-btn').removeClass('active btn-dark').addClass('btn-outline-dark');
+                $(this).addClass('active btn-dark').removeClass('btn-outline-dark');
+            });
+
+
+        });
+
+
+
+    </script>
+}
