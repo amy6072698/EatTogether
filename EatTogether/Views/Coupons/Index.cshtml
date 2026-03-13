@@ -1,0 +1,104 @@
+﻿@model IEnumerable<EatTogether.Models.DTOs.CouponDto>
+@{
+    ViewData["Title"] = "優惠券管理";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">優惠券管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">優惠券管理</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-ticket-alt me-1"></i>優惠券列表</div>
+            <div class="d-flex gap-2">
+                <a asp-action="MemberCoupons" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-users me-1"></i>領券紀錄
+                </a>
+                <a asp-action="Create" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus me-1"></i>新增優惠券
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="couponTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>活動名稱</th>
+                        <th>折扣碼</th>
+                        <th>折扣內容</th>
+                        <th>最低消費</th>
+                        <th>有效期間</th>
+                        <th>已領 / 限量</th>
+                        <th>狀態</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@c.Name</td>
+                            <td>
+                                <code class="@(c.IsExpired ? "text-danger" : "")">@c.Code</code>
+                            </td>
+                            <td>@c.DiscountDescription</td>
+                            <td>@(c.MinSpend > 0 ? $"${c.MinSpend}" : "無門檻")</td>
+                            <td class="small">
+                                @if (!c.EndDate.HasValue)
+                                {
+                                    <span class="text-success">永久有效</span>
+                                }
+                                else if (c.IsExpired)
+                                {
+                                    <span class="text-danger">
+                                        @c.StartDate.ToString("yyyy/M/d") ~ @c.EndDate?.ToString("yyyy/M/d")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>@c.StartDate.ToString("yyyy/M/d") ~ @c.EndDate?.ToString("yyyy/M/d")</span>
+                                }
+                            </td>
+                            <td>
+                                @if (c.IsLimitHit)
+                                {
+                                    <span class="text-danger fw-bold">
+                                        @c.ReceivedCount / @c.LimitCount
+                                        <i class="fas fa-lock ms-1"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>@c.ReceivedCount / @(c.LimitCount?.ToString() ?? "無限")</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @c.StatusBadgeClass">@c.StatusText</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
+    <script>
+        const dataTable = new simpleDatatables.DataTable("#couponTable", {
+            labels: {
+                placeholder: "搜尋...",
+                searchTitle: "搜尋",
+                perPage: "每頁顯示",
+                noRows: "無資料",
+                info: "顯示第 {start} 至 {end} 筆，共 {rows} 筆",
+                loading: "載入中...",
+                infoFiltered: "（從 {rowsTotal} 筆中篩選）",
+                noResults: "無符合資料"
+            }
+        });
+    </script>
+}

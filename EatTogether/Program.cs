@@ -16,25 +16,35 @@ namespace EatTogether
 
 			// µù¥U¨ìDBContext
 			builder.Services.AddDbContext<EatTogetherDBContext>(options =>
-				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-
+        
 			// µù¥URepository
 			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 			builder.Services.AddScoped<IDishRepository, DishRepository>();
+			builder.Services.AddScoped<ISetMealRepository, SetMealRepository>();
 			builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 			// µù¥UService
 			builder.Services.AddScoped<CategoryService>();
 			builder.Services.AddScoped<DishService>();
+			builder.Services.AddScoped<SetMealService>();
+
+
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+            builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+            builder.Services.AddScoped<IMemberCouponRepository, MemberCouponRepository>();
+            builder.Services.AddScoped<TableService>();
+            builder.Services.AddScoped<ReservationService>();
+            builder.Services.AddScoped<CouponService>(); ;
 			builder.Services.AddScoped<EventService>();
 
 
 
 
-
-			var app = builder.Build();
+            var app = builder.Build();
 
 
 

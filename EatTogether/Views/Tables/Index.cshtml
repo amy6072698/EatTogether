@@ -1,0 +1,213 @@
+﻿@model IEnumerable<EatTogether.Models.DTOs.TableDto>
+@{
+    ViewData["Title"] = "桌位管理";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">桌位管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">桌位管理</li>
+    </ol>
+
+    <!-- 統計卡片 -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">桌位總數</div>
+                        <div class="fs-4 fw-bold">@Model.Count()</div>
+                    </div>
+                    <i class="fas fa-border-all fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">空桌</div>
+                        <div class="fs-4 fw-bold">@Model.Count(t => t.Status == 0)</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-dark mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">用餐中</div>
+                        <div class="fs-4 fw-bold">@Model.Count(t => t.Status == 1)</div>
+                    </div>
+                    <i class="fas fa-utensils fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-secondary text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">保留中</div>
+                        <div class="fs-4 fw-bold">@Model.Count(t => t.Status == 2)</div>
+                    </div>
+                    <i class="fas fa-lock fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 篩選 + 新增 -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-filter me-1"></i>篩選桌位</div>
+            <a asp-action="Create" class="btn btn-success btn-sm">
+                <i class="fas fa-plus me-1"></i>新增桌位
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label">狀態</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select form-select-sm" id="statusFilter" onchange="filterTiles()">
+                        <option value="">全部</option>
+                        <option value="0">空桌</option>
+                        <option value="1">用餐中</option>
+                        <option value="2">保留</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="col-form-label">座位數</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select form-select-sm" id="seatFilter" onchange="filterTiles()">
+                        <option value="">全部</option>
+                        <option value="2">2 人桌</option>
+                        <option value="4">4 人桌</option>
+                        <option value="6">6 人桌</option>
+                        <option value="10">10 人包廂</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 桌位磚塊 -->
+    <div id="alertBox"></div>
+    <div class="row g-3" id="tileGrid">
+        @foreach (var table in Model)
+        {
+            var borderColor = table.Status == 0 ? "success" : table.Status == 1 ? "warning" : "secondary";
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 table-tile"
+                 data-status="@table.Status" data-seats="@table.SeatCount">
+                <div class="card h-100 border-@borderColor" style="border-top: 4px solid;">
+                    <div class="card-body text-center p-3 d-flex flex-column">
+                        <div class="fs-4 fw-bold text-dark">@table.TableName</div>
+                        <div class="small text-muted mb-2">@table.SeatCount 人桌</div>
+                        <span class="badge @table.StatusBadgeClass mb-3 align-self-center">@table.StatusText</span>
+
+                        <!-- 狀態按鈕區：空桌=兩顆，用餐中=一顆大，保留=兩顆 -->
+                        @if (table.Status == 0)
+                        {
+                            <div class="d-grid gap-1 mb-2">
+                                <button class="btn btn-warning btn-sm"
+                                        onclick="updateStatus(@table.Id, 1)">
+                                    <i class="fas fa-utensils me-1"></i>設為用餐中
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        onclick="updateStatus(@table.Id, 2)">
+                                    <i class="fas fa-lock me-1"></i>設為保留
+                                </button>
+                            </div>
+                        }
+                        else if (table.Status == 1)
+                        {
+                            <div class="d-grid mb-2">
+                                <a asp-controller="Orders" asp-action="Checkout"
+                                   asp-route-tableId="@table.Id"
+                                   class="btn btn-success btn-sm w-100">
+                                    <i class="fas fa-cash-register me-1"></i>結帳
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-grid gap-1 mb-2">
+                                <button class="btn btn-success btn-sm"
+                                        onclick="updateStatus(@table.Id, 0)">
+                                    <i class="fas fa-unlock me-1"></i>取消保留（空桌）
+                                </button>
+                                <button class="btn btn-warning btn-sm"
+                                        onclick="updateStatus(@table.Id, 1)">
+                                    <i class="fas fa-utensils me-1"></i>設為用餐中
+                                </button>
+                            </div>
+                        }
+
+                        <!-- 彈性空間推編輯到底部 -->
+                        <div class="flex-grow-1"></div>
+
+                        <!-- 編輯 / 刪除（固定底部） -->
+                        <a asp-action="Edit" asp-route-id="@table.Id"
+                           class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-edit me-1"></i>編輯 / 刪除
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateStatus(id, status) {
+            const confirms = {
+                0: '確認恢復空桌？',
+                1: '確認設為用餐中？',
+                2: '確認設為保留？'
+            };
+            if (!confirm(confirms[status])) return;
+
+            fetch('/Tables/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+                },
+                body: JSON.stringify({ id, status })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', '狀態更新成功');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showAlert('danger', data.message);
+                }
+            });
+        }
+
+        function filterTiles() {
+            const status = document.getElementById('statusFilter').value;
+            const seats  = document.getElementById('seatFilter').value;
+            document.querySelectorAll('#tileGrid .table-tile').forEach(tile => {
+                const sMatch  = !status || tile.dataset.status === status;
+                const seMatch = !seats  || tile.dataset.seats  === seats;
+                tile.style.display = (sMatch && seMatch) ? '' : 'none';
+            });
+        }
+
+        function showAlert(type, message) {
+            document.getElementById('alertBox').innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+        }
+    </script>
+}

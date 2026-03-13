@@ -1,0 +1,129 @@
+﻿@model EatTogether.Models.ViewModels.ReservationCreateViewModel
+@{
+    ViewData["Title"] = "新增訂位";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">新增訂位</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">訂位管理</a></li>
+        <li class="breadcrumb-item active">新增訂位</li>
+    </ol>
+
+    <div class="card mb-4" style="max-width: 720px;">
+        <div class="card-header">
+            <i class="fas fa-calendar-plus me-1"></i>新增訂位
+        </div>
+        <div class="card-body">
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- 訂位人資訊 -->
+                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2">
+                    訂位人資訊
+                </h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label">
+                            姓名 <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-control" placeholder="訂位人姓名" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label">
+                            電話 <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Phone" class="form-control" placeholder="09xxxxxxxx" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" type="email" class="form-control"
+                           placeholder="選填，用於寄送訂位確認通知" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <!-- 預約資訊 -->
+                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2 mt-4">
+                    預約時間與人數
+                </h6>
+
+                <div class="mb-3">
+                    <label asp-for="ReservationDate" class="form-label">
+                        預約日期時間 <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="ReservationDate" type="datetime-local"
+                           class="form-control" id="reservationDateInput" />
+                    <span asp-validation-for="ReservationDate" class="text-danger small"></span>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        系統將自動檢查 ±90 分鐘內是否有時段衝突
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="AdultsCount" class="form-label">
+                            大人人數 <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="AdultsCount" type="number" min="1"
+                               class="form-control" />
+                        <span asp-validation-for="AdultsCount" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ChildrenCount" class="form-label">小孩人數</label>
+                        <input asp-for="ChildrenCount" type="number" min="0"
+                               class="form-control" />
+                        <span asp-validation-for="ChildrenCount" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Remark" class="form-label">備註</label>
+                    <textarea asp-for="Remark" class="form-control" rows="2"
+                              placeholder="如：有嬰兒車、慶生、需要兒童椅..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-calendar-check me-1"></i>確認新增訂位
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>返回列表
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // 若欄位為空（預設 0001/01/01），自動填入今日日期時間
+        window.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('reservationDateInput');
+            if (!input.value || input.value.startsWith('0001')) {
+                const now = new Date();
+                // 格式：yyyy-MM-ddTHH:mm
+                const pad = n => String(n).padStart(2, '0');
+                const localStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                input.value = localStr;
+            }
+        });
+    </script>
+}
