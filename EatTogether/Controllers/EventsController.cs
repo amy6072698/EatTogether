@@ -23,24 +23,22 @@ namespace EatTogether.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Create(EventCreateViewModel vm)
+		public async Task<IActionResult> Create(EventCreateViewModel vm)
 		{
 			if (!ModelState.IsValid)
 			{
-				
 				return View(vm);
 			}
 
-			var dto = vm.ToEditDto();
-			_service.Create(dto);
+			var dto = vm.ToCreateDto();
+			await _service.CreateAsync(dto);
 			return View(vm);
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
-			var events = _service
-				.GetAllForIndex()
-				.Select(x => x.ToVm())
+			var events = (await _service.GetAllForIndexAsync())
+				.Select(x => x.ToEventVm())
 				.ToList();
 			return View(events);
 		}

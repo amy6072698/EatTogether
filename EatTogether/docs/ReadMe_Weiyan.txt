@@ -72,7 +72,7 @@
 
 
 [working]add 活動編輯 url: /Events/Edit?eventsId=00
-	[working]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , VM轉Dto的擴充方法
 		EventEditViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 
@@ -91,7 +91,7 @@
 			EventDto ToDto(this Event entity)	
 
 
-	[]modify EventRepository
+	[working]modify EventRepository
 		IEventRepository  interface
 			add void Edit(EventEditDto  dto)
 			add EventEditDto GetEditById(int id)

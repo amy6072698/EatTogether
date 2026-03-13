@@ -7,8 +7,10 @@ namespace EatTogether.Models.Repositories
 {
 	public interface IEventRepository
 	{
-		void Create(EventCreateDto dto);
-		List<EventDto> GetAll();
+		Task CreateAsync(EventCreateDto dto);
+		Task<List<EventDto>> GetAllAsync();
+		Task EditAsync(EventEditDto dto);
+		EventEditDto GetEditById(int id);
 	}
 
 	public class EventRepository : IEventRepository
@@ -19,19 +21,19 @@ namespace EatTogether.Models.Repositories
 		{
 			_context = context;
 		}
-				
-		public void Create(EventCreateDto dto)
+
+		public async Task CreateAsync(EventCreateDto dto)
 		{
 			var events = dto.ToEntity();
 
 			_context.Events.Add(events);
-			_context.SaveChanges();
-
+			await _context.SaveChangesAsync();
 		}
 
-		public List<EventDto> GetAll()
+
+		public async Task<List<EventDto>> GetAllAsync()
 		{
-			var data = _context.Events
+			var data = await _context.Events
 				.AsNoTracking()
 				.Select(e => new EventDto
 				{
@@ -46,10 +48,54 @@ namespace EatTogether.Models.Repositories
 					DiscountValue = e.DiscountValue,
 					Status = e.Status
 				})
-				.ToList();
+				.ToListAsync();
 
 			return data;
-
 		}
+
+
+		public async Task EditAsync(EventEditDto dto)
+		{
+			var entity = await _context.Events.FindAsync(dto.Id);
+			if (entity == null)
+			{
+				return;
+			}
+
+			entity.Title = dto.Title;
+			entity.Summary = dto.Summary;
+			entity.MinSpend = dto.MinSpend;
+			entity.StartDate = dto.StartDate;
+			entity.EndDate = dto.EndDate;
+			entity.RewardItem = dto.RewardItem;
+			entity.DiscountType = dto.DiscountType;
+			entity.DiscountValue = dto.DiscountValue;
+			entity.Status = dto.Status;
+
+			await _context.SaveChangesAsync();		
+		}
+
+		public async Task<EventEditDto> GetEditById(int id)
+		{
+			var entity = await _context.Events.FindAsync(id);
+
+			if (entity == null) return null;
+
+			return new EventEditDto
+			{
+				Id = entity.Id,
+				Title = entity.Title,
+				Summary = entity.Summary,
+				MinSpend = entity.MinSpend,
+				StartDate = entity.StartDate,
+				EndDate = entity.EndDate,
+				RewardItem = entity.RewardItem,
+				DiscountType = entity.DiscountType,
+				DiscountValue = entity.DiscountValue,
+				Status = entity.Status
+			};
+		}
+
+
 	}
 }

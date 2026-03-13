@@ -10,20 +10,20 @@ namespace EatTogether.Models.Services
 		public EventService(IEventRepository repo)
 		{
 			_repo = repo;
-		}	
+		}
 
 
 
-		public bool Create(EventCreateDto dto)
+		public async Task<bool> CreateAsync(EventCreateDto dto)
 		{
-			_repo.Create(dto);
+			await Task.Run(() => _repo.CreateAsync(dto));
 			Console.WriteLine("新增完成");  //考慮新增一個result services
 			return true;
 		}
 
-		public List<EventDto> GetAllForIndex()
+		public async Task<List<EventDto>> GetAllForIndexAsync()
 		{
-			return _repo.GetAll();
+			return await _repo.GetAllAsync();
 		}
 
 
