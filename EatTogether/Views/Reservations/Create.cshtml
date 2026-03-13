@@ -22,6 +22,13 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.ErrorMessage
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+                @if (ViewBag.SuggestedTime != null)
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        建議可選時段：<strong>@ViewBag.SuggestedTime</strong> 之後（±90 分鐘衝突區結束）
+                    </div>
+                }
             }
 
             <form asp-action="Create" method="post">

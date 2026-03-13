@@ -27,6 +27,8 @@ namespace EatTogether.Models.Services
         {
             var r = await _repo.GetByIdAsync(id);
             if (r == null) return Result.Fail("找不到此訂位");
+            if (r.Status == 1)
+                return Result.Fail("此訂位已完成報到，無法再更改狀態");
             await _repo.UpdateStatusAsync(id, newStatus);
             return Result.Success();
         }
