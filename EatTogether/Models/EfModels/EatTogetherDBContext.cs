@@ -39,6 +39,8 @@ public partial class EatTogetherDBContext : DbContext
 
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
+    public virtual DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<PreOrder> PreOrders { get; set; }
@@ -188,7 +190,9 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.EndDate).HasPrecision(0);
             entity.Property(e => e.RewardItem).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasPrecision(0);
-            entity.Property(e => e.Summary).HasMaxLength(50);
+            entity.Property(e => e.Summary)
+                .IsRequired()
+                .HasMaxLength(50);
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -351,6 +355,29 @@ public partial class EatTogetherDBContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_OrderDetails_Products");
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasIndex(e => e.Token, "IX_PasswordResetTokens_Token").IsUnique();
+
+            entity.HasIndex(e => e.UserId, "IX_PasswordResetTokens_UserId");
+
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PasswordResetTokens_CreatedAt");
+            entity.Property(e => e.ExpiresAt).HasPrecision(0);
+            entity.Property(e => e.IsUsed).HasAnnotation("Relational:DefaultConstraintName", "DF_PasswordResetTokens_IsUsed");
+            entity.Property(e => e.Token)
+                .IsRequired()
+                .HasMaxLength(32)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.User).WithMany(p => p.PasswordResetTokens)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PasswordResetTokens_Users");
         });
 
         modelBuilder.Entity<Payment>(entity =>

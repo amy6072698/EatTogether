@@ -44,9 +44,18 @@ namespace EatTogether
             builder.Services.AddScoped<IPreOrderRepository, PreOrderRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<CouponService>(); ;
+            
+
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
+			builder.Services.AddScoped<EventService>();
 
 
-            var app = builder.Build();
+
+			var app = builder.Build();
+
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
