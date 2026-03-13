@@ -114,15 +114,17 @@
 
 
                             <div class="sb-sidenav-menu-heading">訂單管理</div>
-                            <a class="nav-link @(inOrder ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="@(inOrder ? "true" : "false")" aria-controls="collapseOrders">
+                            <a class="nav-link @(inUser ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="@(inUser ? "true" : "false")" aria-controls="collapseOrders">
                                 <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
                                 訂單管理
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse @(inOrder ? "show" : "")" id="collapseOrders" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                            <div class="collapse @(inUser ? "show" : "")" id="collapseOrders" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link @(ctrl == "PreOrders" && action == "PreOrderList" ? "active" : "")" asp-controller="PreOrders" asp-action="PreOrderList">待處理訂單</a>
-                                    <a class="nav-link @(ctrl == "Payments" && action == "Create" ? "active" : "")" asp-controller="Payments" asp-action="Create">結帳</a>
+                                    <a class="nav-link" asp-controller="PreOrders" asp-action="Create">點餐(暫時)</a>
+                                    <a class="nav-link @(ctrl == "Users" && action == "Index" ? "active" : "")" asp-controller="PreOrders" asp-action="TodayPreOrderList">待處理訂單</a>
+                                    <a class="nav-link" asp-controller="Payments" asp-action="Create">結帳</a>
+                                    <a class="nav-link" asp-controller="PreOrders" asp-action="AllOrders">所有訂單</a>
                                 </nav>
                             </div>
 

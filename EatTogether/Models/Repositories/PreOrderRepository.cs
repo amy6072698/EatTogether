@@ -13,6 +13,7 @@ namespace EatTogether.Models.Repositories
 
         // List
         Task UpdateDetailStatusAsync(int detailId, int status);
+        Task<List<PreOrder>> GetAllAsync();
 
         // Payment
         Task CancelUnservedDetailsAsync(int preOrderId);
@@ -21,7 +22,7 @@ namespace EatTogether.Models.Repositories
 
 
 
-        Task<List<PreOrder>> GetAllAsync();
+        
         
         Task UpdateStatusAsync(int id, int doneOrCancel);        // string → int
         Task DeleteAsync(int id);
@@ -60,24 +61,14 @@ namespace EatTogether.Models.Repositories
 
             detail.DoneOrCancel = status;
             await _context.SaveChangesAsync();
-
-            // 檢查該 PreOrder 的所有 Detail 是否全部完成或取消
-            var allDetails = await _context.PreOrderDetails
-                .Where(d => d.PreOrderId == detail.PreOrderId)
-                .ToListAsync();
-
-            bool allDone = allDetails.All(d => d.DoneOrCancel == 1 || d.DoneOrCancel == 2);
-
-            if (allDone)
-            {
-                var preOrder = await _context.PreOrders.FindAsync(detail.PreOrderId);
-                if (preOrder != null)
-                {
-                    preOrder.DoneOrCancel = PreOrderStatus.Done;  // 1
-                    await _context.SaveChangesAsync();
-                }
-            }
         }
+        public async Task<List<PreOrder>> GetAllAsync() =>
+            await _context.PreOrders
+                     .Include(p => p.PreOrderDetails)
+                     .Include(p => p.Table)
+                     .Include(p => p.Member)
+                     .OrderByDescending(p => p.OrderAt)
+                     .ToListAsync();
 
         // Payment
         public async Task CancelUnservedDetailsAsync(int preOrderId)
@@ -95,18 +86,9 @@ namespace EatTogether.Models.Repositories
             await _context.PreOrders
                      .Include(p => p.PreOrderDetails)
                      .Include(p => p.Table)
+                     .Include(p => p.User)
+                     .Include(p => p.Coupon)
                      .FirstOrDefaultAsync(p => p.Id == id);
-
-
-
-
-
-        public async Task<List<PreOrder>> GetAllAsync() =>
-            await _context.PreOrders
-                     .Include(p => p.PreOrderDetails)
-                     .Include(p => p.Table)
-                     .OrderByDescending(p => p.OrderAt)
-                     .ToListAsync();
 
         
 
