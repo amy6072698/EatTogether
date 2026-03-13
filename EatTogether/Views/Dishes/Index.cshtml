@@ -38,7 +38,8 @@
                 {
                     <div class="col-6 col-md-4 col-lg-3 dish-card"
                          data-category="@item.CategoryName"
-                         data-name="@item.DishName.ToLower()">
+                         data-name="@item.DishName.ToLower()"
+                         data-order="@item.DisplayOrder">
                         <div class="card h-100 shadow-sm">
                             <div style="position:relative; padding-top:75%; overflow:hidden; background:#f8f9fa;">
                                 @if (!string.IsNullOrEmpty(item.ImageUrl))
@@ -131,6 +132,9 @@
                 return matchCategory && matchSearch;
             });
 
+            // 依順序排序
+            filteredCards.sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
+
             currentPage = 1;
             renderPage();
         }
@@ -150,7 +154,7 @@
             const total = filteredCards.length;
             const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
             document.getElementById("pageInfo").textContent =
-                `顯示 ${Math.min(start + 1, total)}–${Math.min(end, total)} 筆，共 ${total} 筆`;
+                `顯示第 ${Math.min(start + 1, total)} 至 ${Math.min(end, total)} 筆，共 ${total} 筆記錄`;
 
             // 產生分頁按鈕
             const pagination = document.getElementById("pagination");

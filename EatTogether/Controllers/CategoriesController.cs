@@ -1,8 +1,10 @@
-﻿using EatTogether.Models.Services;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EatTogether.Controllers
 {
@@ -20,50 +22,55 @@ namespace EatTogether.Controllers
 		{
 			var dtos = await _categoryService.GetAllAsync();
 			var vms = dtos.Select(d => d.ToViewModel()).ToList();
+			
+			// 準備下拉選單給 Modal 使用
+			ViewBag.ParentCategoryOptions = await GetParentCategoryOptionsAsync();
+			
 			return View(vms);
 		}
 
-		public async Task<IActionResult> Create()
-		{
-			var vm = new CategoryViewModel();
-			vm.ParentCategoryOptions = await GetParentCategoryOptionsAsync();
-			return View(vm);
-		}
-
+		// 用於 Modal 提交的新增
 		[HttpPost]
-		public async Task <IActionResult> Create([FromBody] CategoryViewModel vm)
+		public async Task<IActionResult> Create([FromBody] CategoryViewModel vm)
 		{
 			if (!ModelState.IsValid)
 			{
-				vm.ParentCategoryOptions = await GetParentCategoryOptionsAsync();
-				return View(vm);
+				var errors = ModelState.ToDictionary(
+					kvp => kvp.Key,
+					kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+				);
+				return BadRequest(errors);
 			}
+
 			await _categoryService.CreateAsync(vm.ToDto());
-			return RedirectToAction(nameof(Index));
+			return Ok(new { message = "新增成功" });
 		}
 
-		public async Task<IActionResult> Edit(int id)
-		{
-			var dto = await _categoryService.GetByIdAsync(id);
-			if (dto == null) return NotFound();
-
-			var vm = dto.ToViewModel();
-			vm.ParentCategoryOptions = await GetParentCategoryOptionsAsync(id);
-			return View(vm);
-		}
-
+		// 用於 Modal 提交的編輯 (如果需要)
 		[HttpPost]
 		public async Task<IActionResult> Edit(int id, [FromBody] CategoryViewModel vm)
 		{
-			if (id != vm.Id) return BadRequest();
+			if (id != vm.Id) return BadRequest(new { message = "ID 不符" });
+			
 			if (!ModelState.IsValid)
 			{
-				vm.ParentCategoryOptions = await GetParentCategoryOptionsAsync(id);
-				return View(vm);
+				var errors = ModelState.ToDictionary(
+					kvp => kvp.Key,
+					kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+				);
+				return BadRequest(errors);
 			}
 
 			await _categoryService.UpdateAsync(vm.ToDto());
-			return RedirectToAction(nameof(Index));
+			return Ok(new { message = "更新成功" });
+		}
+
+		// 停用分類
+		[HttpPost]
+		public async Task<IActionResult> Disable(int id)
+		{
+			await _categoryService.DisableAsync(id);
+			return Ok(new { message = "已停用" });
 		}
 
 		private async Task<List<SelectListItem>> GetParentCategoryOptionsAsync(int excludeId = 0)
@@ -71,7 +78,7 @@ namespace EatTogether.Controllers
 			var allCategories = await _categoryService.GetAllAsync();
 
 			var options = allCategories
-				.Where(c => c.Id != excludeId) // 排除自己
+				.Where(c => c.Id != excludeId)
 				.Select(c => new SelectListItem
 				{
 					Value = c.Id.ToString(),

@@ -35,6 +35,14 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "圖片網址")]
         public string? ImageUrl { get; set; }
 
+        [Display(Name = "折扣開始日期")]
+        [DataType(DataType.Date)]
+        public DateOnly? StartDate { get; set; }
+
+        [Display(Name = "折扣結束日期")]
+        [DataType(DataType.Date)]
+        public DateOnly? EndDate { get; set; }
+
         // 裁切後的 Base64 圖片資料
         public string? CroppedImageData { get; set; }
 
@@ -43,6 +51,9 @@ namespace EatTogether.Models.ViewModels
 
         [Display(Name = "更新時間")]
         public DateTime? UpdatedAt { get; set; }
+
+        [Display(Name = "顯示順序")]
+        public int DisplayOrder { get; set; }
 
         public List<SetMealItemViewModel> Items { get; set; } = new();
 

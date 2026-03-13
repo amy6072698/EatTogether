@@ -18,6 +18,8 @@ namespace EatTogether.Models.Extensions
 				SetPrice = setMeal.SetPrice,
 				Description = setMeal.Description,
 				ImageUrl = setMeal.ImageUrl,
+				StartDate = setMeal.StartDate,
+				EndDate = setMeal.EndDate,
 				UpdatedAt = setMeal.UpdatedAt,
 				Items = setMeal.SetMealItems.Select(i => i.ToItemDto()).ToList()
 			};

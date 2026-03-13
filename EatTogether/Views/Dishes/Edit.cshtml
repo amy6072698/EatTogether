@@ -12,108 +12,134 @@
     </ol>
 
     <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-edit me-1"></i>編輯餐點
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-edit me-1"></i>編輯餐點基本資料</span>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>返回列表
+            </a>
         </div>
         <div class="card-body">
-
-            <form method="post" enctype="multipart/form-data" asp-action="Edit" asp-route-id="@Model.Id">
+            <form method="post" enctype="multipart/form-data" asp-action="Edit" asp-route-id="@Model.Id" id="editForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="ImageUrl" />
                 <input type="hidden" id="croppedImageData" name="CroppedImageData" />
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">餐點名稱 <span class="text-danger">*</span></label>
-                        <input asp-for="DishName" class="form-control" />
-                        <span asp-validation-for="DishName" class="text-danger small"></span>
-                    </div>
+                    <!-- 左側資料區 -->
+                    <div class="col-lg-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">餐點名稱 <span class="text-danger">*</span></label>
+                                <input asp-for="DishName" class="form-control" />
+                                <span asp-validation-for="DishName" class="text-danger small"></span>
+                            </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">分類 <span class="text-danger">*</span></label>
-                        <select asp-for="CategoryId" asp-items="Model.CategoryOptions" class="form-select">
-                            <option value="">請選擇分類</option>
-                        </select>
-                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
-                    </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">所屬分類 <span class="text-danger">*</span></label>
+                                <select asp-for="CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                                    <option value="">請選擇分類</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                            </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">價格 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input asp-for="Price" class="form-control" min="0" />
-                        </div>
-                        <span asp-validation-for="Price" class="text-danger small"></span>
-                    </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">定價 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Price" class="form-control" min="0" step="1" />
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
 
-                    <!-- 圖片上傳 -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">圖片上傳</label>
-                        <input type="file" id="imageInput" class="form-control" accept="image/*"
-                               onchange="openCropper(this)" />
-                        <!-- 預覽區：有原本圖片就顯示，沒有就隱藏 -->
-                        <div id="previewBox" class="mt-2"
-                             style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none" : "")">
-                            <img id="previewImg"
-                                 src="@(Model.ImageUrl ?? "")"
-                                 style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" />
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1"
-                                    onclick="openCropperAgain()">
-                                <i class="fas fa-crop me-1"></i>重新裁切
-                            </button>
-                        </div>
-                    </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">餐點描述</label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
 
-                    <div class="col-12 mb-3">
-                        <label class="form-label">描述</label>
-                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">限定供應</label>
-                        <div class="form-check mb-2">
-                            <input asp-for="IsLimited" class="form-check-input"
-                                   onchange="toggleDateRange()" />
-                            <label class="form-check-label" asp-for="IsLimited">限定供應</label>
-                        </div>
-                        <div id="dateRange" class="@(Model.IsLimited ? "" : "d-none")">
-                            <div class="d-flex gap-2">
-                                <input asp-for="StartDate" type="date" class="form-control" />
-                                <span class="align-self-center">~</span>
-                                <input asp-for="EndDate" type="date" class="form-control" />
+                            <div class="col-md-12 border-top pt-3">
+                                <label class="form-label fw-bold">供應與狀態設定</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input asp-for="IsLimited" class="form-check-input" type="checkbox" role="switch" onchange="toggleDateRange()">
+                                            <label class="form-check-label fw-bold" asp-for="IsLimited">限定供應期間</label>
+                                        </div>
+                                        <div id="dateRange" class="mt-2 @(Model.IsLimited ? "" : "d-none")">
+                                            <div class="input-group input-group-sm">
+                                                <input asp-for="StartDate" type="date" class="form-control" />
+                                                <span class="input-group-text">至</span>
+                                                <input asp-for="EndDate" type="date" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            <input asp-for="IsTakeOut" class="form-check-input" />
+                                            <label class="form-check-label fw-bold" asp-for="IsTakeOut">可外帶</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mb-2">
+                                            <input asp-for="IsActive" class="form-check-input" />
+                                            <label class="form-check-label fw-bold" asp-for="IsActive">啟用中</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">其他設定</label>
-                        <div class="form-check">
-                            <input asp-for="IsTakeOut" class="form-check-input" />
-                            <label class="form-check-label" asp-for="IsTakeOut">可外帶</label>
-                        </div>
-                        <div class="form-check">
-                            <input asp-for="IsActive" class="form-check-input" />
-                            <label class="form-check-label" asp-for="IsActive">啟用</label>
+                    <!-- 右側圖片區 -->
+                    <div class="col-lg-4 border-start">
+                        <div class="ps-lg-3">
+                            <label class="form-label fw-bold">餐點圖片</label>
+                            
+                            <div id="imagePlaceholder" class="border rounded bg-light d-flex flex-column align-items-center justify-content-center mb-3" 
+                                 style="aspect-ratio: 4/3; cursor: pointer; @(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none")" 
+                                 onclick="document.getElementById('imageInput').click()">
+                                <i class="fas fa-utensils fa-3x text-secondary mb-2"></i>
+                                <span class="text-secondary">點擊或拖曳圖片至此</span>
+                            </div>
+
+                            <div id="previewBox" class="mb-3" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none" : "")">
+                                <div class="position-relative">
+                                    <img id="previewImg" src="@(Model.ImageUrl ?? "")" class="img-fluid rounded border" style="width:100%; aspect-ratio: 4/3; object-fit: cover;" />
+                                    <div class="position-absolute bottom-0 end-0 p-2">
+                                        <button type="button" class="btn btn-sm btn-dark opacity-75" onclick="openCropperAgain()">
+                                            <i class="fas fa-crop me-1"></i>重新裁切
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="file" id="imageInput" class="form-control d-none" accept="image/*"
+                                   onchange="handleFileSelect(this)" />
+                            
+                            <div class="d-grid mt-3">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                                    <i class="fas fa-upload me-1"></i>變更圖片
+                                </button>
+                            </div>
+                            
+                            <div class="mt-4 p-2 bg-light rounded border small text-muted">
+                                <div>建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <div>最後更新：@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3 text-muted small">
-                    建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                    @if (Model.UpdatedAt.HasValue)
-                    {
-                        <span class="ms-3">最後更新：@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
-                    }
-                </div>
+                <hr class="my-4">
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>儲存
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-primary px-5">
+                        <i class="fas fa-save me-2"></i>儲存餐點資料
                     </button>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>返回列表
-                    </a>
                 </div>
             </form>
         </div>
@@ -121,22 +147,22 @@
 </div>
 
 <!-- Cropper Modal -->
-<div class="modal fade" id="cropperModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">裁切圖片</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="cropperModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-crop me-2"></i>裁切圖片</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div style="max-height:500px; overflow:hidden;">
-                    <img id="cropperImage" src="" style="max-width:100%;" />
+            <div class="modal-body p-0">
+                <div class="img-container" style="background-color: #f7f7f7; height: 500px; width: 100%;">
+                    <img id="cropperImage" src="" style="max-width: 100%;">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="confirmCrop()">
-                    <i class="fas fa-check me-1"></i>確認裁切
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-4" onclick="confirmCrop()">
+                    <i class="fas fa-check me-2"></i>確認裁切
                 </button>
             </div>
         </div>
@@ -145,6 +171,19 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    <style>
+        #imagePlaceholder:hover {
+            border-color: #0d6efd !important;
+            background-color: #f8f9fa !important;
+        }
+        #imagePlaceholder:hover i {
+            color: #0d6efd !important;
+        }
+        .img-container img {
+            display: block;
+            max-width: 100%;
+        }
+    </style>
 }
 
 @section Scripts {
@@ -156,29 +195,38 @@
 
         function toggleDateRange() {
             const isLimited = document.getElementById("IsLimited").checked;
-            document.getElementById("dateRange").classList.toggle("d-none", !isLimited);
+            const dateRange = document.getElementById("dateRange");
+            if(dateRange) {
+                dateRange.classList.toggle("d-none", !isLimited);
+            }
         }
 
-        function openCropper(input) {
+        function handleFileSelect(input) {
             if (!input.files || !input.files[0]) return;
-            originalFile = input.files[0];
+            openCropper(input.files[0]);
+        }
+
+        function openCropper(file) {
+            originalFile = file;
 
             const reader = new FileReader();
             reader.onload = e => {
                 const img = document.getElementById("cropperImage");
                 img.src = e.target.result;
 
-                const modal = new bootstrap.Modal(document.getElementById("cropperModal"));
+                const modalElement = document.getElementById("cropperModal");
+                const modal = new bootstrap.Modal(modalElement);
                 modal.show();
 
-                document.getElementById("cropperModal").addEventListener("shown.bs.modal", () => {
+                modalElement.addEventListener("shown.bs.modal", () => {
                     if (cropper) cropper.destroy();
                     cropper = new Cropper(img, {
                         aspectRatio: 4 / 3,
                         viewMode: 1,
                         movable: true,
                         zoomable: true,
-                        rotatable: false
+                        rotatable: false,
+                        autoCropArea: 1
                     });
                 }, { once: true });
             };
@@ -186,9 +234,11 @@
         }
 
         function openCropperAgain() {
-            if (!originalFile) return;
-            const input = document.getElementById("imageInput");
-            openCropper(input);
+            if (!originalFile) {
+                 document.getElementById('imageInput').click();
+                 return;
+            }
+            openCropper(originalFile);
         }
 
         function confirmCrop() {
@@ -199,11 +249,34 @@
 
             document.getElementById("croppedImageData").value = base64;
             document.getElementById("previewImg").src = base64;
-            document.getElementById("previewBox").style.display = "";
+            document.getElementById("previewBox").style.display = "block";
+            document.getElementById("imagePlaceholder").style.display = "none";
 
-            bootstrap.Modal.getInstance(document.getElementById("cropperModal")).hide();
+            const modalElement = document.getElementById("cropperModal");
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+            
             cropper.destroy();
             cropper = null;
+        }
+
+        // 支援拖曳上傳
+        const placeholder = document.getElementById('imagePlaceholder');
+        if(placeholder) {
+            placeholder.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                placeholder.classList.add('bg-secondary', 'bg-opacity-10', 'border-primary');
+            });
+            placeholder.addEventListener('dragleave', () => {
+                placeholder.classList.remove('bg-secondary', 'bg-opacity-10', 'border-primary');
+            });
+            placeholder.addEventListener('drop', (e) => {
+                e.preventDefault();
+                placeholder.classList.remove('bg-secondary', 'bg-opacity-10', 'border-primary');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    openCropper(e.dataTransfer.files[0]);
+                }
+            });
         }
     </script>
 }

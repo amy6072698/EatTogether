@@ -11,208 +11,241 @@
         <li class="breadcrumb-item active">編輯套餐</li>
     </ol>
 
-    <!-- 套餐基本資料 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-edit me-1"></i>套餐基本資料
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <span class="fw-bold"><i class="fas fa-edit me-1 text-warning"></i>套餐基本資料</span>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary border-0">
+                <i class="fas fa-arrow-left me-1"></i>返回列表
+            </a>
         </div>
-        <div class="card-body">
-
-            <form method="post" enctype="multipart/form-data" asp-action="Edit" asp-route-id="@Model.Id">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" asp-action="Edit" asp-route-id="@Model.Id" id="editForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="ImageUrl" />
                 <input type="hidden" id="croppedImageData" name="CroppedImageData" />
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">套餐名稱 <span class="text-danger">*</span></label>
-                        <input asp-for="SetMealName" class="form-control" />
-                        <span asp-validation-for="SetMealName" class="text-danger small"></span>
-                    </div>
+                    <!-- 左側資料區 -->
+                    <div class="col-lg-8">
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-secondary">套餐名稱 <span class="text-danger">*</span></label>
+                                <input asp-for="SetMealName" class="form-control form-control-lg border-light-subtle shadow-sm" />
+                                <span asp-validation-for="SetMealName" class="text-danger small"></span>
+                            </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">套餐定價</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input asp-for="SetPrice" class="form-control" min="0" />
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">套餐定價</label>
+                                <div class="input-group input-group-lg shadow-sm">
+                                    <span class="input-group-text bg-light border-light-subtle">$</span>
+                                    <input asp-for="SetPrice" class="form-control border-light-subtle" min="0" step="1" />
+                                </div>
+                                <span asp-validation-for="SetPrice" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-secondary">折扣類型 <span class="text-danger">*</span></label>
+                                <select asp-for="DiscountType" asp-items="Model.DiscountTypeOptions"
+                                        class="form-select form-select-lg border-light-subtle shadow-sm" onchange="updateDiscountLabel()"></select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-secondary" id="discountLabel">
+                                    @(Model.DiscountType == "percent" ? "折扣值（%）" : "折扣值（元）")
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="DiscountValue" class="form-control form-control-lg border-light-subtle shadow-sm" min="0" step="0.01" />
+                                <span asp-validation-for="DiscountValue" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label fw-bold text-secondary"></label>
+                                <input asp-for="StartDate" type="date" class="form-control form-control-lg border-light-subtle shadow-sm" />
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label fw-bold text-secondary"></label>
+                                <input asp-for="EndDate" type="date" class="form-control form-control-lg border-light-subtle shadow-sm" />
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-secondary">套餐描述</label>
+                                <textarea asp-for="Description" class="form-control border-light-subtle shadow-sm" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked">
+                                    <label class="form-check-label fw-bold text-muted" for="flexSwitchCheckChecked">啟用此套餐</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">折扣類型 <span class="text-danger">*</span></label>
-                        <select asp-for="DiscountType" asp-items="Model.DiscountTypeOptions"
-                                class="form-select" onchange="updateDiscountLabel()"></select>
-                    </div>
+                    <!-- 右側圖片區 -->
+                    <div class="col-lg-4 border-start border-light-subtle">
+                        <div class="ps-lg-4 text-center">
+                            <label class="form-label fw-bold text-secondary d-block text-start mb-3">套餐圖片</label>
+                            
+                            <div id="imageArea" class="position-relative border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center" 
+                                 style="aspect-ratio: 4/3; cursor: pointer;" onclick="document.getElementById('imageInput').click()">
+                                
+                                <div id="placeholderContent" class="text-center" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none")">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="text-secondary mb-1">點擊變更圖片</p>
+                                    <small class="text-muted">建議比例 4:3</small>
+                                </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" id="discountLabel">
-                            @(Model.DiscountType == "percent" ? "折扣值（%）" : "折扣值（元）")
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="DiscountValue" class="form-control" min="0" />
-                        <span asp-validation-for="DiscountValue" class="text-danger small"></span>
-                    </div>
+                                <img id="previewImg" src="@(Model.ImageUrl ?? "")" class="img-fluid" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none;" : "display:block;") width:100%; height:100%; object-fit: cover;" />
+                                
+                                <div id="editBadge" class="position-absolute bottom-0 end-0 p-3">
+                                    <span class="badge bg-dark bg-opacity-75 p-2 rounded-circle shadow-sm">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </span>
+                                </div>
+                            </div>
 
-                    <!-- 圖片上傳 -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">圖片上傳</label>
-                        <input type="file" id="imageInput" class="form-control" accept="image/*"
-                               onchange="openCropper(this)" />
-                        <div id="previewBox" class="mt-2"
-                             style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none" : "")">
-                            <img id="previewImg" src="@(Model.ImageUrl ?? "")"
-                                 style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" />
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1"
-                                    onclick="openCropperAgain()">
-                                <i class="fas fa-crop me-1"></i>重新裁切
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">描述</label>
-                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">其他設定</label>
-                        <div class="form-check">
-                            <input asp-for="IsActive" class="form-check-input" />
-                            <label class="form-check-label" asp-for="IsActive">啟用</label>
+                            <input type="file" id="imageInput" class="form-control d-none" accept="image/*"
+                                   onchange="handleFileSelect(this)" />
+                            
+                            <div class="mt-4 p-3 bg-light rounded-3 border-0 small text-start text-muted">
+                                <div class="mb-1">建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <div>最後更新：@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3 text-muted small">
-                    建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                    @if (Model.UpdatedAt.HasValue)
-                    {
-                        <span class="ms-3">最後更新：@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
-                    }
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>儲存基本資料
+                <div class="mt-5 pt-4 border-top d-flex justify-content-end gap-3">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm rounded-pill">
+                        儲存基本資料
                     </button>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>返回列表
-                    </a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- 套餐餐點明細 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-list me-1"></i>套餐包含餐點
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-white py-3 border-bottom">
+            <span class="fw-bold"><i class="fas fa-list me-1 text-primary"></i>套餐包含餐點</span>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <div id="itemAlertBox"></div>
 
-            <table class="table table-bordered table-hover mb-4">
-                <thead>
-                    <tr>
-                        <th>餐點名稱</th>
-                        <th>單價</th>
-                        <th>數量</th>
-                        <th>是否選擇性</th>
-                        <th>群組編號</th>
-                        <th>選取上限</th>
-                        <th>顯示順序</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr id="item-@item.Id">
-                            <td>@item.DishName</td>
-                            <td>$@item.DishPrice</td>
-                            <td>@item.Quantity</td>
-                            <td>
-                                @if (item.IsOptional)
-                                {
-                                    <span class="badge bg-warning text-dark">選擇性</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-success">固定</span>
-                                }
-                            </td>
-                            <td>@(item.OptionGroupNo?.ToString() ?? "—")</td>
-                            <td>@(item.PickLimit?.ToString() ?? "—")</td>
-                            <td>@item.DisplayOrder</td>
-                            <td>
-                                <button class="btn btn-danger btn-sm" onclick="removeItem(@item.Id)">
-                                    <i class="fas fa-trash"></i> 移除
-                                </button>
-                            </td>
+            <div class="table-responsive rounded-3 overflow-hidden border mb-4">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">餐點名稱</th>
+                            <th>單價</th>
+                            <th>數量</th>
+                            <th>屬性</th>
+                            <th>群組</th>
+                            <th>上限</th>
+                            <th>順序</th>
+                            <th class="text-center pe-4">操作</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr id="item-@item.Id" class="align-middle">
+                                <td class="ps-4 fw-bold">@item.DishName</td>
+                                <td>$@item.DishPrice</td>
+                                <td>@item.Quantity</td>
+                                <td>
+                                    @if (item.IsOptional)
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3">選擇性</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle rounded-pill px-3">固定</span>
+                                    }
+                                </td>
+                                <td>@(item.OptionGroupNo?.ToString() ?? "—")</td>
+                                <td>@(item.PickLimit?.ToString() ?? "—")</td>
+                                <td>@item.DisplayOrder</td>
+                                <td class="text-center pe-4">
+                                    <button class="btn btn-link text-danger p-0" onclick="removeItem(@item.Id)">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-            <h6 class="fw-bold">新增餐點到套餐</h6>
-            <div class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">選擇餐點</label>
-                    <select id="newDishId" class="form-select">
-                        <option value="">請選擇餐點</option>
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <label class="form-label">數量</label>
-                    <input type="number" id="newQuantity" class="form-control" value="1" min="1" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">類型</label>
-                    <select id="newIsOptional" class="form-select" onchange="toggleOptionalFields()">
-                        <option value="false">固定包含</option>
-                        <option value="true">選擇性</option>
-                    </select>
-                </div>
-                <div class="col-md-1" id="groupNoField" style="display:none">
-                    <label class="form-label">群組</label>
-                    <input type="number" id="newOptionGroupNo" class="form-control" value="1" min="1" />
-                </div>
-                <div class="col-md-1" id="pickLimitField" style="display:none">
-                    <label class="form-label">上限</label>
-                    <input type="number" id="newPickLimit" class="form-control" value="1" min="1" />
-                </div>
-                <div class="col-md-1">
-                    <label class="form-label">順序</label>
-                    <input type="number" id="newDisplayOrder" class="form-control" value="1" min="1" />
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-success w-100" onclick="addItem()">
-                        <i class="fas fa-plus me-1"></i>新增
-                    </button>
+            <div class="bg-light p-4 rounded-4">
+                <h6 class="fw-bold mb-4 d-flex align-items-center">
+                    <span class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-2" style="width:24px; height:24px; font-size:12px;">+</span>
+                    新增餐點到套餐
+                </h6>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-secondary">選擇餐點</label>
+                        <select id="newDishId" class="form-select border-light-subtle shadow-sm"></select>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold text-secondary">數量</label>
+                        <input type="number" id="newQuantity" class="form-control border-light-subtle shadow-sm" value="1" min="1" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-secondary">類型</label>
+                        <select id="newIsOptional" class="form-select border-light-subtle shadow-sm" onchange="toggleOptionalFields()">
+                            <option value="false">固定包含</option>
+                            <option value="true">選擇性</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1" id="groupNoField" style="display:none">
+                        <label class="form-label small fw-bold text-secondary">群組</label>
+                        <input type="number" id="newOptionGroupNo" class="form-control border-light-subtle shadow-sm" value="1" min="1" />
+                    </div>
+                    <div class="col-md-1" id="pickLimitField" style="display:none">
+                        <label class="form-label small fw-bold text-secondary">上限</label>
+                        <input type="number" id="newPickLimit" class="form-control border-light-subtle shadow-sm" value="1" min="1" />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small fw-bold text-secondary">順序</label>
+                        <input type="number" id="newDisplayOrder" class="form-control border-light-subtle shadow-sm" value="1" min="1" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-success w-100 shadow-sm rounded-pill py-2" onclick="addItem()">
+                            確認新增
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Cropper Modal -->
-<div class="modal fade" id="cropperModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">裁切圖片</h5>
+<!-- Cropper Modal (同 Create) -->
+<div class="modal fade" id="cropperModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-white border-bottom py-3">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-crop-alt me-2 text-primary"></i>裁切圖片</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div style="max-height:500px; overflow:hidden;">
-                    <img id="cropperImage" src="" style="max-width:100%;" />
+            <div class="modal-body p-0 bg-light">
+                <div class="img-container" style="height: 500px; width: 100%;">
+                    <img id="cropperImage" src="" style="max-width: 100%;">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="confirmCrop()">
-                    <i class="fas fa-check me-1"></i>確認裁切
+            <div class="modal-footer bg-white border-top-0 py-3">
+                <button type="button" class="btn btn-outline-secondary border-0" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-5 shadow-sm rounded-pill" onclick="confirmCrop()">
+                    確認裁切
                 </button>
             </div>
         </div>
@@ -221,6 +254,9 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    <style>
+        #imageArea:hover { border-color: var(--bs-primary) !important; background-color: #f0f7ff !important; }
+    </style>
 }
 
 @section Scripts {
@@ -234,132 +270,93 @@
         function updateDiscountLabel() {
             const type = document.getElementById("DiscountType").value;
             document.getElementById("discountLabel").innerHTML =
-                type === "percent"
-                    ? '折扣值（%） <span class="text-danger">*</span>'
-                    : '折扣值（元） <span class="text-danger">*</span>';
+                type === "percent" ? '折扣值（%） <span class="text-danger">*</span>' : '折扣值（元） <span class="text-danger">*</span>';
         }
 
-        function openCropper(input) {
-            if (!input.files || !input.files[0]) return;
-            originalFile = input.files[0];
+        function handleFileSelect(input) { if (input.files && input.files[0]) openCropper(input.files[0]); }
 
+        function openCropper(file) {
+            originalFile = file;
             const reader = new FileReader();
             reader.onload = e => {
                 const img = document.getElementById("cropperImage");
                 img.src = e.target.result;
-
-                const modal = new bootstrap.Modal(document.getElementById("cropperModal"));
-                modal.show();
-
+                new bootstrap.Modal(document.getElementById("cropperModal")).show();
                 document.getElementById("cropperModal").addEventListener("shown.bs.modal", () => {
                     if (cropper) cropper.destroy();
-                    cropper = new Cropper(img, {
-                        aspectRatio: 4 / 3,
-                        viewMode: 1,
-                        movable: true,
-                        zoomable: true,
-                        rotatable: false
-                    });
+                    cropper = new Cropper(img, { aspectRatio: 4 / 3, viewMode: 1, autoCropArea: 1 });
                 }, { once: true });
             };
             reader.readAsDataURL(originalFile);
         }
 
-        function openCropperAgain() {
-            if (!originalFile) return;
-            openCropper(document.getElementById("imageInput"));
-        }
-
         function confirmCrop() {
             if (!cropper) return;
-
             const canvas = cropper.getCroppedCanvas({ width: 800, height: 600 });
-            const base64  = canvas.toDataURL("image/jpeg", 0.9);
-
+            const base64 = canvas.toDataURL("image/jpeg", 0.9);
             document.getElementById("croppedImageData").value = base64;
-            document.getElementById("previewImg").src = base64;
-            document.getElementById("previewBox").style.display = "";
-
+            const previewImg = document.getElementById("previewImg");
+            previewImg.src = base64;
+            previewImg.style.display = "block";
+            document.getElementById("placeholderContent").style.display = "none";
             bootstrap.Modal.getInstance(document.getElementById("cropperModal")).hide();
-            cropper.destroy();
-            cropper = null;
+            cropper.destroy(); cropper = null;
         }
 
         function toggleOptionalFields() {
             const isOptional = document.getElementById("newIsOptional").value === "true";
-            document.getElementById("groupNoField").style.display   = isOptional ? "" : "none";
+            document.getElementById("groupNoField").style.display = isOptional ? "" : "none";
             document.getElementById("pickLimitField").style.display = isOptional ? "" : "none";
         }
 
         async function addItem() {
-            const dishId     = document.getElementById("newDishId").value;
-            const isOptional = document.getElementById("newIsOptional").value === "true";
-
-            if (!dishId) {
-                showAlert("itemAlertBox", "warning", "請選擇餐點");
-                return;
-            }
-
+            const dishId = document.getElementById("newDishId").value;
+            if (!dishId) { showAlert("itemAlertBox", "warning", "請選擇餐點"); return; }
             const data = {
-                SetMealId:     setMealId,
-                DishId:        parseInt(dishId),
-                Quantity:      parseInt(document.getElementById("newQuantity").value),
-                IsOptional:    isOptional,
-                OptionGroupNo: isOptional ? parseInt(document.getElementById("newOptionGroupNo").value) : null,
-                PickLimit:     isOptional ? parseInt(document.getElementById("newPickLimit").value) : null,
-                DisplayOrder:  parseInt(document.getElementById("newDisplayOrder").value)
+                SetMealId: setMealId,
+                DishId: parseInt(dishId),
+                Quantity: parseInt(document.getElementById("newQuantity").value),
+                IsOptional: document.getElementById("newIsOptional").value === "true",
+                OptionGroupNo: document.getElementById("newIsOptional").value === "true" ? parseInt(document.getElementById("newOptionGroupNo").value) : null,
+                PickLimit: document.getElementById("newIsOptional").value === "true" ? parseInt(document.getElementById("newPickLimit").value) : null,
+                DisplayOrder: parseInt(document.getElementById("newDisplayOrder").value)
             };
-
-            const res = await fetch("/SetMeals/AddItem", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-
-            if (res.ok) {
-                showAlert("itemAlertBox", "success", "新增成功");
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                const err = await res.json();
-                showAlert("itemAlertBox", "danger", err.message || "新增失敗");
-            }
+            const res = await fetch("/SetMeals/AddItem", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+            if (res.ok) { showAlert("itemAlertBox", "success", "新增成功"); setTimeout(() => location.reload(), 800); }
+            else { const err = await res.json(); showAlert("itemAlertBox", "danger", err.message || "新增失敗"); }
         }
 
         async function removeItem(itemId) {
             if (!confirm("確定要移除此餐點嗎？")) return;
-
             const res = await fetch(`/SetMeals/RemoveItem/${itemId}`, { method: "POST" });
-
-            if (res.ok) {
-                document.getElementById(`item-${itemId}`)?.remove();
-                showAlert("itemAlertBox", "success", "移除成功");
-            } else {
-                showAlert("itemAlertBox", "danger", "移除失敗");
-            }
+            if (res.ok) { document.getElementById(`item-${itemId}`)?.remove(); showAlert("itemAlertBox", "success", "移除成功"); }
+            else showAlert("itemAlertBox", "danger", "移除失敗");
         }
 
         function showAlert(boxId, type, message) {
-            document.getElementById(boxId).innerHTML = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>`;
+            document.getElementById(boxId).innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
         }
 
-        // 載入餐點下拉選單
         async function loadDishOptions() {
-            const res = await fetch("/Dishes/GetAllJson");
-            if (!res.ok) return;
+            const res = await fetch("/Dishes/GetAllJson"); if (!res.ok) return;
             const dishes = await res.json();
             const select = document.getElementById("newDishId");
-            dishes.forEach(d => {
-                const option = document.createElement("option");
-                option.value = d.id;
-                option.text  = `${d.dishName}（$${d.price}）`;
-                select.appendChild(option);
-            });
+            if(select) {
+                select.innerHTML = '<option value="">請選擇餐點</option>';
+                dishes.forEach(d => {
+                    const option = document.createElement("option");
+                    option.value = d.id; option.text = `${d.dishName} ($${d.price})`; select.appendChild(option);
+                });
+            }
         }
-
         loadDishOptions();
+
+        const area = document.getElementById('imageArea');
+        area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('border-primary'); });
+        area.addEventListener('dragleave', () => { area.classList.remove('border-primary'); });
+        area.addEventListener('drop', (e) => {
+            e.preventDefault(); area.classList.remove('border-primary');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) openCropper(e.dataTransfer.files[0]);
+        });
     </script>
 }

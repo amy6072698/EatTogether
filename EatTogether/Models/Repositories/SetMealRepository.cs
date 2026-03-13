@@ -1,6 +1,10 @@
-﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EatTogether.Models.Repositories
 {
@@ -151,7 +155,5 @@ namespace EatTogether.Models.Repositories
 
 			await _context.SaveChangesAsync();
 		}
-
-		
 	}
 }

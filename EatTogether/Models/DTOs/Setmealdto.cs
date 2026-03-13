@@ -20,7 +20,10 @@
 		public string? Description { get; set; }
 
 		public string? ImageUrl { get; set; }
+		public DateOnly? StartDate { get; set; }
+		public DateOnly? EndDate { get; set; }
 		public DateTime? UpdatedAt { get; set; }
+		public int DisplayOrder { get; set; }
 
 		public List<SetmealItemDto> Items { get; set; } = new ();
 

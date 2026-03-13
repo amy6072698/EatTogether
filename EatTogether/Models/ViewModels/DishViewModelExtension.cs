@@ -21,7 +21,8 @@ namespace EatTogether.Models.ViewModels
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
 				CreatedAt = dto.CreatedAt,
-				UpdatedAt = dto.UpdatedAt
+				UpdatedAt = dto.UpdatedAt,
+				DisplayOrder = dto.DisplayOrder
 			};
 		}
 		public static DishDto ToDto(this DishViewModel vm) // ViewModel => Dto
@@ -38,7 +39,8 @@ namespace EatTogether.Models.ViewModels
 				IsTakeOut = vm.IsTakeOut,
 				IsLimited = vm.IsLimited,
 				StartDate = vm.StartDate,
-				EndDate = vm.EndDate
+				EndDate = vm.EndDate,
+				DisplayOrder = vm.DisplayOrder
 			};
 		}
 	}

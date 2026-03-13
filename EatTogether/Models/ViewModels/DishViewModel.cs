@@ -56,6 +56,9 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "更新時間")]
         public DateTime? UpdatedAt { get; set; }
 
+        [Display(Name = "顯示順序")]
+        public int DisplayOrder { get; set; }
+
         // 給下拉選單用
         public List<SelectListItem> CategoryOptions { get; set; } = new();
     }

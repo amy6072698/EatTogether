@@ -2,6 +2,9 @@ using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace EatTogether.Controllers
 {
@@ -27,7 +30,13 @@ namespace EatTogether.Controllers
         // GET: /Dishes/Create
         public async Task<IActionResult> Create()
         {
-            var vm = new DishViewModel();
+            var allDishes = await _dishService.GetAllAsync();
+            int nextOrder = allDishes.Any() ? allDishes.Max(d => d.DisplayOrder) + 1 : 1;
+
+            var vm = new DishViewModel
+            {
+                DisplayOrder = nextOrder
+            };
             vm.CategoryOptions = await GetCategoryOptionsAsync();
             return View(vm);
         }
@@ -118,15 +127,23 @@ namespace EatTogether.Controllers
 
         private async Task<string> SaveBase64ImageAsync(string base64Data)
         {
-            // 移除 data:image/jpeg;base64, 前綴
+            if (string.IsNullOrEmpty(base64Data)) return null;
+
+            // 移除 data:image/xxx;base64, 前綴
             var base64 = base64Data.Contains(",")
                 ? base64Data.Split(',')[1]
                 : base64Data;
 
             var bytes    = Convert.FromBase64String(base64);
             var fileName = $"{Guid.NewGuid()}.jpg";
-            var savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", fileName);
+            
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
 
+            var savePath = Path.Combine(folderPath, fileName);
             await System.IO.File.WriteAllBytesAsync(savePath, bytes);
 
             return "/images/" + fileName;
