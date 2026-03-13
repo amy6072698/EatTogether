@@ -33,6 +33,8 @@ public partial class User
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
+    public virtual ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+
     public virtual ICollection<PreOrder> PreOrders { get; set; } = new List<PreOrder>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

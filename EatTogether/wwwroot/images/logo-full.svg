@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <!-- Icon: circle + fork & knife -->
+  <circle cx="60" cy="60" r="56" fill="#1A0D08"/>
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#F5D87A" stroke-width="1" opacity="0.5"/>
+
+  <!-- Fork handle -->
+  <line x1="49" y1="28" x2="49" y2="92" stroke="#F5D87A" stroke-width="3" stroke-linecap="round"/>
+  <!-- Fork tines -->
+  <line x1="43" y1="28" x2="43" y2="48" stroke="#F5D87A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="49" y1="28" x2="49" y2="48" stroke="#F5D87A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="55" y1="28" x2="55" y2="48" stroke="#F5D87A" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- Fork tine curve -->
+  <path d="M43 48 Q49 58 55 48" fill="none" stroke="#F5D87A" stroke-width="2.2"/>
+
+  <!-- Knife handle -->
+  <line x1="71" y1="28" x2="71" y2="92" stroke="#F5D87A" stroke-width="3" stroke-linecap="round"/>
+  <!-- Knife blade -->
+  <path d="M71 28 Q83 37 83 52 Q83 61 71 64" fill="#F5D87A" opacity="0.18"/>
+  <path d="M71 28 Q83 37 83 52 Q83 61 71 64" fill="none" stroke="#F5D87A" stroke-width="2.2"/>
+
+  <!-- Gold dot bottom -->
+  <circle cx="60" cy="93" r="2" fill="#C9A96E"/>
+
+  <!-- Vertical divider -->
+  <line x1="130" y1="28" x2="130" y2="92" stroke="#F5D87A" stroke-width="1" opacity="0.35"/>
+
+  <!-- Chinese name -->
+  <text x="158" y="74" font-family="'Noto Serif TC', 'Songti SC', serif" font-weight="700"
+        font-size="44" fill="#F5D87A" letter-spacing="8">義起吃</text>
+
+  <!-- Slogan -->
+  <text x="162" y="97" font-family="'Cormorant Garamond', 'Georgia', serif" font-style="italic"
+        font-size="14" fill="#C9A96E" letter-spacing="5" opacity="0.85">Eat Together</text>
+</svg>

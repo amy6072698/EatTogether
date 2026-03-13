@@ -1,0 +1,71 @@
+﻿@model EatTogether.Models.ViewModels.EventCreateViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1 class="ms-5">活動新增</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4 ms-5">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>            
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Summary" class="control-label"></label>
+                <input asp-for="Summary" class="form-control" />
+                <span asp-validation-for="Summary" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MinSpend" class="control-label"></label>
+                <input asp-for="MinSpend" class="form-control" />                
+                <span asp-validation-for="MinSpend" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RewardItem" class="control-label"></label>
+                <input asp-for="RewardItem" class="form-control" />
+                <span asp-validation-for="RewardItem" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DiscountType" class="control-label"></label>
+                <select asp-for="DiscountType" class="form-control">
+                    <option value=""></option>
+                    <option value="FixedAmount">折抵金額</option>
+                    <option value="Percent">打折</option>
+                    <option value="Gift">贈品</option>
+                </select>
+                <span asp-validation-for="DiscountType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DiscountValue" class="control-label"></label>
+                <input asp-for="DiscountValue" class="form-control" />
+                <span asp-validation-for="DiscountValue" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-3">
+                <input type="submit" value="新增" class="btn btn-primary mb-2" />
+                <br />
+                <button a asp-action="Index" class="btn btn-light">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
