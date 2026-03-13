@@ -32,9 +32,19 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "描述")]
         public string? Description { get; set; }
 
-        [StringLength(300, ErrorMessage = "圖片網址最多 300 字")]
         [Display(Name = "圖片網址")]
         public string? ImageUrl { get; set; }
+
+        [Display(Name = "折扣開始日期")]
+        [DataType(DataType.Date)]
+        public DateOnly? StartDate { get; set; }
+
+        [Display(Name = "折扣結束日期")]
+        [DataType(DataType.Date)]
+        public DateOnly? EndDate { get; set; }
+
+        // 裁切後的 Base64 圖片資料
+        public string? CroppedImageData { get; set; }
 
         [Display(Name = "建立時間")]
         public DateTime CreatedAt { get; set; }
@@ -42,10 +52,11 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "更新時間")]
         public DateTime? UpdatedAt { get; set; }
 
-        // 套餐包含的餐點明細
+        [Display(Name = "顯示順序")]
+        public int DisplayOrder { get; set; }
+
         public List<SetMealItemViewModel> Items { get; set; } = new();
 
-        // 折扣類型下拉選單
         public List<SelectListItem> DiscountTypeOptions { get; set; } = new()
         {
             new SelectListItem { Value = "percent", Text = "百分比折扣（%）" },
@@ -85,7 +96,6 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "顯示順序")]
         public int DisplayOrder { get; set; } = 1;
 
-        // 餐點下拉選單
         public List<SelectListItem> DishOptions { get; set; } = new();
     }
 }

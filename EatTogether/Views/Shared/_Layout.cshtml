@@ -99,16 +99,16 @@
 
                             <div class="sb-sidenav-menu-heading">菜單管理</div>
 
-                            <a class="nav-link @(inDish ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDish" aria-expanded="@(inDish ? "true" : "false")" aria-controls="collapseDish">
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMenu" aria-expanded="false" aria-controls="collapseMenu">
                                 <div class="sb-nav-link-icon"><i class="fas fa-utensils"></i></div>
-                                菜單管理
+                                菜單維護
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <div class="collapse @(inDish ? "show" : "")" id="collapseDish" aria-labelledby="headingDish" data-bs-parent="#sidenavAccordion">
+                            <div class="collapse" id="collapseMenu" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link @(ctrl == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index">類別</a>
-                                    <a class="nav-link @(ctrl == "Dishes" ? "active" : "")" asp-controller="Dishes" asp-action="Index">餐點</a>
-                                    <a class="nav-link @(ctrl == "SetMeals" ? "active" : "")" asp-controller="SetMeals" asp-action="Index">套餐</a>
+                                    <a class="nav-link" asp-controller="Categories" asp-action="Index">分類管理</a>
+                                    <a class="nav-link" asp-controller="Dishes" asp-action="Index">單點管理</a>
+                                    <a class="nav-link" asp-controller="SetMeals" asp-action="Index">套餐管理</a>
                                 </nav>
                             </div>
 

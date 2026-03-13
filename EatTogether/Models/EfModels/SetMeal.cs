@@ -25,6 +25,10 @@ public partial class SetMeal
 
     public string ImageUrl { get; set; }
 
+    public DateOnly? StartDate { get; set; }
+
+    public DateOnly? EndDate { get; set; }
+
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<SetMealItem> SetMealItems { get; set; } = new List<SetMealItem>();

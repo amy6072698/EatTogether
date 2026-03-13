@@ -1,6 +1,7 @@
-﻿@model IEnumerable<EatTogether.Models.ViewModels.CategoryViewModel>
+@model IEnumerable<EatTogether.Models.ViewModels.CategoryViewModel>
 @{
     ViewData["Title"] = "分類管理";
+    var parentOptions = ViewBag.ParentCategoryOptions as List<SelectListItem>;
 }
 
 <div class="container-fluid px-4">
@@ -13,57 +14,164 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div><i class="fas fa-table me-1"></i>分類列表</div>
-            <a asp-action="Create" class="btn btn-primary btn-sm">
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
                 <i class="fas fa-plus me-1"></i>新增分類
-            </a>
+            </button>
         </div>
         <div class="card-body">
             <div id="alertBox"></div>
-            <table id="categoryTable" class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>分類名稱</th>
-                        <th>上層分類</th>
-                        <th>顯示順序</th>
-                        <th>狀態</th>
-                        <th>建立時間</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+            <div class="table-responsive">
+                <table id="categoryTable" class="table table-bordered table-hover">
+                    <thead class="table-light">
                         <tr>
-                            <td>@item.Id</td>
-                            <td>@item.CategoryName</td>
-                            <td>@(item.ParentCategoryName ?? "—")</td>
-                            <td>@item.DisplayOrder</td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge bg-success">啟用</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">停用</span>
-                                }
-                            </td>
-                            <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id"
-                                   class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit"></i> 編輯
-                                </a>
-                                <button class="btn btn-danger btn-sm"
-                                        onclick="disableCategory(@item.Id)">
-                                    <i class="fas fa-trash"></i> 停用
-                                </button>
-                            </td>
+                            <th>分類名稱</th>
+                            <th>上層分類</th>
+                            <th style="width: 100px;">顯示順序</th>
+                            <th style="width: 80px;">狀態</th>
+                            <th>建立時間</th>
+                            <th class="text-center" style="width: 150px;">操作</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @{
+                            int autoOrder = 1;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.CategoryName</td>
+                                <td>@(item.ParentCategoryName ?? "—")</td>
+                                <td>@(item.DisplayOrder > 0 ? item.DisplayOrder : autoOrder++)</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">啟用</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">停用</span>
+                                    }
+                                </td>
+                                <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal(@item.Id, '@item.CategoryName', '@item.ParentCategoryId', @item.DisplayOrder, @(item.IsActive.ToString().ToLower()))">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="disableCategory(@item.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增分類 Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-bottom">
+                <h5 class="modal-title text-dark" id="createCategoryModalLabel"><i class="fas fa-plus-circle me-2 text-primary"></i>新增分類</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-white">
+                <form id="createCategoryForm">
+                    <div class="mb-3">
+                        <label for="createCategoryName" class="form-label fw-bold">分類名稱 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-light-subtle shadow-sm" id="createCategoryName" required placeholder="例如：中式料理">
+                        <div class="invalid-feedback" id="createCategoryName-error"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="createParentCategoryId" class="form-label fw-bold">上層分類</label>
+                        <select class="form-select border-light-subtle shadow-sm" id="createParentCategoryId">
+                            @if (parentOptions != null)
+                            {
+                                @foreach (var opt in parentOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="createDisplayOrder" class="form-label fw-bold">顯示順序</label>
+                        <input type="number" class="form-control border-light-subtle shadow-sm" id="createDisplayOrder" value="@(Model.Any() ? Model.Max(c => c.DisplayOrder) + 1 : 1)" min="1" max="999">
+                        <div class="invalid-feedback" id="createDisplayOrder-error"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="createIsActive" checked>
+                            <label class="form-check-label fw-bold text-muted" for="createIsActive">立即啟用此分類</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0">
+                <button type="button" class="btn btn-outline-secondary border-0" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="submitCreateCategory()">
+                    確認新增
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 編輯分類 Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-bottom">
+                <h5 class="modal-title text-dark"><i class="fas fa-edit me-2 text-warning"></i>編輯分類</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-white">
+                <form id="editCategoryForm">
+                    <input type="hidden" id="editCategoryId">
+                    <div class="mb-3">
+                        <label for="editCategoryName" class="form-label fw-bold">分類名稱 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-light-subtle shadow-sm" id="editCategoryName" required>
+                        <div class="invalid-feedback" id="editCategoryName-error"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editParentCategoryId" class="form-label fw-bold">上層分類</label>
+                        <select class="form-select border-light-subtle shadow-sm" id="editParentCategoryId">
+                            @if (parentOptions != null)
+                            {
+                                @foreach (var opt in parentOptions)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editDisplayOrder" class="form-label fw-bold">顯示順序</label>
+                        <input type="number" class="form-control border-light-subtle shadow-sm" id="editDisplayOrder" min="1" max="999">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="editIsActive">
+                            <label class="form-check-label fw-bold text-muted" for="editIsActive">啟用中</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0">
+                <button type="button" class="btn btn-outline-secondary border-0" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-warning px-4 shadow-sm" onclick="submitEditCategory()">
+                    儲存變更
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -71,27 +179,105 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
     <script>
-        const dataTable = new simpleDatatables.DataTable("#categoryTable");
+        const dataTable = new simpleDatatables.DataTable("#categoryTable", {
+            searchable: true,
+            fixedHeight: false,
+            perPage: 10,
+            labels: {
+                placeholder: "搜尋...",
+                perPage: "筆記錄 / 頁",
+                noRows: "找不到符合的記錄",
+                info: "顯示第 {start} 至 {end} 筆，共 {rows} 筆記錄",
+            }
+        });
 
-        async function disableCategory(id) {
-            if (!confirm("確定要停用此分類嗎？")) return;
+        async function submitCreateCategory() {
+            const data = {
+                CategoryName:     document.getElementById("createCategoryName").value,
+                ParentCategoryId: document.getElementById("createParentCategoryId").value ? parseInt(document.getElementById("createParentCategoryId").value) : null,
+                DisplayOrder:     parseInt(document.getElementById("createDisplayOrder").value),
+                IsActive:         document.getElementById("createIsActive").checked
+            };
 
-            const res = await fetch(`/Categories/Disable/${id}`, {
-                method: "POST"
+            const res = await fetch("/Categories/Create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
             });
 
             if (res.ok) {
-                showAlert("success", "停用成功");
-                setTimeout(() => location.reload(), 1000);
+                showAlert("success", "新增成功！");
+                bootstrap.Modal.getInstance(document.getElementById('createCategoryModal')).hide();
+                setTimeout(() => location.reload(), 800);
             } else {
-                showAlert("danger", "停用失敗，請稍後再試");
+                const errors = await res.json();
+                handleErrors(errors, "create");
+            }
+        }
+
+        function openEditModal(id, name, parentId, order, active) {
+            document.getElementById("editCategoryId").value = id;
+            document.getElementById("editCategoryName").value = name;
+            document.getElementById("editParentCategoryId").value = parentId || "";
+            document.getElementById("editDisplayOrder").value = order;
+            document.getElementById("editIsActive").checked = active;
+            
+            new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
+        }
+
+        async function submitEditCategory() {
+            const id = document.getElementById("editCategoryId").value;
+            const data = {
+                Id:               parseInt(id),
+                CategoryName:     document.getElementById("editCategoryName").value,
+                ParentCategoryId: document.getElementById("editParentCategoryId").value ? parseInt(document.getElementById("editParentCategoryId").value) : null,
+                DisplayOrder:     parseInt(document.getElementById("editDisplayOrder").value),
+                IsActive:         document.getElementById("editIsActive").checked
+            };
+
+            const res = await fetch(`/Categories/Edit/${id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                showAlert("success", "更新成功！");
+                bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+                setTimeout(() => location.reload(), 800);
+            } else {
+                const errors = await res.json();
+                handleErrors(errors, "edit");
+            }
+        }
+
+        async function disableCategory(id) {
+            if (!confirm("確定要停用此分類嗎？")) return;
+            const res = await fetch(`/Categories/Disable/${id}`, { method: "POST" });
+            if (res.ok) {
+                showAlert("success", "停用成功");
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showAlert("danger", "停用失敗");
+            }
+        }
+
+        function handleErrors(errors, prefix) {
+            document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            for (const key in errors) {
+                const inputId = prefix + key;
+                const input = document.getElementById(inputId);
+                const errorDiv = document.getElementById(inputId + "-error");
+                if (input) input.classList.add('is-invalid');
+                if (errorDiv) errorDiv.textContent = errors[key].join(", ");
             }
         }
 
         function showAlert(type, message) {
             document.getElementById("alertBox").innerHTML = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    ${message}
+                <div class="alert alert-${type} alert-dismissible border-0 shadow-sm fade show" role="alert">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>${message}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>`;
         }
