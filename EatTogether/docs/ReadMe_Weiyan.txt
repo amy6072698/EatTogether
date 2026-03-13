@@ -91,12 +91,12 @@
 			EventDto ToDto(this Event entity)	
 
 
-	[working]modify EventRepository
+	[V]modify EventRepository
 		IEventRepository  interface
 			add void Edit(EventEditDto  dto)
 			add EventEditDto GetEditById(int id)
 
-	[]modify 	EventService
+	[working]modify	EventService
 			void Edit(EventEditDto dto)
 
 	[]modify EventsController
