@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<EatTogether.Models.ViewModels.EventViewModel>
 
 @{
-    ViewData["Title"] = "活動列表";
+    ViewData["Title"] = "活動管理";
 }
 
 
@@ -10,11 +10,11 @@
 
     <style>
         /* 讓 DataTables 的長度選擇器與我們的篩選按鈕排在同一行 */
-        .dataTables_length {
+        .dataTables_filter {
             display: flex !important;
             align-items: center;
             gap: 15px; /* 設定間距 */
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         /* 讓篩選按鈕不要跟文字擠在一起 */
@@ -27,138 +27,157 @@
 }
 
 <div class="container-fluid mt-4" style="max-width: 90%;">
-    <h1>活動列表</h1>
-    <p>
-        <a asp-action="Create">Create New</a>
-    </p>
-    <div id="filter-container" class="d-inline-block ms-3">
-        <strong>篩選狀態：</strong>
-        <button type="button" class="btn btn-sm btn-outline-dark filter-btn" data-status="">全部</button> |
-        <button type="button" class="btn btn-sm btn-outline-success filter-btn" data-status="進行中">進行中</button> |
-        <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" data-status="未開始">未開始</button> |
-        <button type="button" class="btn btn-sm btn-outline-danger filter-btn" data-status="已結束">已結束</button>
-    </div>
-    <table class="table w-100" id="indexList">
-        <thead>
-            <tr>
-                @* <th>
+    <h1>活動管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">活動管理</li>
+    </ol>
+    
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-dark">
+                <i class="bi bi-table me-2"></i>活動列表
+            </h5>
+            <a asp-action="Create" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> 新增活動
+            </a>
+        </div>
+        <div class="card-body">
+            <div id="filter-container" class="d-inline-block me-5">
+                <strong>篩選：</strong>
+                <button type="button" class="btn btn-sm btn-outline-dark filter-btn" data-status="">全部</button> |
+                <button type="button" class="btn btn-sm btn-outline-success filter-btn" data-status="進行中">進行中</button> |
+                <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" data-status="未開始">未開始</button> |
+                <button type="button" class="btn btn-sm btn-outline-danger filter-btn" data-status="已結束">已結束</button>
+            </div>
+            <table class="table w-100" id="indexList">
+                <thead class="bg-light">
+                    <tr>
+                        @* <th>
                     @Html.DisplayNameFor(model => model.Id)
                 </th> *@
-                <th>
-                    @Html.DisplayNameFor(model => model.Title)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Summary)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.MinSpend)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.StartDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.EndDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.RewardItem)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DiscountType)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DiscountValue)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Status)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-    @foreach (var item in Model) {
-            <tr>
-                @* <td>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Title)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Summary)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.MinSpend)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.StartDate)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.EndDate)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.RewardItem)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.DiscountType)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.DiscountValue)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Status)
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            @* <td>
                     @Html.DisplayFor(modelItem => item.Id)
                 </td> *@
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Summary)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MinSpend)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StartDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EndDate)
-                </td>
-                <td>
-                    @{
-                        // 如果類別不是 Gift，或是 Gift 但內容是空的，就顯示 "-"
-                        string rewardDisplay = (item.DiscountType == "Gift" && !string.IsNullOrEmpty(item.RewardItem))
-                        ? item.RewardItem
-                        : "-";
-                    }
-                    @rewardDisplay
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Title)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Summary)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MinSpend)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.StartDate)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.EndDate)
+                            </td>
+                            <td>
+                                @{
+                                    // 如果類別不是 Gift，或是 Gift 但內容是空的，就顯示 "-"
+                                    string rewardDisplay = (item.DiscountType == "Gift" && !string.IsNullOrEmpty(item.RewardItem))
+                                    ? item.RewardItem
+                                    : "-";
+                                }
+                                @rewardDisplay
 
-                </td>
-                <td>
-                    @{
-                        string discountTypeDisplay = item.DiscountType switch
-                        {
-                            "FixedAmount" => "折抵金額",
-                            "Percent" => "打折",
-                            "Gift" => "贈品"
-                        };
-                            @discountTypeDisplay
-                    }
-                </td>
-                <td>
+                            </td>
+                            <td>
+                                @{
+                                    string discountTypeDisplay = item.DiscountType switch
+                                    {
+                                        "FixedAmount" => "折抵金額",
+                                        "Percent" => "打折",
+                                        "Gift" => "贈品"
+                                    };
+                                    @discountTypeDisplay
+                                }
+                            </td>
+                            <td>
 
-                    @{
-                        string discountDisplay = "";
-                        if (item.DiscountType == "Percent")
-                        {
-                            var percent = (item.DiscountValue * 100).ToString("0");
-                            discountDisplay = $"{percent} 折";
-                        }
-                        else
-                        {
-                            discountDisplay = item.DiscountValue.ToString("0");
-                        }
-                    }
-                    @discountDisplay
+                                @{
+                                    string discountDisplay = "";
+                                    if (item.DiscountType == "Percent")
+                                    {
+                                        var percent = (item.DiscountValue * 100).ToString("0");
+                                        discountDisplay = $"{percent} 折";
+                                    }
+                                    else
+                                    {
+                                        discountDisplay = item.DiscountValue.ToString("0");
+                                    }
+                                }
+                                @discountDisplay
 
-                </td>
-                <td>
-                    @{
-                        string statusName = item.Status switch
-                        {
-                            0 => "未開始",
-                            1 => "進行中",
-                            2 => "已結束"
-                        };
-                        string badgeClass = item.Status switch
-                        {
-                            0 => "bg-secondary",
-                            1 => "bg-success",
-                            2 => "bg-danger"
-                        };
+                            </td>
+                            <td>
+                                @{
+                                    string statusName = item.Status switch
+                                    {
+                                        0 => "未開始",
+                                        1 => "進行中",
+                                        2 => "已結束"
+                                    };
+                                    string badgeClass = item.Status switch
+                                    {
+                                        0 => "bg-secondary",
+                                        1 => "bg-success",
+                                        2 => "bg-danger"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@statusName</span>
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> 編輯
+                                </a>
+                            </td>
+                        </tr>
                     }
-                    <span class="badge @badgeClass">@statusName</span>
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
-                        <i class="bi bi-pencil"></i> 編輯
-                    </a>
-                </td>
-            </tr>
-    }
-        </tbody>
-    </table>
+                </tbody>
+            </table>
+            
+        </div>  
+
+
+
 </div>
 
 
@@ -179,7 +198,7 @@
                 //將篩選狀態標籤移進dataTables格式裡
                 "retrieve": true,
                 "initComplete": function(settings, json) {
-                $("#filter-container").appendTo($(".dataTables_length"));
+                   $("#filter-container").prependTo($(".dataTables_filter"));
                 }
             });
 

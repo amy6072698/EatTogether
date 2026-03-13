@@ -1,15 +1,13 @@
-﻿using EatTogether.Models.EfModels;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
 {
-	public class EventCreateViewModel
+	public class EventEditViewModel
 	{
+		public int Id { get; set; }
 
-		//public int Id { get; set; }
-
-		[Display(Name ="標題")]
-		[Required(ErrorMessage ="{0}必填")]
+		[Display(Name = "標題")]
+		[Required(ErrorMessage = "{0}必填")]
 		[StringLength(100)]
 		public string Title { get; set; }
 
@@ -27,7 +25,6 @@ namespace EatTogether.Models.ViewModels
 		[Required(ErrorMessage = "{0}必填")]
 		[DataType(DataType.Date)]
 		public DateTime StartDate { get; set; }
-
 
 		private DateTime _endDate;
 		[Display(Name = "結束日期")]
@@ -65,6 +62,5 @@ namespace EatTogether.Models.ViewModels
 			if (EndDate.Date < StartDate.Date)
 				yield return new ValidationResult("結束日期不能早於開始日期", new[] { nameof(EndDate) });
 		}
-
 	}
 }

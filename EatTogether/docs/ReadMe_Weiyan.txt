@@ -71,8 +71,8 @@
 	
 
 
-[]add 活動編輯 url: /Events/Edit?eventsId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+[working]add 活動編輯 url: /Events/Edit?eventsId=00
+	[working]add ViewModel, Dto , VM轉Dto的擴充方法
 		EventEditViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 

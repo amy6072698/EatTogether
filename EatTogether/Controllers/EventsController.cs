@@ -31,7 +31,7 @@ namespace EatTogether.Controllers
 				return View(vm);
 			}
 
-			var dto = vm.ToDto();
+			var dto = vm.ToEditDto();
 			_service.Create(dto);
 			return View(vm);
 		}
