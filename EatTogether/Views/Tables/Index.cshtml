@@ -97,11 +97,11 @@
 
     <!-- 桌位磚塊 -->
     <div id="alertBox"></div>
-    <div class="row g-3" id="tileGrid">
+    <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 g-3" id="tileGrid">
         @foreach (var table in Model)
         {
             var borderColor = table.Status == 0 ? "success" : table.Status == 1 ? "warning" : "secondary";
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 table-tile"
+            <div class="col table-tile"
                  data-status="@table.Status" data-seats="@table.SeatCount">
                 <div class="card h-100 border-@borderColor" style="border-top: 4px solid;">
                     <div class="card-body text-center p-3 d-flex flex-column">
