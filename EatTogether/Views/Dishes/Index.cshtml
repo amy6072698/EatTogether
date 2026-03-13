@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EatTogether.Models.ViewModels.DishViewModel>
+@model IEnumerable<EatTogether.Models.ViewModels.DishViewModel>
 @{
     ViewData["Title"] = "餐點管理";
 }
@@ -12,94 +12,166 @@
 
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-table me-1"></i>餐點列表</div>
-            <a asp-action="Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i>新增餐點
-            </a>
+            <div><i class="fas fa-utensils me-1"></i>餐點列表</div>
+            <div class="d-flex gap-2 align-items-center">
+                <select id="categoryFilter" class="form-select form-select-sm" style="width:150px"
+                        onchange="filterCards()">
+                    <option value="">所有分類</option>
+                    @foreach (var cat in Model.Select(d => d.CategoryName).Distinct())
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+                <input type="text" id="searchInput" class="form-control form-control-sm"
+                       placeholder="搜尋餐點..." style="width:180px" oninput="filterCards()" />
+                <a asp-action="Create" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>新增餐點
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div id="alertBox"></div>
-            <table id="dishTable" class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>餐點名稱</th>
-                        <th>分類</th>
-                        <th>價格</th>
-                        <th>可外帶</th>
-                        <th>限定供應</th>
-                        <th>狀態</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.Id</td>
-                            <td>@item.DishName</td>
-                            <td>@item.CategoryName</td>
-                            <td>$@item.Price</td>
-                            <td>
-                                @if (item.IsTakeOut)
+
+            <!-- 卡片容器 -->
+            <div class="row g-3" id="dishCardContainer">
+                @foreach (var item in Model)
+                {
+                    <div class="col-6 col-md-4 col-lg-3 dish-card"
+                         data-category="@item.CategoryName"
+                         data-name="@item.DishName.ToLower()">
+                        <div class="card h-100 shadow-sm">
+                            <div style="position:relative; padding-top:75%; overflow:hidden; background:#f8f9fa;">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
                                 {
-                                    <span class="badge bg-success">是</span>
+                                    <img src="@item.ImageUrl"
+                                          style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;"
+                                          alt="@item.DishName"
+                                          onerror="this.src='/images/no-image.png'" />
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">否</span>
+                                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center;" class="text-muted">
+                                        <i class="fas fa-image fa-3x"></i>
+                                    </div>
+
                                 }
-                            </td>
-                            <td>
-                                @if (item.IsLimited)
-                                {
-                                    <span class="badge bg-warning text-dark">限定</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">否</span>
-                                }
-                            </td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge bg-success">啟用</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">停用</span>
-                                }
-                            </td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id"
-                                   class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit"></i> 編輯
-                                </a>
-                                <button class="btn btn-danger btn-sm"
-                                        onclick="disableDish(@item.Id)">
-                                    <i class="fas fa-trash"></i> 停用
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1 fw-bold text-truncate" title="@item.DishName">
+                                    @item.DishName
+                                </h6>
+                                <div class="text-muted small mb-1">@item.CategoryName</div>
+                                <div class="fw-bold text-danger mb-2">$@item.Price</div>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">啟用</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">停用</span>
+                                    }
+                                    @if (item.IsTakeOut)
+                                    {
+                                        <span class="badge bg-info text-dark">可外帶</span>
+                                    }
+                                    @if (item.IsLimited)
+                                    {
+                                        <span class="badge bg-warning text-dark">限定</span>
+                                    }
+                                </div>
+                                <div class="d-flex gap-1">
+                                    <a asp-action="Edit" asp-route-id="@item.Id"
+                                       class="btn btn-warning btn-sm flex-fill">
+                                        <i class="fas fa-edit"></i> 編輯
+                                    </a>
+                                    <button class="btn btn-danger btn-sm flex-fill"
+                                            onclick="disableDish(@item.Id)">
+                                        <i class="fas fa-trash"></i> 停用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-utensils fa-3x mb-3"></i>
+                    <p>目前沒有餐點資料</p>
+                </div>
+            }
+
+            <!-- 分頁 -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted small" id="pageInfo"></div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
+                </nav>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
     <script>
-        const dataTable = new simpleDatatables.DataTable("#dishTable");
+        const PAGE_SIZE = 12;
+        let currentPage = 1;
+        let filteredCards = [];
+
+        function filterCards() {
+            const category = document.getElementById("categoryFilter").value;
+            const search   = document.getElementById("searchInput").value.toLowerCase();
+
+            filteredCards = Array.from(document.querySelectorAll(".dish-card")).filter(card => {
+                const matchCategory = !category || card.dataset.category === category;
+                const matchSearch   = !search   || card.dataset.name.includes(search);
+                return matchCategory && matchSearch;
+            });
+
+            currentPage = 1;
+            renderPage();
+        }
+
+        function renderPage() {
+            const allCards = Array.from(document.querySelectorAll(".dish-card"));
+
+            // 先全部隱藏
+            allCards.forEach(c => c.style.display = "none");
+
+            // 顯示當頁
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const end   = start + PAGE_SIZE;
+            filteredCards.slice(start, end).forEach(c => c.style.display = "");
+
+            // 更新頁碼資訊
+            const total = filteredCards.length;
+            const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+            document.getElementById("pageInfo").textContent =
+                `顯示 ${Math.min(start + 1, total)}–${Math.min(end, total)} 筆，共 ${total} 筆`;
+
+            // 產生分頁按鈕
+            const pagination = document.getElementById("pagination");
+            pagination.innerHTML = "";
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === currentPage ? "active" : ""}`;
+                li.innerHTML = `<button class="page-link" onclick="goToPage(${i})">${i}</button>`;
+                pagination.appendChild(li);
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderPage();
+        }
 
         async function disableDish(id) {
             if (!confirm("確定要停用此餐點嗎？")) return;
-
-            const res = await fetch(`/Dishes/Disable/${id}`, {
-                method: "POST"
-            });
-
+            const res = await fetch(`/Dishes/Disable/${id}`, { method: "POST" });
             if (res.ok) {
                 showAlert("success", "停用成功");
                 setTimeout(() => location.reload(), 1000);
@@ -115,5 +187,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>`;
         }
+
+        // 初始化
+        filteredCards = Array.from(document.querySelectorAll(".dish-card"));
+        renderPage();
     </script>
 }

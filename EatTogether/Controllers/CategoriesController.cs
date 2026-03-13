@@ -31,8 +31,7 @@ namespace EatTogether.Controllers
 		}
 
 		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task <IActionResult> Create(CategoryViewModel vm)
+		public async Task <IActionResult> Create([FromBody] CategoryViewModel vm)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -54,8 +53,7 @@ namespace EatTogether.Controllers
 		}
 
 		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, CategoryViewModel vm)
+		public async Task<IActionResult> Edit(int id, [FromBody] CategoryViewModel vm)
 		{
 			if (id != vm.Id) return BadRequest();
 			if (!ModelState.IsValid)
