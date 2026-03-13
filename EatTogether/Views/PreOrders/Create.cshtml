@@ -1,0 +1,351 @@
+﻿@model EatTogether.Models.ViewModels.CreatePreOrderViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: #f5f0eb;
+    }
+
+    .order-wrap {
+        max-width: 860px;
+        margin: 40px auto;
+        padding: 0 16px 60px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+
+    .page-sub {
+        color: #888;
+        margin-bottom: 32px;
+        font-size: 0.95rem;
+    }
+
+    /* ── 內用/外帶 ── */
+    .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .toggle-wrap {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .toggle-btn {
+        flex: 1;
+        padding: 14px;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 1rem;
+        font-family: inherit;
+        font-weight: 500;
+        color: #555;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+        .toggle-btn.active {
+            border-color: #c0392b;
+            background: #fff5f5;
+            color: #c0392b;
+            font-weight: 700;
+        }
+
+    /* ── 桌號 ── */
+    .table-input {
+        display: none;
+        margin-bottom: 24px;
+    }
+
+        .table-input.show {
+            display: block;
+        }
+
+    .form-select, .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #fff;
+        color: #333;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #c0392b;
+        }
+
+    /* ── 菜單 ── */
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .menu-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        border: 2px solid #eee;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .menu-card:hover {
+            border-color: #c0392b;
+            box-shadow: 0 4px 16px rgba(192,57,43,0.08);
+        }
+
+        .menu-card.selected {
+            border-color: #c0392b;
+            background: #fff5f5;
+        }
+
+    .menu-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+    }
+
+    .menu-price {
+        color: #c0392b;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 14px;
+    }
+
+    .qty-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        background: #fff;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555;
+        transition: all 0.15s;
+        line-height: 1;
+    }
+
+        .qty-btn:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+    .qty-input {
+        width: 44px;
+        text-align: center;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        padding: 4px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        outline: none;
+    }
+
+        .qty-input:focus {
+            border-color: #c0392b;
+        }
+
+    /* ── 備註 ── */
+    .note-wrap {
+        margin-bottom: 32px;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* ── 送出 ── */
+    .btn-next {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        background: #c0392b;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.2s;
+        letter-spacing: 0.05em;
+    }
+
+        .btn-next:hover {
+            background: #a93226;
+        }
+
+    .alert-danger {
+        background: #fff5f5;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="order-wrap">
+    <div class="page-title">🍽️ 點餐</div>
+    <div class="page-sub">請選擇用餐方式並挑選餐點</div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-danger">@TempData["Error"]</div>
+    }
+
+    <form asp-action="Confirm" method="post" id="orderForm">
+        @Html.AntiForgeryToken()
+
+        <!-- 內用 / 外帶 -->
+        <div class="section-title">用餐方式</div>
+        <div class="toggle-wrap">
+            <button type="button" class="toggle-btn active" id="btn-dine-in"
+                    onclick="setInOrOut(true)">
+                🪑 內用
+            </button>
+            <button type="button" class="toggle-btn" id="btn-take-out"
+                    onclick="setInOrOut(false)">
+                🥡 外帶
+            </button>
+        </div>
+        <input type="hidden" name="InOrOut" id="inOrOutInput" value="true" />
+
+        <!-- 桌號（內用才顯示） -->
+        <div class="table-input show" id="tableInput">
+            <div class="section-title">選擇桌號</div>
+            <select name="TableId" id="tableSelect" class="form-select">
+                <option value="">-- 請選擇桌號 --</option>
+                @foreach (var t in Model.TableOptions)
+                {
+                    <option value="@t.Value">@t.Text</option>
+                }
+            </select>
+            <div id="tableError" style="display:none; color:#c0392b; font-size:0.88rem; margin-top:6px;">⚠️ 桌號為必填，請選擇桌號</div>
+        </div>
+
+        <!-- 菜單 -->
+        <div class="section-title">選擇餐點</div>
+        <div class="menu-grid">
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                <div class="menu-card" id="card-@i">
+                    <input type="hidden" name="Items[@i].ProductId" value="@Model.Items[i].ProductId" />
+                    <input type="hidden" name="Items[@i].ProductName" value="@Model.Items[i].ProductName" />
+                    <input type="hidden" name="Items[@i].UnitPrice" value="@Model.Items[i].UnitPrice" />
+
+                    <div class="menu-name">@Model.Items[i].ProductName</div>
+                    <div class="menu-price">NT$ @Model.Items[i].UnitPrice</div>
+                    <div class="qty-wrap">
+                        <button type="button" class="qty-btn" onclick="changeQty(@i, -1)">−</button>
+                        <input type="number" class="qty-input" id="qty-@i"
+                               name="Items[@i].Qty" value="0" min="0"
+                               onchange="updateCard(@i)" />
+                        <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- 備註 -->
+        <div class="note-wrap">
+            <div class="section-title">備註</div>
+            <textarea class="form-control" name="Note" placeholder="有什麼特殊需求嗎？（可不填）"></textarea>
+        </div>
+
+        <button type="submit" class="btn-next">下一步 →</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('orderForm').addEventListener('submit', function (e) {
+        const isIn = document.getElementById('inOrOutInput').value === 'true';
+        const tableVal = document.getElementById('tableSelect').value;
+        const errorDiv = document.getElementById('tableError');
+        const tableSelect = document.getElementById('tableSelect');
+
+        if (isIn && !tableVal) {
+            e.preventDefault();
+            errorDiv.style.display = 'block';
+            tableSelect.style.borderColor = '#c0392b';
+            document.getElementById('tableInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tableSelect.focus();
+        } else {
+            errorDiv.style.display = 'none';
+            tableSelect.style.borderColor = '';
+        }
+    });
+
+    document.getElementById('tableSelect').addEventListener('change', function () {
+        if (this.value) {
+            document.getElementById('tableError').style.display = 'none';
+            this.style.borderColor = '';
+        }
+    });
+
+    function setInOrOut(isIn) {
+        document.getElementById('inOrOutInput').value = isIn ? "true" : "false";
+        document.getElementById('tableInput').classList.toggle('show', isIn);
+        document.getElementById('btn-dine-in').classList.toggle('active', isIn);
+        document.getElementById('btn-take-out').classList.toggle('active', !isIn);
+        if (!isIn) {
+            document.getElementById('tableError').style.display = 'none';
+            document.getElementById('tableSelect').style.borderColor = '';
+        }
+    }
+
+    function changeQty(idx, delta) {
+        const input = document.getElementById('qty-' + idx);
+        const newVal = Math.max(0, parseInt(input.value || 0) + delta);
+        input.value = newVal;
+        updateCard(idx);
+    }
+
+    function updateCard(idx) {
+        const qty = parseInt(document.getElementById('qty-' + idx).value || 0);
+        document.getElementById('card-' + idx).classList.toggle('selected', qty > 0);
+    }
+</script>
+
