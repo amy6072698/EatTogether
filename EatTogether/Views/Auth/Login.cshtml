@@ -1,0 +1,309 @@
+﻿@{
+    ViewData["Title"] = "登入";
+    ViewData["HideNav"] = true;
+    ViewData["BodyClass"] = "auth-page";
+}
+
+
+<div class="auth-wrapper" data-auth-page="login">
+
+    <!-- ========== Demo 帳號選擇區塊（正式版移除）========== -->
+    <div class="demo-panel">
+        <div class="demo-badge">⚠ Demo Only</div>
+        <div class="demo-panel-title">帳號選擇（演示用）</div>
+        <div class="demo-panel-subtitle">點擊角色可自動填入帳號密碼</div>
+
+        <button class="demo-role-btn"
+                data-account="manager01"
+                data-password="manager01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-crown" style="color:#e8722a;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">店長</span>
+                <span class="demo-role-account">manager01</span>
+            </div>
+        </button>
+
+        <button class="demo-role-btn"
+                data-account="vmanager01"
+                data-password="vmanager01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-user-tie" style="color:#7eb3e0;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">副店長</span>
+                <span class="demo-role-account">vmanager01</span>
+            </div>
+        </button>
+
+        <button class="demo-role-btn"
+                data-account="cashier01"
+                data-password="cashier01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-cash-register" style="color:#2e9e6b;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">收銀員</span>
+                <span class="demo-role-account">cashier01</span>
+            </div>
+        </button>
+
+        <button class="demo-role-btn"
+                data-account="waiter01"
+                data-password="waiter01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-bell-concierge" style="color:#e8b42a;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">外場服務生</span>
+                <span class="demo-role-account">waiter01</span>
+            </div>
+        </button>
+
+        <button class="demo-role-btn"
+                data-account="chef01"
+                data-password="chef01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-hat-chef" style="color:#a0a0e0;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">內場廚師</span>
+                <span class="demo-role-account">chef01</span>
+            </div>
+        </button>
+
+        <button class="demo-role-btn"
+                data-account="parttime01"
+                data-password="parttime01">
+            <div class="demo-role-icon">
+                <i class="fa-solid fa-person" style="color:#e08080;"></i>
+            </div>
+            <div class="demo-role-info">
+                <span class="demo-role-name">工讀生</span>
+                <span class="demo-role-account">parttime01</span>
+            </div>
+        </button>
+    </div>
+    <!-- ========== END Demo 區塊 ========== -->
+    <!-- ========== 登入卡片 ========== -->
+    <div class="auth-card">
+
+        <!-- Logo -->
+        <div class="auth-logo">
+            <img src="~/images/logo-full-light.svg" alt="義起吃 EatTogether" class="auth-logo-img">
+            <span class="auth-logo-sub">後台管理系統</span>
+        </div>
+
+        <!-- 警示訊息 -->
+        <div class="auth-alert danger" id="auth-alert" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span class="alert-msg"></span>
+        </div>
+
+        <!-- 登入表單 -->
+        <form id="login-form" novalidate autocomplete="off">
+
+            <!-- 帳號 -->
+            <div class="auth-form-group">
+                <label class="auth-label" for="account">帳號</label>
+                <input type="text"
+                       class="auth-input"
+                       id="account"
+                       name="account"
+                       placeholder="請輸入帳號"
+                       autocomplete="username"
+                       maxlength="50" />
+                <div class="auth-input-error" id="account-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- 密碼 -->
+            <div class="auth-form-group">
+                <label class="auth-label" for="password">密碼</label>
+                <div class="auth-input-wrap">
+                    <input type="password"
+                           class="auth-input"
+                           id="password"
+                           name="password"
+                           placeholder="請輸入密碼"
+                           autocomplete="current-password"
+                           maxlength="100" />
+                    <button type="button" class="toggle-password" data-target="password" aria-label="切換密碼顯示">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div class="auth-input-error" id="password-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- 登入按鈕 -->
+            <button type="submit" class="btn-auth-primary" id="login-btn">
+                登入
+            </button>
+
+        </form>
+
+        <!-- 忘記密碼 -->
+        <button type="button" class="auth-forgot-link" id="forgot-password-link"
+                data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+            <i class="fa-regular fa-circle-question me-1"></i>忘記密碼？
+        </button>
+
+    </div>
+    <!-- ========== END 登入卡片 ========== -->
+
+</div>
+
+<!-- ========== 忘記密碼 Modal ========== -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1"
+     aria-labelledby="forgotPasswordModalLabel" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="forgotPasswordModalLabel">
+                    <i class="fa-solid fa-key me-2 text-warning"></i>忘記密碼
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+
+            <div class="modal-body pt-2">
+                <p class="text-muted small mb-3">
+                    輸入帳號綁定的 Email，系統將寄送密碼重設連結至您的信箱
+                </p>
+
+                <!-- 錯誤訊息 -->
+                <div class="auth-alert danger mb-3" id="forgot-alert" role="alert">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span class="alert-msg"></span>
+                </div>
+
+                <form id="forgot-password-form" novalidate autocomplete="off">
+                    <div class="auth-form-group">
+                        <label class="auth-label" for="forgot-email">Email</label>
+                        <input type="email"
+                               class="auth-input"
+                               id="forgot-email"
+                               name="email"
+                               placeholder="請輸入帳號綁定的 Email"
+                               autocomplete="email"
+                               maxlength="100" />
+                        <div class="auth-input-error" id="forgot-email-error">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        id="forgot-cancel-btn">
+                    取消
+                </button>
+                <button type="button" class="btn btn-warning text-dark fw-semibold"
+                        id="forgot-submit-btn">
+                    送出
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- ========== END 忘記密碼 Modal ========== -->
+
+<!-- ========== 強制改密碼 Modal ========== -->
+<div class="modal fade" id="forceChangePasswordModal" tabindex="-1"
+     aria-labelledby="forceChangePasswordModalLabel" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="forceChangePasswordModalLabel">
+                    <i class="fa-solid fa-lock me-2 text-warning"></i>請設定新密碼
+                </h5>
+            </div>
+
+            <div class="modal-body pt-2">
+                <p class="text-muted small mb-3">
+                    為保護帳號安全，請重設新密碼，才能繼續使用系統
+                </p>
+
+                <!-- 錯誤訊息 -->
+                <div class="auth-alert danger mb-3" id="force-change-alert" role="alert">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span class="alert-msg"></span>
+                </div>
+
+                <!-- 新密碼 -->
+                <div class="auth-form-group">
+                    <label class="auth-label" for="force-new-password">新密碼</label>
+                    <div class="auth-input-wrap">
+                        <input type="password"
+                               class="auth-input"
+                               id="force-new-password"
+                               placeholder="請輸入新密碼"
+                               autocomplete="new-password"
+                               maxlength="100" />
+                        <button type="button" class="toggle-password" data-target="force-new-password" aria-label="切換密碼顯示">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="auth-input-error" id="force-new-password-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span></span>
+                    </div>
+                    <!-- 密碼規則提示 -->
+                    <p class="text-muted small mt-1 mb-0">密碼須至少 6 個字元，並包含英文字母與數字</p>
+                </div>
+
+                <!-- 確認密碼 -->
+                <div class="auth-form-group">
+                    <label class="auth-label" for="force-confirm-password">確認密碼</label>
+                    <div class="auth-input-wrap">
+                        <input type="password"
+                               class="auth-input"
+                               id="force-confirm-password"
+                               placeholder="請再次輸入新密碼"
+                               autocomplete="new-password"
+                               maxlength="100" />
+                        <button type="button" class="toggle-password" data-target="force-confirm-password" aria-label="切換密碼顯示">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="auth-input-error" id="force-confirm-password-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-warning text-dark fw-semibold w-100"
+                        id="force-change-btn">
+                    確定重設
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- ========== END 強制改密碼 Modal ========== -->
+
+@section Styles
+{
+        <link rel="stylesheet" href="~/css/views/auth.css">
+}
+
+@section Scripts
+{
+        <script src="~/js/views/auth.js"></script>
+}
+

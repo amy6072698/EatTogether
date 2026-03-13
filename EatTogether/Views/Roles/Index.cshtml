@@ -1,0 +1,1025 @@
+@{
+    ViewData["Title"] = "角色與權限管理";
+}
+
+<div class="container-fluid px-4 roles-index">
+
+    <!-- 頁面標題列 -->
+    <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
+        <div>
+            <h1 class="page-header-title">角色與權限管理</h1>
+            <p class="page-header-subtitle">管理餐廳人員權限</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button id="btn-open-overview" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-table-cells me-1"></i>查看總覽
+            </button>
+            @* TODO（後端連線後）：依 Staff_Manage 權限決定是否渲染此按鈕 *@
+            <button id="btn-open-create" class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-plus me-1"></i>新增角色
+            </button>
+        </div>
+    </div>
+
+    <!-- 角色資料表格 -->
+    <div class="card">
+        <div class="card-body">
+            <table id="roles-table" class="table table-bordered table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>角色名稱</th>
+                        <th>角色描述</th>
+                        <th>已擁有的權限</th>
+                        <th class="text-center">員工數</th>
+                        <th class="text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*
+                        TODO（後端連線後）：替換為 @foreach (var role in Model) { ... }
+                        每列 <tr> 需包含以下 data 屬性：
+                        data-id, data-name, data-description,
+                        data-is-default（true = 系統預設角色，不可刪除）,
+                        data-functions（逗號分隔的 FunctionName 識別碼清單）,
+                        data-employee-ids（逗號分隔的員工 Id 清單）
+                    *@
+
+                    <!-- Demo 資料 — 後端連線後移除 -->
+
+                    <!-- 店長 -->
+                    <tr data-id="1"
+                        data-name="店長"
+                        data-description="最高權限，可使用所有後台功能"
+                        data-is-default="true"
+                        data-functions="Staff_Manage,Staff_View,Member_Manage,Order_Manage,Order_Update,Menu_Manage,Reservation_Manage,Table_Manage,Coupon_Manage,Event_Manage,Article_Manage,Report_Manage,Notification_Manage"
+                        data-employee-ids="1">
+                        <td>店長</td>
+                        <td>最高權限，可使用所有後台功能</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">員工管理</span>
+                                <span class="perm-badge">員工查看</span>
+                                <span class="perm-badge">會員管理</span>
+                                <span class="perm-badge">訂單管理（含結帳）</span>
+                                <span class="perm-badge">更新訂單狀態</span>
+                                <span class="perm-badge">菜單管理</span>
+                                <span class="perm-badge">訂位管理</span>
+                                <span class="perm-badge">桌位設定</span>
+                                <span class="perm-badge">優惠券管理</span>
+                                <span class="perm-badge">活動管理</span>
+                                <span class="perm-badge">文章管理</span>
+                                <span class="perm-badge">報表管理</span>
+                                <span class="perm-badge">通知管理</span>
+                            </div>
+                        </td>
+                        <td class="text-center">1</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="1" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="1" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 副店長 -->
+                    <tr data-id="2"
+                        data-name="副店長"
+                        data-description="協助店長管理，可使用大部分後台功能"
+                        data-is-default="true"
+                        data-functions="Staff_View,Member_Manage,Order_Manage,Order_Update,Menu_Manage,Reservation_Manage,Table_Manage,Coupon_Manage,Event_Manage,Article_Manage,Notification_Manage"
+                        data-employee-ids="2">
+                        <td>副店長</td>
+                        <td>協助店長管理，可使用大部分後台功能</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">員工查看</span>
+                                <span class="perm-badge">會員管理</span>
+                                <span class="perm-badge">訂單管理（含結帳）</span>
+                                <span class="perm-badge">更新訂單狀態</span>
+                                <span class="perm-badge">菜單管理</span>
+                                <span class="perm-badge">訂位管理</span>
+                                <span class="perm-badge">桌位設定</span>
+                                <span class="perm-badge">優惠券管理</span>
+                                <span class="perm-badge">活動管理</span>
+                                <span class="perm-badge">文章管理</span>
+                                <span class="perm-badge">通知管理</span>
+                            </div>
+                        </td>
+                        <td class="text-center">1</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="2" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="2" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 收銀員 -->
+                    <tr data-id="3"
+                        data-name="收銀員"
+                        data-description="負責結帳，可核驗優惠券及查看會員"
+                        data-is-default="true"
+                        data-functions="Member_Manage,Order_Manage"
+                        data-employee-ids="3">
+                        <td>收銀員</td>
+                        <td>負責結帳，可核驗優惠券及查看會員</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">會員管理</span>
+                                <span class="perm-badge">訂單管理（含結帳）</span>
+                            </div>
+                        </td>
+                        <td class="text-center">2</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="3" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="3" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 外場服務生 -->
+                    <tr data-id="4"
+                        data-name="外場服務生"
+                        data-description="負責外場服務，可處理訂位及更新訂單狀態"
+                        data-is-default="true"
+                        data-functions="Order_Update,Reservation_Manage"
+                        data-employee-ids="4">
+                        <td>外場服務生</td>
+                        <td>負責外場服務，可處理訂位及更新訂單狀態</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">更新訂單狀態</span>
+                                <span class="perm-badge">訂位管理</span>
+                            </div>
+                        </td>
+                        <td class="text-center">2</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="4" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="4" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 內場廚師 -->
+                    <tr data-id="5"
+                        data-name="內場廚師"
+                        data-description="負責備餐，可查看並更新訂單狀態"
+                        data-is-default="true"
+                        data-functions="Order_Update"
+                        data-employee-ids="5">
+                        <td>內場廚師</td>
+                        <td>負責備餐，可查看並更新訂單狀態</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">更新訂單狀態</span>
+                            </div>
+                        </td>
+                        <td class="text-center">2</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="5" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="5" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 工讀生 -->
+                    <tr data-id="6"
+                        data-name="工讀生"
+                        data-description="基層人員，僅可更新訂單狀態"
+                        data-is-default="true"
+                        data-functions="Order_Update"
+                        data-employee-ids="6">
+                        <td>工讀生</td>
+                        <td>基層人員，僅可更新訂單狀態</td>
+                        <td>
+                            <div class="perm-badge-group">
+                                <span class="perm-badge">更新訂單狀態</span>
+                            </div>
+                        </td>
+                        <td class="text-center">3</td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
+                                        data-id="6" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
+                                        data-id="6" title="刪除">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- /Demo 資料 -->
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     權限總覽 Modal（唯讀矩陣）
+     ============================================================ -->
+<div class="modal fade" id="modal-overview" tabindex="-1" aria-labelledby="modal-overview-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-overview-label">
+                    <i class="fa-solid fa-table-cells me-2 text-primary"></i>權限總覽
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm overview-matrix roles-index">
+                        <thead>
+                            <tr>
+                                <th class="perm-col-label">權限</th>
+                                <th class="text-center">店長</th>
+                                <th class="text-center">副店長</th>
+                                <th class="text-center">收銀員</th>
+                                <th class="text-center">外場服務生</th>
+                                <th class="text-center">內場廚師</th>
+                                <th class="text-center">工讀生</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="perm-col-label">員工管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">員工查看</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">會員管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">訂單管理（含結帳）</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">更新訂單狀態</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">菜單管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">訂位管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">桌位設定</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">優惠券管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">活動管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">文章管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">報表管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                            <tr>
+                                <td class="perm-col-label">通知管理</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-check">✓</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                                <td class="text-center matrix-dash">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mt-2 mb-0">
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    此矩陣為唯讀總覽，如需修改請至各角色的「編輯」操作。
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     新增角色 Modal
+     ============================================================ -->
+<div class="modal fade" id="modal-create-role" tabindex="-1" aria-labelledby="modal-create-role-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-create-role-label">
+                    <i class="fa-solid fa-plus-circle me-2 text-primary"></i>新增角色
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body roles-index">
+
+                <!-- 基本資料 -->
+                <div class="mb-4">
+                    <h6 class="section-title">基本資料</h6>
+                    <div class="mb-3">
+                        <label class="form-label form-label-sm required-label" for="create-role-name">角色名稱</label>
+                        <input type="text" class="form-control form-control-sm" id="create-role-name" maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label-sm" for="create-role-desc">角色描述</label>
+                        <textarea class="form-control form-control-sm" id="create-role-desc" rows="2" maxlength="200"></textarea>
+                    </div>
+                </div>
+
+                <!-- 擁有的權限 -->
+                <div class="mb-4">
+                    <h6 class="section-title">擁有的權限</h6>
+                    <p class="text-muted small mb-2">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        員工管理與報表管理是店長才有的權限，無法指派給其他角色。
+                    </p>
+                    <div class="perm-card-grid" id="create-perm-grid">
+                        <div class="row g-2">
+                            <!-- 員工管理（disabled - IsOwnerOnly） -->
+                            <div class="col-md-6">
+                                <div class="perm-card owner-only">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Staff_Manage"
+                                               value="Staff_Manage" disabled />
+                                        <label class="form-check-label" for="create-perm-Staff_Manage">
+                                            <span class="perm-card-name">員工管理</span>
+                                            <span class="perm-card-desc">員工帳號的新增、修改、停用及角色權限指派</span>
+                                            <span class="owner-only-tag">僅限店長</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 員工查看 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Staff_View"
+                                               name="functions" value="Staff_View" />
+                                        <label class="form-check-label" for="create-perm-Staff_View">
+                                            <span class="perm-card-name">員工查看</span>
+                                            <span class="perm-card-desc">查看員工列表及基本資料，不含修改</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 會員管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Member_Manage"
+                                               name="functions" value="Member_Manage" />
+                                        <label class="form-check-label" for="create-perm-Member_Manage">
+                                            <span class="perm-card-name">會員管理</span>
+                                            <span class="perm-card-desc">查看會員資料、設定黑名單</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 訂單管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Order_Manage"
+                                               name="functions" value="Order_Manage" />
+                                        <label class="form-check-label" for="create-perm-Order_Manage">
+                                            <span class="perm-card-name">訂單管理（含結帳）</span>
+                                            <span class="perm-card-desc">修改、取消訂單及執行結帳，涉及金流操作</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 更新訂單狀態 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Order_Update"
+                                               name="functions" value="Order_Update" />
+                                        <label class="form-check-label" for="create-perm-Order_Update">
+                                            <span class="perm-card-name">更新訂單狀態</span>
+                                            <span class="perm-card-desc">查看訂單清單並更新訂單狀態，不含結帳</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 菜單管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Menu_Manage"
+                                               name="functions" value="Menu_Manage" />
+                                        <label class="form-check-label" for="create-perm-Menu_Manage">
+                                            <span class="perm-card-name">菜單管理</span>
+                                            <span class="perm-card-desc">餐點、分類、套餐的新增、修改、上下架</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 訂位管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Reservation_Manage"
+                                               name="functions" value="Reservation_Manage" />
+                                        <label class="form-check-label" for="create-perm-Reservation_Manage">
+                                            <span class="perm-card-name">訂位管理</span>
+                                            <span class="perm-card-desc">訂位的新增、修改、報到與取消</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 桌位設定 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Table_Manage"
+                                               name="functions" value="Table_Manage" />
+                                        <label class="form-check-label" for="create-perm-Table_Manage">
+                                            <span class="perm-card-name">桌位設定</span>
+                                            <span class="perm-card-desc">新增與修改桌位資料（桌名、座位數）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 優惠券管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Coupon_Manage"
+                                               name="functions" value="Coupon_Manage" />
+                                        <label class="form-check-label" for="create-perm-Coupon_Manage">
+                                            <span class="perm-card-name">優惠券管理</span>
+                                            <span class="perm-card-desc">建立與修改優惠券設定</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 活動管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Event_Manage"
+                                               name="functions" value="Event_Manage" />
+                                        <label class="form-check-label" for="create-perm-Event_Manage">
+                                            <span class="perm-card-name">活動管理</span>
+                                            <span class="perm-card-desc">建立與管理行銷活動</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 文章管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Article_Manage"
+                                               name="functions" value="Article_Manage" />
+                                        <label class="form-check-label" for="create-perm-Article_Manage">
+                                            <span class="perm-card-name">文章管理</span>
+                                            <span class="perm-card-desc">發布與管理最新消息、品牌文章</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 報表管理（disabled - IsOwnerOnly） -->
+                            <div class="col-md-6">
+                                <div class="perm-card owner-only">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Report_Manage"
+                                               value="Report_Manage" disabled />
+                                        <label class="form-check-label" for="create-perm-Report_Manage">
+                                            <span class="perm-card-name">報表管理</span>
+                                            <span class="perm-card-desc">查看營業額、淨收入、熱銷排行等所有報表</span>
+                                            <span class="owner-only-tag">僅限店長</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 通知管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="create-perm-Notification_Manage"
+                                               name="functions" value="Notification_Manage" />
+                                        <label class="form-check-label" for="create-perm-Notification_Manage">
+                                            <span class="perm-card-name">通知管理</span>
+                                            <span class="perm-card-desc">管理會員小鈴鐺通知及郵件發送隊列</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 指派員工 -->
+                <div class="mb-2">
+                    <h6 class="section-title">擁有此角色的員工</h6>
+                    <p class="text-muted small mb-2">勾選員工後儲存，即可將此角色加入該員工的角色清單。</p>
+                    <div class="employee-assign-list" id="create-employee-list">
+                        @*
+                            TODO（後端連線後）：替換為 @foreach (var emp in ViewBag.ActiveEmployees)
+                            每個 employee-assign-item 需有對應員工 Id 的 input[value]
+                        *@
+                        <!-- Demo 員工清單 -->
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-1" value="1" />
+                                <label class="form-check-label ms-2" for="create-emp-1">
+                                    <span class="emp-name">員工1</span>
+                                    <span class="emp-no">EMP2025001</span>
+                                    <span class="emp-account">· manager01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-2" value="2" />
+                                <label class="form-check-label ms-2" for="create-emp-2">
+                                    <span class="emp-name">員工2</span>
+                                    <span class="emp-no">EMP2025002</span>
+                                    <span class="emp-account">· vmanager01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-3" value="3" />
+                                <label class="form-check-label ms-2" for="create-emp-3">
+                                    <span class="emp-name">員工3</span>
+                                    <span class="emp-no">EMP2025003</span>
+                                    <span class="emp-account">· cashier01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-4" value="4" />
+                                <label class="form-check-label ms-2" for="create-emp-4">
+                                    <span class="emp-name">員工4</span>
+                                    <span class="emp-no">EMP2025004</span>
+                                    <span class="emp-account">· waiter01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-5" value="5" />
+                                <label class="form-check-label ms-2" for="create-emp-5">
+                                    <span class="emp-name">員工5</span>
+                                    <span class="emp-no">EMP2025005</span>
+                                    <span class="emp-account">· chef01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="create-emp-6" value="6" />
+                                <label class="form-check-label ms-2" for="create-emp-6">
+                                    <span class="emp-name">員工6</span>
+                                    <span class="emp-no">EMP2025006</span>
+                                    <span class="emp-account">· parttime01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /Demo 員工清單 -->
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-create-confirm">
+                    <i class="fa-solid fa-plus me-1"></i>新增
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     編輯角色 Modal
+     ============================================================ -->
+<div class="modal fade" id="modal-edit-role" tabindex="-1" aria-labelledby="modal-edit-role-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-role-label">
+                    <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>編輯角色
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body roles-index">
+                <input type="hidden" id="edit-role-id" />
+
+                <!-- 基本資料 -->
+                <div class="mb-4">
+                    <h6 class="section-title">基本資料</h6>
+                    <div class="mb-3">
+                        <label class="form-label form-label-sm required-label" for="edit-role-name">角色名稱</label>
+                        <input type="text" class="form-control form-control-sm" id="edit-role-name" maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label-sm" for="edit-role-desc">角色描述</label>
+                        <textarea class="form-control form-control-sm" id="edit-role-desc" rows="2" maxlength="200"></textarea>
+                    </div>
+                </div>
+
+                <!-- 擁有的權限 -->
+                <div class="mb-4">
+                    <h6 class="section-title">擁有的權限</h6>
+                    <p class="text-muted small mb-2">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        員工管理與報表管理是店長才有的權限，無法指派給其他角色。
+                    </p>
+                    <div class="perm-card-grid" id="edit-perm-grid">
+                        <div class="row g-2">
+                            <!-- 員工管理（disabled） -->
+                            <div class="col-md-6">
+                                <div class="perm-card owner-only">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Staff_Manage"
+                                               value="Staff_Manage" disabled />
+                                        <label class="form-check-label" for="edit-perm-Staff_Manage">
+                                            <span class="perm-card-name">員工管理</span>
+                                            <span class="perm-card-desc">員工帳號的新增、修改、停用及角色權限指派</span>
+                                            <span class="owner-only-tag">僅限店長</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 員工查看 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Staff_View"
+                                               name="edit-functions" value="Staff_View" />
+                                        <label class="form-check-label" for="edit-perm-Staff_View">
+                                            <span class="perm-card-name">員工查看</span>
+                                            <span class="perm-card-desc">查看員工列表及基本資料，不含修改</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 會員管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Member_Manage"
+                                               name="edit-functions" value="Member_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Member_Manage">
+                                            <span class="perm-card-name">會員管理</span>
+                                            <span class="perm-card-desc">查看會員資料、設定黑名單</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 訂單管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Order_Manage"
+                                               name="edit-functions" value="Order_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Order_Manage">
+                                            <span class="perm-card-name">訂單管理（含結帳）</span>
+                                            <span class="perm-card-desc">修改、取消訂單及執行結帳，涉及金流操作</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 更新訂單狀態 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Order_Update"
+                                               name="edit-functions" value="Order_Update" />
+                                        <label class="form-check-label" for="edit-perm-Order_Update">
+                                            <span class="perm-card-name">更新訂單狀態</span>
+                                            <span class="perm-card-desc">查看訂單清單並更新訂單狀態，不含結帳</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 菜單管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Menu_Manage"
+                                               name="edit-functions" value="Menu_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Menu_Manage">
+                                            <span class="perm-card-name">菜單管理</span>
+                                            <span class="perm-card-desc">餐點、分類、套餐的新增、修改、上下架</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 訂位管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Reservation_Manage"
+                                               name="edit-functions" value="Reservation_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Reservation_Manage">
+                                            <span class="perm-card-name">訂位管理</span>
+                                            <span class="perm-card-desc">訂位的新增、修改、報到與取消</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 桌位設定 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Table_Manage"
+                                               name="edit-functions" value="Table_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Table_Manage">
+                                            <span class="perm-card-name">桌位設定</span>
+                                            <span class="perm-card-desc">新增與修改桌位資料（桌名、座位數）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 優惠券管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Coupon_Manage"
+                                               name="edit-functions" value="Coupon_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Coupon_Manage">
+                                            <span class="perm-card-name">優惠券管理</span>
+                                            <span class="perm-card-desc">建立與修改優惠券設定</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 活動管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Event_Manage"
+                                               name="edit-functions" value="Event_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Event_Manage">
+                                            <span class="perm-card-name">活動管理</span>
+                                            <span class="perm-card-desc">建立與管理行銷活動</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 文章管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Article_Manage"
+                                               name="edit-functions" value="Article_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Article_Manage">
+                                            <span class="perm-card-name">文章管理</span>
+                                            <span class="perm-card-desc">發布與管理最新消息、品牌文章</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 報表管理（disabled） -->
+                            <div class="col-md-6">
+                                <div class="perm-card owner-only">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Report_Manage"
+                                               value="Report_Manage" disabled />
+                                        <label class="form-check-label" for="edit-perm-Report_Manage">
+                                            <span class="perm-card-name">報表管理</span>
+                                            <span class="perm-card-desc">查看營業額、淨收入、熱銷排行等所有報表</span>
+                                            <span class="owner-only-tag">僅限店長</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 通知管理 -->
+                            <div class="col-md-6">
+                                <div class="perm-card">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-perm-Notification_Manage"
+                                               name="edit-functions" value="Notification_Manage" />
+                                        <label class="form-check-label" for="edit-perm-Notification_Manage">
+                                            <span class="perm-card-name">通知管理</span>
+                                            <span class="perm-card-desc">管理會員小鈴鐺通知及郵件發送隊列</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 指派員工 -->
+                <div class="mb-2">
+                    <h6 class="section-title">擁有此角色的員工</h6>
+                    <p class="text-muted small mb-2">已擁有此角色的員工會預先勾選；取消勾選後儲存即移除對應角色。</p>
+                    <div class="employee-assign-list" id="edit-employee-list">
+                        <!-- Demo 員工清單 -->
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-1" value="1" />
+                                <label class="form-check-label" for="edit-emp-1">
+                                    <span class="emp-name">員工1</span>
+                                    <span class="emp-no">EMP2025001</span>
+                                    <span class="emp-account">· manager01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-2" value="2" />
+                                <label class="form-check-label" for="edit-emp-2">
+                                    <span class="emp-name">員工2</span>
+                                    <span class="emp-no">EMP2025002</span>
+                                    <span class="emp-account">· vmanager01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-3" value="3" />
+                                <label class="form-check-label" for="edit-emp-3">
+                                    <span class="emp-name">員工3</span>
+                                    <span class="emp-no">EMP2025003</span>
+                                    <span class="emp-account">· cashier01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-4" value="4" />
+                                <label class="form-check-label" for="edit-emp-4">
+                                    <span class="emp-name">員工4</span>
+                                    <span class="emp-no">EMP2025004</span>
+                                    <span class="emp-account">· waiter01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-5" value="5" />
+                                <label class="form-check-label" for="edit-emp-5">
+                                    <span class="emp-name">員工5</span>
+                                    <span class="emp-no">EMP2025005</span>
+                                    <span class="emp-account">· chef01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="employee-assign-item">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input me-2" id="edit-emp-6" value="6" />
+                                <label class="form-check-label" for="edit-emp-6">
+                                    <span class="emp-name">員工6</span>
+                                    <span class="emp-no">EMP2025006</span>
+                                    <span class="emp-account">· parttime01</span>
+                                    <span class="badge bg-success ms-1">在職</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /Demo 員工清單 -->
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-edit-confirm">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>儲存變更
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/roles-index.css" />
+}
+
+@section Scripts {
+    <script src="~/js/views/roles-index.js"></script>
+}

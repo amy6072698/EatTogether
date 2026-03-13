@@ -1,0 +1,473 @@
+@{
+    ViewData["Title"] = "員工管理";
+}
+
+<div class="container-fluid px-4 user-index">
+
+    <!-- 頁面標題列 -->
+    <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
+        <div>
+            <h1 class="page-header-title">員工管理</h1>
+            <p class="page-header-subtitle">管理餐廳員工資訊</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <select id="sort-select" class="form-select form-select-sm" style="width:auto;">
+                <option value="HireDateDesc">到職日期（最新）</option>
+                <option value="HireDateAsc">到職日期（最舊）</option>
+                <option value="CreatedAtDesc">建立時間（最新）</option>
+            </select>
+            @* TODO: 後端連線後依 Staff_Manage 權限決定是否渲染 *@
+            <button id="btn-open-create" class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-plus me-1"></i>新增
+            </button>
+        </div>
+    </div>
+
+    <!-- 搜尋列 -->
+    <div class="card mb-3">
+        <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2 col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-emp-no">員工編號</label>
+                        <input type="text" class="form-control form-control-sm" id="search-emp-no" />
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-name">姓名</label>
+                        <input type="text" class="form-control form-control-sm" id="search-name" />
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-account">帳號</label>
+                        <input type="text" class="form-control form-control-sm" id="search-account" />
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-email">Email</label>
+                        <input type="text" class="form-control form-control-sm" id="search-email" />
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button id="btn-search" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i>查詢
+                    </button>
+                </div>
+                <div class="col-auto d-flex align-items-center pb-1">
+                    <div class="form-check mb-0">
+                        <input type="checkbox" class="form-check-input" id="search-active-only" />
+                        <label class="form-check-label small" for="search-active-only">在職</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 員工資料表格 -->
+    <div class="card">
+        <div class="card-body">
+            <table id="user-table" class="table table-bordered table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>員工編號</th>
+                        <th>姓名</th>
+                        <th>帳號</th>
+                        <th>Email</th>
+                        <th>手機</th>
+                        <th>到職日期</th>
+                        <th>建立時間</th>
+                        <th>角色</th>
+                        <th>狀態</th>
+                        <th class="text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*
+                        TODO（後端連線後）：替換為 @foreach (var user in Model) { ... }
+                        - data-created-at 格式為 "yyyy-MM-dd HH:mm"
+                        - data-role-ids 為逗號分隔角色 ID
+                        - 操作欄依 Staff_Manage 權限決定是否渲染
+                    *@
+
+                    <!-- Demo 資料 — 後端連線後移除 -->
+                    <tr data-id="1"
+                        data-emp-no="EMP2025001" data-name="陳怡伶"
+                        data-is-active="1"       data-account="manager01"
+                        data-email="yi-ling@eat.com" data-phone="0912345678"
+                        data-hire-date="2021-03-01"  data-created-at="2025-01-15 09:00"
+                        data-role-ids="1">
+                        <td>EMP2025001</td><td>陳怡伶</td><td>manager01</td>
+                        <td>yi-ling@eat.com</td><td>0912-345-678</td>
+                        <td>2021-03-01</td><td>2025-01-15 09:00</td>
+                        <td><span class="role-badge">店長</span></td>
+                        <td><span class="status-badge active">在職</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-user"
+                                        data-id="1" data-name="陳怡伶" data-emp-no="EMP2025001" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-resign-user"
+                                        data-id="1" data-name="陳怡伶" data-emp-no="EMP2025001" title="離職">
+                                    <i class="fa-solid fa-user-minus"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-id="2"
+                        data-emp-no="EMP2025002" data-name="林志明"
+                        data-is-active="0"       data-account="cashier01"
+                        data-email="zhi-ming@eat.com" data-phone="0933456789"
+                        data-hire-date="2022-06-15"   data-created-at="2025-01-20 14:30"
+                        data-role-ids="3">
+                        <td>EMP2025002</td><td>林志明</td><td>cashier01</td>
+                        <td>zhi-ming@eat.com</td><td>0933-456-789</td>
+                        <td>2022-06-15</td><td>2025-01-20 14:30</td>
+                        <td><span class="role-badge">收銀員</span></td>
+                        <td><span class="status-badge leave">請假</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-user"
+                                        data-id="2" data-name="林志明" data-emp-no="EMP2025002" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-resign-user"
+                                        data-id="2" data-name="林志明" data-emp-no="EMP2025002" title="離職">
+                                    <i class="fa-solid fa-user-minus"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-id="3"
+                        data-emp-no="EMP2024003" data-name="王小明"
+                        data-is-active="0"       data-account="parttime01"
+                        data-email="xiao-ming@eat.com" data-phone="0988123456"
+                        data-hire-date="2023-09-01"    data-created-at="2024-09-01 08:45"
+                        data-role-ids="6">
+                        <td>EMP2024003</td><td>王小明</td><td>parttime01</td>
+                        <td>xiao-ming@eat.com</td><td>0988-123-456</td>
+                        <td>2023-09-01</td><td>2024-09-01 08:45</td>
+                        <td><span class="role-badge">工讀生</span></td>
+                        <td><span class="status-badge resigned">離職</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit-user"
+                                        data-id="3" data-name="王小明" data-emp-no="EMP2024003" title="編輯">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success btn-reinstate-user"
+                                        data-id="3" data-name="王小明" data-emp-no="EMP2024003" title="復職">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- /Demo 資料 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     新增員工 Modal
+     ============================================================ -->
+<div class="modal fade" id="modal-create-user" tabindex="-1" aria-labelledby="modal-create-user-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-create-user-label">
+                    <i class="fa-solid fa-user-plus me-2 text-primary"></i>新增員工
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+
+            <div class="modal-body user-index">
+                <form id="form-create-user" novalidate autocomplete="off">
+
+                    <div class="modal-section-heading">基本資料</div>
+
+                    <div class="row g-3">
+
+                        <!-- 第一行：員工編號 + 姓名 + 啟用狀態 -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="create-user-number">員工編號</label>
+                            <input type="text" class="form-control" id="create-user-number"
+                                   readonly placeholder="系統自動產生"
+                                   style="background-color:#f8f9fa; color:#6c757d;" />
+                            <div class="field-hint">系統自動產生，不可修改</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create-name">
+                                姓名 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="create-name"
+                                   placeholder="請輸入姓名" maxlength="50" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create-status">
+                                啟用狀態 <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="create-status">
+                                <option value="1">在職（啟用）</option>
+                                <option value="0">請假（暫停登入）</option>
+                            </select>
+                        </div>
+
+                        <!-- 帳號 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-account">
+                                帳號 <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-with-check">
+                                <input type="text" class="form-control" id="create-account"
+                                       placeholder="請輸入帳號" maxlength="50" autocomplete="off" />
+                                <label class="same-empno-check">
+                                    <input type="checkbox" id="create-account-same-empno" />
+                                    同員工編號
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 密碼 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-password">
+                                密碼 <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-with-check">
+                                <div class="position-relative flex-grow-1">
+                                    <input type="password" class="form-control pe-5" id="create-password"
+                                           placeholder="至少 6 碼，含英文與數字" maxlength="100" autocomplete="new-password" />
+                                    <button type="button" class="toggle-password btn btn-link position-absolute end-0 top-50 translate-middle-y pe-2"
+                                            data-target="create-password" style="color:#6c757d;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                                <label class="same-empno-check">
+                                    <input type="checkbox" id="create-password-same-empno" />
+                                    同員工編號
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-email">Email</label>
+                            <input type="email" class="form-control" id="create-email"
+                                   placeholder="example@email.com" maxlength="100" />
+                        </div>
+
+                        <!-- 手機 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-phone">手機</label>
+                            <input type="text" class="form-control" id="create-phone"
+                                   placeholder="0912345678" maxlength="10" />
+                        </div>
+
+                        <!-- 到職日期 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="create-hire-date">到職日期</label>
+                            <input type="text" class="form-control" id="create-hire-date"
+                                   placeholder="YYYY-MM-DD" />
+                        </div>
+                    </div>
+
+
+                    <!-- 角色 -->
+                    <div class="modal-section-heading">
+                        角色（可多選）<span class="text-danger ms-1">*</span>
+                    </div>
+                    <p class="field-hint mb-2">角色決定員工可存取的後台功能</p>
+
+                    <div class="role-checkbox-grid">
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="1" /><span>店長</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="2" /><span>副店長</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="3" /><span>收銀員</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="4" /><span>外場服務生</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="5" /><span>內場廚師</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="6" /><span>工讀生</span>
+                        </label>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-create-user">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     編輯員工 Modal
+     ============================================================ -->
+<div class="modal fade" id="modal-edit-user" tabindex="-1" aria-labelledby="modal-edit-user-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-user-label">
+                    <i class="fa-solid fa-user-pen me-2 text-primary"></i>編輯員工資訊
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+
+            <div class="modal-body user-index">
+                <form id="form-edit-user" novalidate autocomplete="off">
+                    <input type="hidden" id="edit-user-id" />
+
+                    <div class="modal-section-heading">基本資料</div>
+
+                    <div class="row g-3">
+
+                        <!-- 第一行：員工編號 + 姓名 + 啟用狀態 -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit-user-number">員工編號</label>
+                            <input type="text" class="form-control" id="edit-user-number"
+                                   readonly style="background-color:#f8f9fa; color:#6c757d;" />
+                            <div class="field-hint">系統自動產生，不可修改</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit-name">
+                                姓名 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="edit-name"
+                                   placeholder="請輸入姓名" maxlength="50" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit-status">啟用狀態</label>
+                            <select class="form-select" id="edit-status">
+                                <option value="1">在職（啟用）</option>
+                                <option value="0">請假（暫停登入）</option>
+                            </select>
+                        </div>
+
+                        <!-- 帳號（可修改 + 同員工編號） -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-account">帳號</label>
+                            <div class="input-with-check">
+                                <input type="text" class="form-control" id="edit-account"
+                                       placeholder="請輸入帳號" maxlength="50" autocomplete="off" />
+                                <label class="same-empno-check">
+                                    <input type="checkbox" id="edit-account-same-empno" />
+                                    同員工編號
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 密碼（選填） -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-password">密碼</label>
+                            <div class="input-with-check">
+                                <div class="position-relative flex-grow-1">
+                                    <input type="password" class="form-control pe-5" id="edit-password"
+                                           placeholder="留空表示不修改" maxlength="100" autocomplete="new-password" />
+                                    <button type="button" class="toggle-password btn btn-link position-absolute end-0 top-50 translate-middle-y pe-2"
+                                            data-target="edit-password" style="color:#6c757d;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                                <label class="same-empno-check">
+                                    <input type="checkbox" id="edit-password-same-empno" />
+                                    同員工編號
+                                </label>
+                            </div>
+                            <div class="field-hint">留空表示不修改，密碼同員工編號登入時將被強制重設密碼</div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-email">Email</label>
+                            <input type="email" class="form-control" id="edit-email"
+                                   placeholder="example@email.com" maxlength="100" />
+                        </div>
+
+                        <!-- 手機 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-phone">手機</label>
+                            <input type="text" class="form-control" id="edit-phone"
+                                   placeholder="0912345678" maxlength="10" />
+                        </div>
+
+                        <!-- 到職日期 -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-hire-date">到職日期</label>
+                            <input type="text" class="form-control" id="edit-hire-date"
+                                   placeholder="YYYY-MM-DD" />
+                        </div>
+
+                        <!-- 建立時間（唯讀） -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="edit-created-at">建立時間</label>
+                            <input type="text" class="form-control" id="edit-created-at"
+                                   readonly style="background-color:#f8f9fa; color:#6c757d;" />
+                            <div class="field-hint">系統自動產生，不可修改</div>
+                        </div>
+                    </div>
+
+                    <!-- 角色 -->
+                    <div class="modal-section-heading">
+                        角色（可多選）<span class="text-danger ms-1">*</span>
+                    </div>
+
+                    <div class="role-checkbox-grid">
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="1" /><span>店長</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="2" /><span>副店長</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="3" /><span>收銀員</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="4" /><span>外場服務生</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="5" /><span>內場廚師</span>
+                        </label>
+                        <label class="role-checkbox-item">
+                            <input type="checkbox" class="role-checkbox" value="6" /><span>工讀生</span>
+                        </label>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-save-user">儲存變更</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/user-index.css" />
+}
+
+@section Scripts {
+    <script src="~/lib/flatpickr/dist/l10n/zh-tw.js"></script>
+    <script src="~/js/views/user-index.js"></script>
+}
