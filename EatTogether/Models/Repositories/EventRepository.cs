@@ -10,7 +10,7 @@ namespace EatTogether.Models.Repositories
 		Task CreateAsync(EventCreateDto dto);
 		Task<List<EventDto>> GetAllAsync();
 		Task EditAsync(EventEditDto dto);
-		EventEditDto GetEditById(int id);
+		Task<EventEditDto> GetEditByIdAsync(int id);
 	}
 
 	public class EventRepository : IEventRepository
@@ -75,7 +75,7 @@ namespace EatTogether.Models.Repositories
 			await _context.SaveChangesAsync();		
 		}
 
-		public async Task<EventEditDto> GetEditById(int id)
+		public async Task<EventEditDto> GetEditByIdAsync(int id)
 		{
 			var entity = await _context.Events.FindAsync(id);
 

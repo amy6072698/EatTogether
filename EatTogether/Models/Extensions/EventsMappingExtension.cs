@@ -28,7 +28,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new Event
 			{
-				//Id = dto.Id,
+				Id = dto.Id,
 				Title = dto.Title,
 				Summary = dto.Summary,
 				MinSpend = dto.MinSpend,
@@ -110,7 +110,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new EventEditDto
 			{
-				//Id = vm.Id,
+				Id = vm.Id,
 				Title = vm.Title,
 				Summary = vm.Summary,
 				MinSpend = vm.MinSpend,
@@ -123,7 +123,7 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
-		public static EventEditViewModel ToVm(this EventEditDto dto)
+		public static EventEditViewModel ToEditVm(this EventEditDto dto)
 		{
 			return new EventEditViewModel
 			{

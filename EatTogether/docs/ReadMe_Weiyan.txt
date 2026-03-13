@@ -96,21 +96,21 @@
 			add void Edit(EventEditDto  dto)
 			add EventEditDto GetEditById(int id)
 
-	[working]modify	EventService
+	[V]modify	EventService
 			void Edit(EventEditDto dto)
 
-	[]modify EventsController
-		add IActionResult Edit action[Autorize]
+	[V]modify EventsController
+		add IActionResult Edit action[Authorize]
 			Edit.cshtml
-		HttpGet Edit(int id)[Autorize]
+		HttpGet Edit(int id)[Authorize]
 
-		HttpPost Edit(EventEditViewModel vm)[Autorize]
+		HttpPost Edit(EventEditViewModel vm)[Authorize]
 
 	**1.進行中活動開始日期不能改
 	    2.未開始活動則都可以改 
 	    3.編輯頁面放置「活動停用」超連結，跳出活動詳細視窗，按下停用再跳一個警告視窗
 
-	[]美化頁面
+	[working]美化頁面
 
 
 []add 活動停用   >>情境:可能贈品送完、折扣有誤或是有臨時狀況需要緊急停止該活動

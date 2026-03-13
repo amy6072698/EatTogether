@@ -1,4 +1,5 @@
-﻿using EatTogether.Models.Extensions;
+﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Extensions;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -42,5 +43,39 @@ namespace EatTogether.Controllers
 				.ToList();
 			return View(events);
 		}
+
+		//[Authorize]
+		// GET: Event/Edit/5
+		public async Task<IActionResult> Edit(int id)
+		{
+			var dto = await _service.GetEditByIdAsync(id);
+
+			if (dto == null)
+			{
+				return NotFound();
+			}
+
+			var vm = dto.ToEditVm();
+
+			return View(vm);
+		}
+
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(EventEditDto dto)
+		{
+			var result = await _service.EditAsync(dto);
+			if (result.Success)
+			{
+				// 使用 TempData 把 Service 裡的 "編輯完成！" 文字傳到下一頁
+				TempData["SuccessMessage"] = result.Message;
+				return RedirectToAction("Index");
+			}
+
+			ModelState.AddModelError("", result.Message);
+			return View(dto);
+		}
+
 	}
 }
