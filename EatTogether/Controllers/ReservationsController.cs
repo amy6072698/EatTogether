@@ -31,6 +31,8 @@ namespace EatTogether.Controllers
                 all = all.Where(r => r.Status == statusFilter.Value);
 
             vm.Results = all;
+            // 今日統計：固定抓今日，不受篩選影響
+            ViewBag.TodayStats = await _reservationService.GetByDateAsync(DateTime.Today);
             return View(vm);
         }
 

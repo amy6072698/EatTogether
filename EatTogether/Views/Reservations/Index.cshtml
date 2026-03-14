@@ -12,51 +12,54 @@
         <li class="breadcrumb-item active">訂位管理</li>
     </ol>
 
-    <!-- 統計卡片 -->
+    <!-- 今日統計卡片（固定顯示今日，不受篩選影響） -->
     @{
-        var allResults = Model.Results.ToList();
-        var statPending = allResults.Count(r => r.Status == 0);
-        var statArrived = allResults.Count(r => r.Status == 1);
-        var statCancelled = allResults.Count(r => r.Status == 2);
-        var statNoShow = allResults.Count(r => r.Status == 3);
+        var todayData = (ViewBag.TodayStats as IEnumerable<EatTogether.Models.DTOs.ReservationDto>)
+        ?? new List<EatTogether.Models.DTOs.ReservationDto>();
+        var statPending = todayData.Count(r => r.Status == 0);
+        var statArrived = todayData.Count(r => r.Status == 1);
+        var statCancelled = todayData.Count(r => r.Status == 2);
+        var statNoShow = todayData.Count(r => r.Status == 3);
     }
-    @if (allResults.Any())
-    {
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-primary text-white mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div><div class="small">訂位中</div><div class="fs-4 fw-bold">@statPending</div></div>
-                        <i class="fas fa-clock fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-success text-white mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div><div class="small">已報到</div><div class="fs-4 fw-bold">@statArrived</div></div>
-                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-danger text-white mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div><div class="small">已取消</div><div class="fs-4 fw-bold">@statCancelled</div></div>
-                        <i class="fas fa-times-circle fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-secondary text-white mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div><div class="small">NoShow</div><div class="fs-4 fw-bold">@statNoShow</div></div>
-                        <i class="fas fa-user-slash fa-2x opacity-50"></i>
-                    </div>
+    <div class="row mb-4">
+        <div class="col-12 mb-1">
+            <small class="text-muted fw-semibold text-uppercase">
+                <i class="fas fa-calendar-day me-1"></i>今日訂位統計（@DateTime.Today.ToString("yyyy/M/d")）
+            </small>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div><div class="small">訂位中</div><div class="fs-4 fw-bold">@statPending</div></div>
+                    <i class="fas fa-clock fa-2x opacity-50"></i>
                 </div>
             </div>
         </div>
-    }
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div><div class="small">已報到</div><div class="fs-4 fw-bold">@statArrived</div></div>
+                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div><div class="small">已取消</div><div class="fs-4 fw-bold">@statCancelled</div></div>
+                    <i class="fas fa-times-circle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-secondary text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div><div class="small">NoShow</div><div class="fs-4 fw-bold">@statNoShow</div></div>
+                    <i class="fas fa-user-slash fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 篩選 -->
     <div class="card mb-4">

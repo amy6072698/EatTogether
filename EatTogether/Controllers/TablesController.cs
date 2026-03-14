@@ -58,7 +58,8 @@ namespace EatTogether.Controllers
                 Id = dto.Id,
                 TableName = dto.TableName,
                 SeatCount = dto.SeatCount,
-                Status = dto.Status
+                Status = dto.Status,
+                Remark = dto.Remark
             };
             return View(vm);
         }
@@ -77,7 +78,8 @@ namespace EatTogether.Controllers
             {
                 Id = vm.Id,
                 TableName = vm.TableName,
-                SeatCount = vm.SeatCount
+                SeatCount = vm.SeatCount,
+                Remark = vm.Remark
             });
 
             if (!result.IsSuccess)
@@ -110,7 +112,14 @@ namespace EatTogether.Controllers
         public async Task<IActionResult> UpdateStatus([FromBody] TableUpdateStatusViewModel vm)
         {
             var result = await _tableService.UpdateStatusAsync(vm.Id, vm.Status);
-            return Json(new { success = result.IsSuccess, message = result.ErrorMesssage ?? "" });
+            if (!result.IsSuccess)
+                return Json(new { success = false, message = result.ErrorMesssage ?? "" });
+
+            // 設為保留(2)時儲存說明；空桌/用餐中時 Repository 已自動清除
+            if (vm.Status == 2 && vm.Remark != null)
+                await _tableService.UpdateRemarkAsync(vm.Id, vm.Remark);
+
+            return Json(new { success = true, message = "" });
         }
     }
 }
