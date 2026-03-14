@@ -420,6 +420,28 @@
         color: #27ae60;
     }
 
+    .pay-method-btn {
+        flex: 1;
+        padding: 8px 4px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: #888;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-align: center;
+    }
+
+        .pay-method-btn.active {
+            border-color: #c0392b;
+            background: #fff5f5;
+            color: #c0392b;
+            font-weight: 700;
+        }
+
     .checkout-btn-wrap {
         margin-top: 14px;
     }
@@ -494,9 +516,13 @@
                 }
                 else
                 {
-                    <div class="table-btn">
-                        <span class="table-icon" style="opacity:0.3">🪑</span>
-                        <span class="table-name" style="color:#ccc">@table.TableName</span>
+                    <div class="table-btn @(table.IsOccupied ? "occupied" : "")" data-tableid="@table.TableId" onclick="selectTable(@table.TableId)">
+                        <span class="table-icon" style="opacity:@(table.IsOccupied ? "1" : "0.3")">🪑</span>
+                        <span class="table-name" style="color:@(table.IsOccupied ? "#e67e22" : "#ccc")">@table.TableName</span>
+                        @if (table.IsOccupied)
+                        {
+                            <span class="table-amount" style="color:#e67e22">點餐中</span>
+                        }
                     </div>
                 }
             }
@@ -563,6 +589,14 @@
             </div>
 
             <div class="amount-section">
+                <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">
+                    <div style="font-size:0.82rem;color:#888;margin-bottom:8px;">付款方式</div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="pay-method-btn" id="pmBtn-Cash" onclick="selectPayMethod('Cash')">💵 現金</button>
+                        <button type="button" class="pay-method-btn" id="pmBtn-Card" onclick="selectPayMethod('Card')">💳 刷卡</button>
+                        <button type="button" class="pay-method-btn" id="pmBtn-Other" onclick="selectPayMethod('Other')">📱 行動支付</button>
+                    </div>
+                </div>
                 <div class="amount-row">
                     <span>總計</span>
                     <span>NT$ <span id="amtOriginal">-</span></span>
@@ -599,6 +633,31 @@
         </div>
     </div>
 </div>
+
+@if (TempData["Success"] != null)
+{
+    <div id="toast" style="
+            position:fixed; inset:0;
+            background:rgba(0,0,0,0.35);
+            display:flex; align-items:center; justify-content:center;
+            z-index:9999;">
+        <div style="
+                background:#fff; border-radius:20px;
+                padding:40px 60px; text-align:center;
+                box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+            <div style="font-size:3rem; margin-bottom:12px;">✅</div>
+            <div style="font-size:1.4rem; font-weight:700; color:#1a1a1a;">結帳成功！</div>
+        </div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const t = document.getElementById('toast');
+            t.style.transition = 'opacity 0.4s';
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 300);
+        }, 2000);
+    </script>
+}
 
 <script>
     let currentPreOrderId = null;
@@ -659,8 +718,7 @@
         currentTotal     = data.totalAmount;
         currentPayMethod = data.payMethod;
 
-        const cashSection = document.getElementById('cashSection');
-        cashSection.style.display = data.payMethod === 'Cash' ? 'block' : 'none';
+        selectPayMethod(data.payMethod);
         document.getElementById('cashInput').value = '';
         document.getElementById('changeDisplay').textContent = '-';
 
@@ -698,10 +756,56 @@
         currentPreOrderId = null;
     }
 
+    function selectPayMethod(method) {
+        currentPayMethod = method;
+        ['Cash', 'Card', 'Other'].forEach(m => {
+            const btn = document.getElementById('pmBtn-' + m);
+            if (btn) btn.classList.toggle('active', m === method);
+        });
+        document.getElementById('cashSection').style.display = method === 'Cash' ? 'block' : 'none';
+        // 把選擇的付款方式帶入 form
+        let input = document.getElementById('checkoutPayMethod');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'payMethod';
+            input.id   = 'checkoutPayMethod';
+            document.getElementById('checkoutForm').appendChild(input);
+        }
+        input.value = method;
+    }
+
     function calcChange() {
         const paid   = parseInt(document.getElementById('cashInput').value || 0);
         const change = paid - currentTotal;
         document.getElementById('changeDisplay').textContent =
             paid >= currentTotal ? `NT$ ${change}` : '金額不足';
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const defaultTableId = @(ViewBag.DefaultTableId ?? 0);
+
+            if (defaultTableId > 0) {
+        const tables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        Model.Tables.Select(t => new { t.TableId, t.PreOrderId, t.HasOrder })
+                ));
+        const target = tables.find(t => t.tableId === defaultTableId);
+        if (target) {
+            if (target.hasOrder && target.preOrderId) {
+                // 有訂單 → 直接載入明細
+                const el = document.getElementById('tbtn-' + target.preOrderId);
+                if (el) {
+                    el.classList.add('active-selected');
+                    loadDetail(target.preOrderId, el);
+                }
+            }
+            // 不管有沒有訂單，捲動到該桌位
+            const anyEl = document.getElementById('tbtn-' + target.preOrderId)
+                       || document.querySelector(`[data-tableid="${defaultTableId}"]`);
+            if (anyEl) anyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else {
+        switchTab('take');
+    }
+    });
 </script>

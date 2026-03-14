@@ -12,16 +12,25 @@ namespace EatTogether.Models.Services
         Task<string> CreatePreOrderAsync(CreatePreOrderDto dto);
         Task<List<SelectListItem>> GetTableOptionsAsync();
         Task<List<CreatePreOrderItemViewModel>> GetMenuItemsAsync();
+
         // PreOrdersList
         Task<List<PreOrderListItemViewModel>> GetPendingPreOrdersAsync();
         Task UpdatePreOrderDetailStatusAsync(int detailId, int status);
+        Task<PreOrderListQueryViewModel> GetAllPreOrdersAsync(PreOrderListQueryViewModel query);
+
+        // Details
+        Task<PreOrderListItemViewModel> GetPreOrderDetailAsync(int preOrderId);
 
         // Payment
         Task<List<PaymentPreOrderSummaryViewModel>> GetTodayPendingForPaymentAsync();
         Task<PaymentCheckoutViewModel> GetCheckoutDetailAsync(int preOrderId);
         Task CancelUnservedDetailsAsync(int preOrderId);
-        Task<int> CheckoutAsync(int preOrderId);
+        Task<int> CheckoutAsync(int preOrderId, string payMethod);
         Task<PaymentIndexViewModel> GetPaymentIndexAsync();
+
+        
+
+
     }
     public class OrderService : IOrderService
     {
@@ -74,6 +83,7 @@ namespace EatTogether.Models.Services
             await _preOrderRepo.AddAsync(preOrder);
             return orderNumber;
         }
+
         // 訂單編號產生器
         private async Task<string> GenerateOrderNumberAsync()
         {
@@ -96,13 +106,15 @@ namespace EatTogether.Models.Services
                 .ToHashSet();
 
             return tables
-                .Where(t => !occupiedTableIds.Contains(t.Id))
+                .Where(t => t.Status == 1)                        // ← 只顯示用餐中
+                .Where(t => !occupiedTableIds.Contains(t.Id))     // ← 且還沒有 PreOrder
                 .Select(t => new SelectListItem
                 {
                     Value = t.Id.ToString(),
                     Text = t.TableName
                 }).ToList();
         }
+
         public async Task<List<CreatePreOrderItemViewModel>> GetMenuItemsAsync()
         {
             var products = await _productRepo.GetAllAsync();
@@ -130,7 +142,8 @@ namespace EatTogether.Models.Services
             var today = DateTime.Today;
 
             return list
-                .Where(p => p.OrderAt.Date == today)   // ← 補上只顯示當日
+                .Where(p => p.OrderAt.Date == today)   // ← 只顯示當日
+                .Where(p => p.PreOrderDetails.Any(d => d.DoneOrCancel == 0))
                 .OrderBy(p => p.OrderAt)
                 .Select(p => new PreOrderListItemViewModel
                 {
@@ -156,6 +169,111 @@ namespace EatTogether.Models.Services
         {
             await _preOrderRepo.UpdateDetailStatusAsync(detailId, status);
         }
+
+        public async Task<PreOrderListQueryViewModel> GetAllPreOrdersAsync(PreOrderListQueryViewModel query)
+        {
+            var all = await _preOrderRepo.GetAllAsync();  // 需補 GetAllAsync
+
+            // 篩選
+            var filtered = all.AsQueryable();
+
+            if (query.Status.HasValue)
+                filtered = filtered.Where(p => p.DoneOrCancel == query.Status.Value);
+
+            if (query.DateFrom.HasValue)
+                filtered = filtered.Where(p => p.OrderAt.Date >= query.DateFrom.Value.Date);
+
+            if (query.DateTo.HasValue)
+                filtered = filtered.Where(p => p.OrderAt.Date <= query.DateTo.Value.Date);
+
+            if (!string.IsNullOrEmpty(query.Keyword))
+            {
+                var kw = query.Keyword.Trim();
+                filtered = filtered.Where(p =>
+                    p.OrderNumber.Contains(kw) ||
+                    (p.Member != null && p.Member.Name.Contains(kw)) ||
+                    (p.Table != null && p.Table.TableName.Contains(kw)) ||
+                    (p.PayMethod != null && p.PayMethod.Contains(kw))
+                );
+            }
+
+            // 計算總筆數
+            query.TotalCount = filtered.Count();
+
+            // 分頁
+            query.Orders = filtered
+                .OrderByDescending(p => p.OrderAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .Select(p => new PreOrderListItemViewModel
+                {
+                    MemberName = p.Member != null ? MaskName(p.Member.Name) : "訪客",
+                    PreOrderId = p.Id,
+                    OrderNumber = p.OrderNumber,
+                    InOrOut = p.InOrOut,
+                    TableName = p.Table != null ? p.Table.TableName : "外帶",
+                    OrderAt = p.OrderAt,
+                    OriginalAmount = p.OriginalAmount,
+                    DiscountAmount = p.DiscountAmount,
+                    TotalAmount = p.TotalAmount,
+                    DoneOrCancel = p.DoneOrCancel,
+                    PayMethod = p.PayMethod
+                }).ToList();
+
+            return query;
+        }
+
+        private string MaskName(string name)
+        {
+            if (string.IsNullOrEmpty(name) || name.Length < 2) return name;
+            return name[0] + "*" + name[2..];  // 第2個字換成 *
+        }
+
+        // ── Details ──────────────────────────────────────────────────
+        public async Task<PreOrderListItemViewModel> GetPreOrderDetailAsync(int preOrderId)
+        {
+            var p = await _preOrderRepo.GetByIdAsync(preOrderId);
+            if (p == null) return null;
+
+            // 優惠券描述
+            string couponName = null;
+            string couponDesc = null;
+            if (p.Coupon != null)
+            {
+                couponName = p.Coupon.Name;
+                couponDesc = p.Coupon.DiscountType == 0
+                    ? $"折抵 NT$ {p.Coupon.DiscountValue}"
+                    : $"打 {(100 - p.Coupon.DiscountValue) / 10.0:0.#} 折";
+            }
+
+            return new PreOrderListItemViewModel
+            {
+                PreOrderId = p.Id,
+                OrderNumber = p.OrderNumber,
+                InOrOut = p.InOrOut,
+                TableName = p.Table != null ? p.Table.TableName : "外帶",
+                UserName = p.User != null ? p.User.Name : null,
+                MemberName = p.Member != null ? MaskName(p.Member.Name) : "訪客",
+                OrderAt = p.OrderAt,
+                CouponName = couponName,
+                CouponDesc = couponDesc,
+                OriginalAmount = p.OriginalAmount,
+                DiscountAmount = p.DiscountAmount,
+                TotalAmount = p.TotalAmount,
+                Note = p.Note,
+                PayMethod = p.PayMethod,
+                DoneOrCancel = p.DoneOrCancel,
+                Items = p.PreOrderDetails.Select(d => new PreOrderDetailItemViewModel
+                {
+                    DetailId = d.Id,
+                    ProductName = d.ProductName,
+                    Qty = d.Qty,
+                    UnitPrice = d.UnitPrice,
+                    Status = d.DoneOrCancel
+                }).ToList()
+            };
+        }
+
         // ── Payment ──────────────────────────────────────────────────
         public async Task<List<PaymentPreOrderSummaryViewModel>> GetTodayPendingForPaymentAsync()
         {
@@ -181,6 +299,9 @@ namespace EatTogether.Models.Services
             var p = await _preOrderRepo.GetByIdAsync(preOrderId);
             if (p == null) return null;
 
+            var servedItems = p.PreOrderDetails.Where(d => d.DoneOrCancel != 2).ToList();
+            var originalAmount = servedItems.Sum(d => d.SubTotal);
+
             return new PaymentCheckoutViewModel
             {
                 PreOrderId = p.Id,
@@ -188,9 +309,9 @@ namespace EatTogether.Models.Services
                 InOrOut = p.InOrOut,
                 TableName = p.Table?.TableName ?? "外帶",
                 PayMethod = p.PayMethod,
-                OriginalAmount = p.OriginalAmount,
+                OriginalAmount = originalAmount,
                 DiscountAmount = p.DiscountAmount,
-                TotalAmount = p.TotalAmount,
+                TotalAmount = originalAmount - p.DiscountAmount,
                 HasUnserved = p.PreOrderDetails.Any(d => d.DoneOrCancel == 0),
                 Items = p.PreOrderDetails.Select(d => new PaymentDetailItemViewModel
                 {
@@ -209,20 +330,18 @@ namespace EatTogether.Models.Services
             await _preOrderRepo.CancelUnservedDetailsAsync(preOrderId);
         }
 
-        public async Task<int> CheckoutAsync(int preOrderId)
+        public async Task<int> CheckoutAsync(int preOrderId, string payMethod)
         {
             var preOrder = await _preOrderRepo.GetByIdAsync(preOrderId);
 
-            // 1. 建立 Payment
             var payment = new Payment
             {
                 PreOrderId = preOrderId,
-                Method = preOrder.PayMethod,
+                Method = payMethod,       // ← 用傳入的，不用 preOrder.PayMethod
                 PaidAt = DateTime.Now,
                 DoneOrCancel = 1
             };
 
-            // 2. 建立 Order
             var order = new Order
             {
                 PreOrderId = preOrderId,
@@ -237,9 +356,9 @@ namespace EatTogether.Models.Services
                 DiscountAmount = preOrder.DiscountAmount,
                 TotalAmount = preOrder.TotalAmount,
                 Note = preOrder.Note,
-                PayMethod = preOrder.PayMethod,
+                PayMethod = payMethod,     // ← 用傳入的
                 OrderDetails = preOrder.PreOrderDetails
-                    .Where(d => d.DoneOrCancel == 1)  // 只存已完成的
+                    .Where(d => d.DoneOrCancel == 1)   // ← 只存已完成
                     .Select(d => new OrderDetail
                     {
                         ProductId = d.ProductId,
@@ -251,12 +370,14 @@ namespace EatTogether.Models.Services
             };
 
             await _orderRepo.AddWithPaymentAsync(order, payment);
-
-            // 3. 更新 PreOrder 狀態
             await _preOrderRepo.UpdateStatusAsync(preOrderId, PreOrderStatus.Done);
+
+            if (preOrder.TableId.HasValue)
+                await _tableRepo.UpdateStatusAsync(preOrder.TableId.Value, 0);  // 0=空桌
 
             return order.Id;
         }
+
         public async Task<PaymentIndexViewModel> GetPaymentIndexAsync()
         {
             var today = DateTime.Today;
@@ -271,6 +392,7 @@ namespace EatTogether.Models.Services
                 var order = todayDine.FirstOrDefault(p => p.TableId == t.Id);
                 return new TableStatusViewModel
                 {
+                    IsOccupied = t.Status == 1,  // ← 補上，1=用餐中（依你的Table.Status定義）
                     TableId = t.Id,
                     TableName = t.TableName,
                     HasOrder = order != null,

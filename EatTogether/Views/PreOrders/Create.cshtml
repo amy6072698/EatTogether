@@ -347,5 +347,27 @@
         const qty = parseInt(document.getElementById('qty-' + idx).value || 0);
         document.getElementById('card-' + idx).classList.toggle('selected', qty > 0);
     }
+
+    // 頁面載入時恢復已選狀態（從 Confirm 返回時）
+        document.addEventListener('DOMContentLoaded', () => {
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+                if (Model.Items[i].Qty > 0)
+                {
+                        @:document.getElementById('card-@i').classList.add('selected');
+                }
+        }
+    });
+
+        // 頁面載入時恢復已選狀態（從 Confirm 返回時）
+    document.addEventListener('DOMContentLoaded', () => {
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+                    if (Model.Items[i].Qty > 0)
+                    {
+                                @:document.getElementById('card-@i').classList.add('selected');
+                    }
+        }
+    });
 </script>
 

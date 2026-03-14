@@ -1,0 +1,290 @@
+@{
+    ViewData["Title"] = "會員管理";
+}
+
+<div class="container-fluid px-4 members-index">
+
+    <!-- 頁面標題列 -->
+    <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
+        <div>
+            <h1 class="page-header-title">會員管理</h1>
+            <p class="page-header-subtitle">管理餐廳會員狀態、查詢會員資訊</p>
+        </div>
+        <div>
+            <select id="sort-select" class="form-select form-select-sm" style="width:auto;">
+                <option value="CreatedAtDesc">註冊日期（最新）</option>
+                <option value="CreatedAtAsc">註冊日期（最舊）</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 搜尋列 -->
+    <div class="card mb-3">
+        <div class="card-body py-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-name">姓名</label>
+                        <input type="text" class="form-control form-control-sm" id="search-name" />
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-account">帳號</label>
+                        <input type="text" class="form-control form-control-sm" id="search-account" />
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-email">Email</label>
+                        <input type="text" class="form-control form-control-sm" id="search-email" />
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-phone">手機</label>
+                        <input type="text" class="form-control form-control-sm" id="search-phone" />
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="search-field">
+                        <label class="search-label" for="search-status">狀態</label>
+                        <select class="form-select form-select-sm" id="search-status">
+                            <option value="">全部</option>
+                            <option value="active">正常（啟用中）</option>
+                            <option value="unverified">未驗證</option>
+                            <option value="blacklisted">黑名單</option>
+                            <option value="deleted">已刪除</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button id="btn-search" class="btn btn-primary">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i>查詢
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 會員資料表格 -->
+    <div class="card">
+        <div class="card-body">
+            <table id="members-table" class="table table-bordered table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>帳號</th>
+                        <th>Email</th>
+                        <th>手機</th>
+                        <th>生日</th>
+                        <th>註冊時間</th>
+                        <th>刪除時間</th>
+                        <th>狀態</th>
+                        <th class="text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*
+                        TODO（後端連線後）：替換為 @foreach (var member in Model) { ... }
+                        每列 <tr> 需包含以下 data 屬性：
+                        data-id, data-name, data-account, data-email, data-phone,
+                        data-birthdate, data-created-at, data-deleted-at,
+                        data-status（'active'|'unverified'|'blacklisted'|'deleted'）,
+                        data-blacklist-reason
+
+                        狀態判斷優先順序：
+                        IsDeleted=1 → deleted；IsBlacklisted=1 → blacklisted；
+                        IsConfirmed=0 → unverified；其餘 → active
+                    *@
+
+                    <!-- Demo 資料 — 後端連線後移除 -->
+
+                    <!-- 啟用中：顯示「加入黑名單」，隱藏「解除黑名單」 -->
+                    <tr data-id="1"
+                        data-name="王大明" data-account="member001"
+                        data-email="daming@email.com" data-phone="0912111111"
+                        data-birthdate="1990-05-15" data-created-at="2024-01-10 14:22:30"
+                        data-deleted-at="" data-status="active" data-blacklist-reason="">
+                        <td>王大明</td>
+                        <td>member001</td>
+                        <td>daming@email.com</td>
+                        <td>0912-111-111</td>
+                        <td>1990-05-15</td>
+                        <td>2024-01-10 14:22:30</td>
+                        <td></td>
+                        <td><span class="status-badge active">啟用中</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-danger btn-blacklist-member"
+                                        data-id="1" data-name="王大明" title="加入黑名單">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-detail-member"
+                                        data-id="1" title="查看詳情">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 未驗證：顯示「加入黑名單」，隱藏「解除黑名單」 -->
+                    <tr data-id="2"
+                        data-name="李小花" data-account="member002"
+                        data-email="xiaohua@email.com" data-phone="0923222222"
+                        data-birthdate="1995-08-20" data-created-at="2024-02-14 09:00:00"
+                        data-deleted-at="" data-status="unverified" data-blacklist-reason="">
+                        <td>李小花</td>
+                        <td>member002</td>
+                        <td>xiaohua@email.com</td>
+                        <td>0923-222-222</td>
+                        <td>1995-08-20</td>
+                        <td>2024-02-14 09:00:00</td>
+                        <td></td>
+                        <td><span class="status-badge unverified">未驗證</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-danger btn-blacklist-member"
+                                        data-id="2" data-name="李小花" title="加入黑名單">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-detail-member"
+                                        data-id="2" title="查看詳情">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 黑名單：隱藏「加入黑名單」，顯示「解除黑名單」 -->
+                    <tr data-id="3"
+                        data-name="張志強" data-account="member003"
+                        data-email="zhiqiang@email.com" data-phone="0934333333"
+                        data-birthdate="1988-12-01" data-created-at="2023-11-05 16:40:00"
+                        data-deleted-at="" data-status="blacklisted"
+                        data-blacklist-reason="多次惡意取消訂位">
+                        <td>張志強</td>
+                        <td>member003</td>
+                        <td>zhiqiang@email.com</td>
+                        <td>0934-333-333</td>
+                        <td>1988-12-01</td>
+                        <td>2023-11-05 16:40:00</td>
+                        <td></td>
+                        <td><span class="status-badge blacklisted">黑名單</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-success btn-unblacklist-member"
+                                        data-id="3" data-name="張志強" title="解除黑名單">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-detail-member"
+                                        data-id="3" title="查看詳情">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 已刪除：顯示「加入黑名單」（disabled），隱藏「解除黑名單」 -->
+                    <tr data-id="4"
+                        data-name="陳美玲" data-account="member004"
+                        data-email="meiling@email.com" data-phone="0945444444"
+                        data-birthdate="2000-03-08" data-created-at="2023-06-20 11:15:00"
+                        data-deleted-at="2024-03-01 08:00:00" data-status="deleted"
+                        data-blacklist-reason="">
+                        <td>陳美玲</td>
+                        <td>member004</td>
+                        <td>meiling@email.com</td>
+                        <td>0945-444-444</td>
+                        <td>2000-03-08</td>
+                        <td>2023-06-20 11:15:00</td>
+                        <td>2024-03-01 08:00:00</td>
+                        <td><span class="status-badge deleted">已刪除</span></td>
+                        <td>
+                            <div class="action-btn-group">
+                                <button class="btn btn-sm btn-outline-danger btn-blacklist-member"
+                                        data-id="4" data-name="陳美玲" title="加入黑名單" disabled>
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-detail-member"
+                                        data-id="4" title="查看詳情">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- /Demo 資料 -->
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     會員詳情 Modal（唯讀）
+     ============================================================ -->
+<div class="modal fade" id="modal-member-detail" tabindex="-1" aria-labelledby="modal-member-detail-label" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-member-detail-label">
+                    <i class="fa-solid fa-user me-2 text-primary"></i>會員詳情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body members-index">
+                <div class="detail-row">
+                    <span class="detail-label">姓名</span>
+                    <span class="detail-value" id="detail-name"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">帳號</span>
+                    <span class="detail-value" id="detail-account"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value" id="detail-email"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">手機</span>
+                    <span class="detail-value" id="detail-phone"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">生日</span>
+                    <span class="detail-value" id="detail-birthdate"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">註冊時間</span>
+                    <span class="detail-value" id="detail-created-at"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">刪除時間</span>
+                    <span class="detail-value" id="detail-deleted-at"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">狀態</span>
+                    <span class="detail-value" id="detail-status"></span>
+                </div>
+                <div class="detail-row" id="detail-reason-row">
+                    <span class="detail-label">黑名單原因</span>
+                    <span class="detail-value" id="detail-blacklist-reason"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/views/members-index.css" />
+}
+
+@section Scripts {
+    <script src="~/js/views/members-index.js"></script>
+}

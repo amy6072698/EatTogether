@@ -79,15 +79,25 @@
     --bs-link-hover-color: #0a58ca;
     --bs-code-color: #d63384;
     --bs-highlight-bg: #fff3cd;
-    /* 客製顏色變數如下 */
-    --bs-sidebar-bg: #5d656a;
-    --bs-sidebar-color: #31373b;
-    --bs-sidenav-menu-hover-bg: #495057;
-    --bs-sidenav-menu-hover-color: #fff;
-    --bs-sidenav-menu-active-bg: #383d43;
-    --bs-sidenav-menu-active-color: #fff;
-    --bs-sidenav-menu-nested-active-bg: #292c30;
-    --bs-sidenav-menu-nested-active-color: #fff;
+    /* 義起吃 品牌色票 */
+    --eat-brand-dark:              #1A0D08;   /* 品牌深棕黑 */
+    --eat-brand-gold:              #F5D87A;   /* 品牌金黃 */
+    --eat-brand-copper:            #C9A96E;   /* 品牌銅金 */
+    --eat-warm-white:              #F5EDD8;   /* 暖米白 */
+    --eat-page-bg:                 #F2EDE4;   /* 頁面底色 */
+    --eat-active-dark-brown:       #3B1F12;   /* 深棕 Active */
+    --eat-active-mid-brown:        #4E2A17;   /* 中棕 Active */
+    --eat-hover-light-brown:       #2C1610;   /* 淺棕 Hover */
+
+    /* Sidebar 配色（對應品牌色票） */
+    --bs-sidebar-bg:                       #1A0D08;   /* 品牌深棕黑（scrollbar 背景） */
+    --bs-sidebar-color:                    #F5EDD8;   /* 暖米白（scrollbar thumb） */
+    --bs-sidenav-menu-hover-bg:            #2C1610;   /* 淺棕 Hover */
+    --bs-sidenav-menu-hover-color:         #F5EDD8;   /* 暖米白 */
+    --bs-sidenav-menu-active-bg:           #3B1F12;   /* 深棕 Active */
+    --bs-sidenav-menu-active-color:        #F5D87A;   /* 品牌金黃 */
+    --bs-sidenav-menu-nested-active-bg:    #4E2A17;   /* 中棕 Active */
+    --bs-sidenav-menu-nested-active-color: #F5D87A;   /* 品牌金黃 */
 }
 
 *,
@@ -11322,4 +11332,67 @@ body {
   width: 20px !important;
   font-size: 0.75rem;
   border-radius: 0.375rem !important;
+}
+
+/* ============================================================
+   EatTogether 品牌色彩覆寫
+   色票來源：requirements.md § 8.1
+   ============================================================ */
+
+/* Navbar → 品牌深棕黑 */
+.sb-topnav.bg-dark,
+.navbar.bg-dark {
+    background-color: #1A0D08 !important;
+    border-bottom: 1px solid rgba(201, 169, 110, 0.2);
+}
+
+/* Navbar brand logo 尺寸 */
+.navbar-brand-logo {
+    height: 50px;
+    width: auto;
+    display: block;
+}
+
+/* Sidebar → 品牌深棕黑 */
+.sb-sidenav-dark {
+    background-color: #1A0D08 !important;
+    color: #F5EDD8 !important;
+}
+.sb-sidenav-dark .sb-sidenav-menu .sb-sidenav-menu-heading {
+    color: rgba(201, 169, 110, 0.6) !important;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+}
+.sb-sidenav-dark .sb-sidenav-menu .nav-link {
+    color: #F5EDD8 !important;
+}
+.sb-sidenav-dark .sb-sidenav-menu .nav-link .sb-nav-link-icon {
+    color: var(--eat-brand-copper) !important;
+}
+.sb-sidenav-dark .sb-sidenav-menu .nav-link .sb-sidenav-collapse-arrow {
+    color: rgba(245, 237, 216, 0.4) !important;
+}
+
+/* 主內容區背景 → 白色 */
+#layoutSidenav #layoutSidenav_content {
+    background-color: #ffffff !important;
+}
+#layoutSidenav_content main {
+    background-color: #ffffff !important;
+}
+
+/* Navbar 員工字母頭像 */
+.navbar-user-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    flex-shrink: 0;
+    user-select: none;
+    background-color: var(--eat-brand-copper) !important;
 }

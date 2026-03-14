@@ -544,6 +544,8 @@ CREATE TABLE [dbo].[SetMeals](
 	[SetPrice] [decimal](10, 2) NULL,
 	[Description] [nvarchar](300) NULL,
 	[ImageUrl] [nvarchar](300) NULL,
+	[StartDate] [date] NULL,
+	[EndDate] [date] NULL,
 	[UpdatedAt] [datetime2](0) NULL,
  CONSTRAINT [PK_SetMeals] PRIMARY KEY CLUSTERED 
 (
