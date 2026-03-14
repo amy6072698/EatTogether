@@ -580,6 +580,7 @@ CREATE TABLE [dbo].[Tables](
 	[TableName] [nvarchar](20) NOT NULL,
 	[SeatCount] [int] NOT NULL,
 	[Status] [int] NOT NULL,
+	[Remark] [nvarchar](200) NULL,
  CONSTRAINT [PK_Tables] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC

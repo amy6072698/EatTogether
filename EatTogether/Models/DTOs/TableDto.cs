@@ -6,6 +6,7 @@
         public string TableName { get; set; } = null!;
         public int SeatCount { get; set; }
         public int Status { get; set; }
+        public string? Remark { get; set; }
 
         // 計算屬性：狀態文字
         public string StatusText => Status switch

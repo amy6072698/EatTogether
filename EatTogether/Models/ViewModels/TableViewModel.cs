@@ -19,6 +19,7 @@ namespace EatTogether.Models.ViewModels
     {
         public int Id { get; set; }
         public int Status { get; set; }
+        public string? Remark { get; set; }
     }
 
     public class TableEditViewModel
@@ -34,6 +35,9 @@ namespace EatTogether.Models.ViewModels
         [Range(1, 99, ErrorMessage = "座位數必須大於 0")]
         [Display(Name = "座位數")]
         public int SeatCount { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(200)]
+        public string? Remark { get; set; }
 
         // 唯讀顯示用，不允許在 Edit 頁修改
         public int Status { get; set; }

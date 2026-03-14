@@ -89,7 +89,7 @@
                         <label asp-for="StartDate" class="form-label">
                             活動開始日 <span class="text-danger">*</span>
                         </label>
-                        <input asp-for="StartDate" type="datetime-local" class="form-control" />
+                        <input asp-for="StartDate" type="datetime-local" class="form-control" id="StartDate" />
                         <span asp-validation-for="StartDate" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
@@ -128,5 +128,14 @@
                 ? '輸入折抵金額，如 100 代表折 $100'
                 : '輸入折扣百分比，如 10 代表打九折（扣 10%）';
         }
+        // 預設開始日 = 今日 00:00
+        window.addEventListener('DOMContentLoaded', function () {
+            const startEl = document.getElementById('StartDate');
+            if (!startEl.value || startEl.value.startsWith('0001')) {
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                startEl.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T00:00`;
+            }
+        });
     </script>
 }

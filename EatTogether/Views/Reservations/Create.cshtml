@@ -1,6 +1,8 @@
 ﻿@model EatTogether.Models.ViewModels.ReservationCreateViewModel
 @{
     ViewData["Title"] = "新增訂位";
+    // 有效時段：11, 13, 15, 17, 19, 20
+    var validHours = new[] { 11, 13, 15, 17, 19, 20 };
 }
 
 <div class="container-fluid px-4">
@@ -28,65 +30,85 @@
                 @Html.AntiForgeryToken()
 
                 <!-- 訂位人資訊 -->
-                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2">
-                    訂位人資訊
-                </h6>
+                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2">訂位人資訊</h6>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label asp-for="Name" class="form-label">
-                            姓名 <span class="text-danger">*</span>
-                        </label>
+                        <label asp-for="Name" class="form-label">姓名 <span class="text-danger">*</span></label>
                         <input asp-for="Name" class="form-control" placeholder="訂位人姓名" />
                         <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Phone" class="form-label">
-                            電話 <span class="text-danger">*</span>
-                        </label>
+                        <label asp-for="Phone" class="form-label">電話 <span class="text-danger">*</span></label>
                         <input asp-for="Phone" class="form-control" placeholder="09xxxxxxxx" />
                         <span asp-validation-for="Phone" class="text-danger small"></span>
                     </div>
                 </div>
-
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email" type="email" class="form-control"
-                           placeholder="選填，用於寄送訂位確認通知" />
+                    <input asp-for="Email" type="email" class="form-control" placeholder="選填" />
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
 
-                <!-- 預約資訊 -->
-                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2 mt-4">
-                    預約時間與人數
-                </h6>
+                <!-- 預約時間與人數 -->
+                <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2 mt-4">預約時間與人數</h6>
 
+                <!-- 日期選擇 -->
                 <div class="mb-3">
-                    <label asp-for="ReservationDate" class="form-label">
-                        預約日期時間 <span class="text-danger">*</span>
-                    </label>
-                    <input asp-for="ReservationDate" type="datetime-local"
-                           class="form-control" id="reservationDateInput" />
-                    <span asp-validation-for="ReservationDate" class="text-danger small"></span>
-                    <div class="form-text">
-                        <i class="fas fa-info-circle me-1"></i>
-                        系統將自動檢查 ±90 分鐘內是否有時段衝突
-                    </div>
+                    <label class="form-label">預約日期 <span class="text-danger">*</span></label>
+                    <input type="date" id="reservationDate" class="form-control" style="max-width:220px" />
+                    <div class="form-text">最早可訂：30 分鐘後起</div>
                 </div>
 
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="AdultsCount" class="form-label">
-                            大人人數 <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="AdultsCount" type="number" min="1"
-                               class="form-control" />
-                        <span asp-validation-for="AdultsCount" class="text-danger small"></span>
+                <!-- 時段選擇（按鈕式） -->
+                <div class="mb-3">
+                    <label class="form-label">用餐時段 <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-2" id="sessionButtons">
+                        @foreach (var h in validHours)
+                        {
+                            var endH = h == 20 ? 21 : h + 2;
+                            <button type="button"
+                                    class="btn btn-outline-secondary session-btn"
+                                    data-hour="@h"
+                                    onclick="selectSession(this, @h)">
+                                @($"{h:D2}:00") ~ @($"{endH:D2}:00")
+                            </button>
+                        }
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="ChildrenCount" class="form-label">小孩人數</label>
-                        <input asp-for="ChildrenCount" type="number" min="0"
-                               class="form-control" />
-                        <span asp-validation-for="ChildrenCount" class="text-danger small"></span>
+                    <div class="form-text">
+                        <i class="fas fa-clock me-1"></i>
+                        營業時間 11:00~21:00，每 2 小時一個時段，最晚可訂 20:00
+                    </div>
+                    <!-- 隱藏欄位傳遞實際 datetime -->
+                    <input type="hidden" asp-for="ReservationDate" id="reservationDateHidden" />
+                    <span asp-validation-for="ReservationDate" class="text-danger small"></span>
+                </div>
+
+                <!-- 人數 -->
+                <div class="mb-3">
+                    <label class="form-label">訂位人數 <span class="text-danger">*</span></label>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label asp-for="AdultsCount" class="col-form-label small">大人</label>
+                        </div>
+                        <div class="col-auto">
+                            <input asp-for="AdultsCount" type="number" min="1" max="10"
+                                   class="form-control" style="width:80px"
+                                   oninput="updateSeatHint()" />
+                        </div>
+                        <div class="col-auto">
+                            <label asp-for="ChildrenCount" class="col-form-label small">小孩</label>
+                        </div>
+                        <div class="col-auto">
+                            <input asp-for="ChildrenCount" type="number" min="0" max="9"
+                                   class="form-control" style="width:80px"
+                                   oninput="updateSeatHint()" />
+                        </div>
+                    </div>
+                    <span asp-validation-for="AdultsCount" class="text-danger small"></span>
+                    <!-- 桌型提示 -->
+                    <div id="seatHint" class="mt-2 small"></div>
+                    <div class="form-text">
+                        總人數上限 10 人。依人數自動配桌：1-2人→2人桌、3-4人→4人桌、5-6人→6人桌、7-10人→10人桌
                     </div>
                 </div>
 
@@ -97,7 +119,7 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
                         <i class="fas fa-calendar-check me-1"></i>確認新增訂位
                     </button>
                     <a asp-action="Index" class="btn btn-secondary">
@@ -114,15 +136,84 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        // 若欄位為空（預設 0001/01/01），自動填入今日日期時間
+        let selectedHour = null;
+
+        // 預設今日
         window.addEventListener('DOMContentLoaded', function () {
-            const input = document.getElementById('reservationDateInput');
-            if (!input.value || input.value.startsWith('0001')) {
-                const now = new Date();
-                // 格式：yyyy-MM-ddTHH:mm
-                const pad = n => String(n).padStart(2, '0');
-                const localStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-                input.value = localStr;
+            const dateInput = document.getElementById('reservationDate');
+            const today = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            dateInput.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+            dateInput.min = dateInput.value;
+
+            // 若 ModelState 回填有值，還原選中狀態
+            const hidden = document.getElementById('reservationDateHidden');
+            if (hidden.value && !hidden.value.startsWith('0001')) {
+                const dt = new Date(hidden.value);
+                dateInput.value = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+                selectedHour = dt.getHours();
+                document.querySelectorAll('.session-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.hour) === selectedHour) {
+                        btn.classList.replace('btn-outline-secondary', 'btn-primary');
+                    }
+                });
+            }
+            updateSeatHint();
+        });
+
+        function selectSession(btn, hour) {
+            // 取消其他選中
+            document.querySelectorAll('.session-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary');
+            selectedHour = hour;
+            updateHidden();
+        }
+
+        function updateHidden() {
+            if (!selectedHour) return;
+            const dateVal = document.getElementById('reservationDate').value;
+            if (!dateVal) return;
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('reservationDateHidden').value =
+                `${dateVal}T${pad(selectedHour)}:00`;
+        }
+
+        document.getElementById('reservationDate').addEventListener('change', updateHidden);
+
+        function updateSeatHint() {
+            const adults   = parseInt(document.getElementById('AdultsCount').value) || 0;
+            const children = parseInt(document.getElementById('ChildrenCount').value) || 0;
+            const total    = adults + children;
+            const el = document.getElementById('seatHint');
+            if (total <= 0) { el.innerHTML = ''; return; }
+            let seats, warn = '';
+            if (total <= 2)      seats = 2;
+            else if (total <= 4) seats = 4;
+            else if (total <= 6) seats = 6;
+            else if (total <= 10) seats = 10;
+            else { el.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>總人數超過上限 10 人</span>'; return; }
+            el.innerHTML = `<span class="text-primary"><i class="fas fa-chair me-1"></i>共 ${total} 人，將安排 <strong>${seats} 人桌</strong></span>`;
+        }
+
+        // 送出前驗證
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!selectedHour) {
+                e.preventDefault();
+                alert('請選擇用餐時段');
+                return;
+            }
+            updateHidden();
+            const hidden = document.getElementById('reservationDateHidden').value;
+            if (!hidden) { e.preventDefault(); alert('請選擇日期與時段'); return; }
+            const selected = new Date(hidden);
+            const min30    = new Date(Date.now() + 30 * 60000);
+            if (selected < min30) {
+                e.preventDefault();
+                alert('訂位時間必須在 30 分鐘後，請重新選擇');
             }
         });
     </script>

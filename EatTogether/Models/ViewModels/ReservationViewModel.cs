@@ -24,11 +24,11 @@ namespace EatTogether.Models.ViewModels
         public DateTime ReservationDate { get; set; }
 
         [Required(ErrorMessage = "大人人數為必填")]
-        [Range(1, 99, ErrorMessage = "大人人數至少 1 人")]
+        [Range(1, 10, ErrorMessage = "大人人數最多 10 人")]
         [Display(Name = "大人人數")]
         public int AdultsCount { get; set; } = 2;
 
-        [Range(0, 99, ErrorMessage = "小孩人數不可為負數")]
+        [Range(0, 9, ErrorMessage = "小孩人數不可為負數")]
         [Display(Name = "小孩人數")]
         public int ChildrenCount { get; set; } = 0;
 

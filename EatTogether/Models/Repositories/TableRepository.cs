@@ -46,6 +46,7 @@ namespace EatTogether.Models.Repositories
             if (table == null) return;
 
             table.Status = newStatus;
+            if (newStatus == 0 || newStatus == 1) table.Remark = null;
             await _context.SaveChangesAsync();
         }
 
@@ -64,6 +65,14 @@ namespace EatTogether.Models.Repositories
                 .AnyAsync(t => t.TableName == tableName && t.Id != excludeId);
         }
 
+        public async Task UpdateRemarkAsync(int id, string? remark)
+        {
+            var t = await _context.Tables.FindAsync(id);
+            if (t == null) return;
+            t.Remark = remark;
+            await _context.SaveChangesAsync();
+        }
+
         public async Task UpdateAsync(TableDto dto)
         {
             var table = await _context.Tables.FindAsync(dto.Id);
@@ -71,6 +80,7 @@ namespace EatTogether.Models.Repositories
 
             table.TableName = dto.TableName;
             table.SeatCount = dto.SeatCount;
+            table.Remark = dto.Remark;
             await _context.SaveChangesAsync();
         }
     }
