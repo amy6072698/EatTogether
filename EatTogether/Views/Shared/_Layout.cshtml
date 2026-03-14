@@ -154,11 +154,12 @@
                                     <a class="nav-link @(ctrl == "Coupons" && action == "Index" ? "active" : "")" asp-controller="Coupons" asp-action="Index">優惠券列表</a>
                                     <a class="nav-link @(ctrl == "Coupons" && action == "MemberCoupons" ? "active" : "")" asp-controller="Coupons" asp-action="MemberCoupons">領券紀錄</a>
                                 </nav>
-                            </div>
+                            </div>                                                        
 
-
-
-
+                            <a class="nav-link @(ctrl == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-week"></i></div>
+                                活動管理
+                            </a>
 
 
                             <div class="sb-sidenav-footer-blank"></div>
