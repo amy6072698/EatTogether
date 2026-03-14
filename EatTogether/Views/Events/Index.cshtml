@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<EatTogether.Models.ViewModels.EventViewModel>
 
+
 @{
     ViewData["Title"] = "活動管理";
 }
@@ -164,10 +165,20 @@
                                 }
                                 <span class="badge @badgeClass">@statusName</span>
                             </td>
+
                             <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-pencil"></i> 編輯
-                                </a>
+                                @if (item.Status == 2)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-light btn-sm">
+                                        <i class="bi bi-eye"></i> 詳情
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-pencil"></i> 編輯
+                                    </a>
+                                }
                             </td>
                         </tr>
                     }
@@ -211,6 +222,7 @@
                 $('.filter-btn').removeClass('active btn-dark').addClass('btn-outline-dark');
                 $(this).addClass('active btn-dark').removeClass('btn-outline-dark');
             });
+
 
 
         });

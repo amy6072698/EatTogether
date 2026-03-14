@@ -1,69 +1,95 @@
 ﻿@model EatTogether.Models.ViewModels.EventCreateViewModel
 
 @{
-    ViewData["Title"] = "活動新增";
+    ViewData["Title"] = "新增活動";
 }
 
-<h1 class="ms-5">活動新增</h1>
 
-<hr />
-<div class="row">
-    <div class="col-md-4 ms-5">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>            
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Summary" class="control-label"></label>
-                <input asp-for="Summary" class="form-control" />
-                <span asp-validation-for="Summary" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MinSpend" class="control-label"></label>
-                <input asp-for="MinSpend" class="form-control" />                
-                <span asp-validation-for="MinSpend" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RewardItem" class="control-label"></label>
-                <input asp-for="RewardItem" class="form-control" />
-                <span asp-validation-for="RewardItem" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DiscountType" class="control-label"></label>
-                <select asp-for="DiscountType" class="form-control">
-                    <option value=""></option>
-                    <option value="FixedAmount">折抵金額</option>
-                    <option value="Percent">打折</option>
-                    <option value="Gift">贈品</option>
-                </select>
-                <span asp-validation-for="DiscountType" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DiscountValue" class="control-label"></label>
-                <input asp-for="DiscountValue" class="form-control" />
-                <span asp-validation-for="DiscountValue" class="text-danger"></span>
-            </div>
-            <div class="form-group mt-3">
-                <input type="submit" value="新增" class="btn btn-primary mb-2" />
-                <br />
-                <button a asp-action="Index" class="btn btn-light">取消</button>
-            </div>
-        </form>
-    </div>
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>新增活動</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">活動管理</a></li>
+        <li class="breadcrumb-item active">新增活動</li>
+    </ol>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-dark">
+                <i class="bi bi-table me-2"></i>新增活動
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row">
+                    <div class="col-md-6">                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Summary" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="Summary" class="form-control" />
+                            <span asp-validation-for="Summary" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="MinSpend" class="control-label"></label><span class="text-danger">*</span>
+                            <input asp-for="MinSpend" class="form-control" />
+                            <span asp-validation-for="MinSpend" class="text-danger"></span>
+                        </div>                           
+                        <div class="form-group mb-3">
+                            <label asp-for="RewardItem" class="control-label"></label>    <span class="form-text">※非贈品活動可留白</span>
+                            <input asp-for="RewardItem" class="form-control" />
+                            <span asp-validation-for="RewardItem" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="DiscountType" class="control-label"></label><span class="text-danger">*</span>
+                            <select asp-for="DiscountType" class="form-control">
+                                <option value=""></option>
+                                <option value="FixedAmount">折抵金額</option>
+                                <option value="Percent">打折</option>
+                                <option value="Gift">贈品</option>
+                            </select>
+                            <span asp-validation-for="DiscountType" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="DiscountValue" class="control-label"></label><span class="text-danger">*</span>    <span class="form-text">※打折請輸入百分比，例：打85折即填寫0.85</span>
+                            <input asp-for="DiscountValue" class="form-control" />
+                            <span asp-validation-for="DiscountValue" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                        @* --!活動日期區塊-- *@
+                    <div class="col-md-6">  
+                        <div class="form-group mb-3">
+                            <label asp-for="StartDate" class="control-label"></label><span class="text-danger">*</span>
+                            <input type="date" asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="EndDate" class="control-label"></label><span class="text-danger">*</span>
+                            <input type="date" asp-for="EndDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    
+                    <div class="form-group mt-3 d-flex align-items-center">
+                        <input type="submit" value="新增" class="btn btn-primary me-2" />
+
+                        <a asp-action="Index" class="btn btn-light">返回列表</a>
+                    </div>                    
+                    
+                </div>
+            </form>
+        </div> 
+
+    </div>  
+
 </div>
+
 
 
 @section Scripts {
