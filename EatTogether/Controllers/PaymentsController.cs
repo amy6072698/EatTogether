@@ -8,9 +8,11 @@ namespace EatTogether.Controllers
         private readonly IOrderService _service;
         public PaymentsController(IOrderService service) => _service = service;
 
-        public async Task<IActionResult> Create()
+        [HttpGet]
+        public async Task<IActionResult> Create(int? tableId)
         {
             var vm = await _service.GetPaymentIndexAsync();
+            ViewBag.DefaultTableId = tableId ?? 0;  // ← 確認有這行
             return View(vm);
         }
 
@@ -32,11 +34,11 @@ namespace EatTogether.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(int preOrderId)
+        public async Task<IActionResult> Checkout(int preOrderId, string payMethod)
         {
-            await _service.CheckoutAsync(preOrderId);
+            await _service.CheckoutAsync(preOrderId, payMethod);  // ← 傳入 payMethod
             TempData["Success"] = "結帳成功！";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Create));
         }
     }
 }

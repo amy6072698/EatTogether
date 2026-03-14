@@ -3,6 +3,10 @@ using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EatTogether.Controllers
 {
@@ -26,28 +30,30 @@ namespace EatTogether.Controllers
         }
 
         // GET: /SetMeals/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View(new SetMealViewModel());
+            var allSetMeals = await _setMealService.GetAllAsync();
+            int nextOrder = allSetMeals.Any() ? allSetMeals.Max(s => s.DisplayOrder) + 1 : 1;
+
+            return View(new SetMealViewModel
+            {
+                DisplayOrder = nextOrder
+            });
         }
 
         // POST: /SetMeals/Create
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] SetMealViewModel vm)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([FromForm] SetMealViewModel vm)
         {
             if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(e => e.Value!.Errors.Count > 0)
-                    .ToDictionary(
-                        e => e.Key,
-                        e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray()
-                    );
-                return BadRequest(errors);
-            }
+                return View(vm);
+
+            if (!string.IsNullOrEmpty(vm.CroppedImageData))
+                vm.ImageUrl = await SaveBase64ImageAsync(vm.CroppedImageData);
 
             await _setMealService.CreateAsync(vm.ToDto());
-            return Ok();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: /SetMeals/Edit/5
@@ -55,30 +61,24 @@ namespace EatTogether.Controllers
         {
             var dto = await _setMealService.GetByIdAsync(id);
             if (dto == null) return NotFound();
-
-            var vm = dto.ToViewModel();
-            return View(vm);
+            return View(dto.ToViewModel());
         }
 
         // POST: /SetMeals/Edit/5
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, [FromBody] SetMealViewModel vm)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [FromForm] SetMealViewModel vm)
         {
             if (id != vm.Id) return BadRequest();
 
             if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(e => e.Value!.Errors.Count > 0)
-                    .ToDictionary(
-                        e => e.Key,
-                        e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray()
-                    );
-                return BadRequest(errors);
-            }
+                return View(vm);
+
+            if (!string.IsNullOrEmpty(vm.CroppedImageData))
+                vm.ImageUrl = await SaveBase64ImageAsync(vm.CroppedImageData);
 
             await _setMealService.UpdateAsync(vm.ToDto());
-            return Ok();
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: /SetMeals/Disable/5
@@ -113,18 +113,30 @@ namespace EatTogether.Controllers
         }
 
         // =============================================
-        // 私有輔助方法：產生餐點下拉選單
+        // 私有輔助方法
         // =============================================
-        private async Task<List<SelectListItem>> GetDishOptionsAsync()
+        private async Task<string> SaveBase64ImageAsync(string base64Data)
         {
-            var dishes = await _dishService.GetAllAsync();
-            return dishes
-                .Select(d => new SelectListItem
-                {
-                    Value = d.Id.ToString(),
-                    Text  = $"{d.DishName}（${d.Price}）"
-                })
-                .ToList();
+            if (string.IsNullOrEmpty(base64Data)) return null;
+
+            // 移除 data:image/xxx;base64, 前綴
+            var base64 = base64Data.Contains(",")
+                ? base64Data.Split(',')[1]
+                : base64Data;
+
+            var bytes    = Convert.FromBase64String(base64);
+            var fileName = $"{Guid.NewGuid()}.jpg";
+            
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            var savePath = Path.Combine(folderPath, fileName);
+            await System.IO.File.WriteAllBytesAsync(savePath, bytes);
+
+            return "/images/" + fileName;
         }
     }
 }

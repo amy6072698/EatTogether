@@ -1,4 +1,5 @@
 using EatTogether.Models.DTOs;
+using System.Linq;
 
 namespace EatTogether.Models.ViewModels
 {
@@ -18,7 +19,10 @@ namespace EatTogether.Models.ViewModels
                 SetPrice      = dto.SetPrice,
                 Description   = dto.Description,
                 ImageUrl      = dto.ImageUrl,
+                StartDate     = dto.StartDate,
+                EndDate       = dto.EndDate,
                 UpdatedAt     = dto.UpdatedAt,
+                DisplayOrder  = dto.DisplayOrder,
                 Items         = dto.Items.Select(i => i.ToItemViewModel()).ToList()
             };
         }
@@ -35,7 +39,10 @@ namespace EatTogether.Models.ViewModels
                 IsActive      = vm.IsActive,
                 SetPrice      = vm.SetPrice,
                 Description   = vm.Description,
-                ImageUrl      = vm.ImageUrl
+                ImageUrl      = vm.ImageUrl,
+                StartDate     = vm.StartDate,
+                EndDate       = vm.EndDate,
+                DisplayOrder  = vm.DisplayOrder
             };
         }
 

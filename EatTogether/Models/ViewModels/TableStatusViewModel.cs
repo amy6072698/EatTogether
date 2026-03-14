@@ -8,5 +8,6 @@
         public bool HasUnserved { get; set; }
         public int? PreOrderId { get; set; }
         public int TotalAmount { get; set; }
+        public bool IsOccupied { get; set; }  // true = 桌位狀態為用餐中
     }
 }
