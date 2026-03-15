@@ -39,4 +39,27 @@ namespace EatTogether.Models.ViewModels
         [Display(Name = "限量張數")]
         public int? LimitCount { get; set; }
     }
+    public class CouponEditViewModel
+    {
+        public int Id { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "活動名稱為必填")]
+        [System.ComponentModel.DataAnnotations.StringLength(50)]
+        [System.ComponentModel.DataAnnotations.Display(Name = "活動名稱")]
+        public string Name { get; set; } = null!;
+
+        // 唯讀顯示欄位
+        public string Code { get; set; } = null!;
+        public string DiscountDescription { get; set; } = null!;
+        public int ReceivedCount { get; set; }
+        public int? LimitCount { get; set; }
+        public string StatusText { get; set; } = null!;
+        public string StatusBadgeClass { get; set; } = null!;
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Range(1, 999999, ErrorMessage = "請輸入大於 0 的數字")]
+        [System.ComponentModel.DataAnnotations.Display(Name = "增加限量張數")]
+        public int? AddLimitCount { get; set; }
+    }
 }

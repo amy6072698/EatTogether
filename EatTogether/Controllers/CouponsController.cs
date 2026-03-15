@@ -46,6 +46,50 @@ namespace EatTogether.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: /Coupons/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var dto = await _couponService.GetByIdAsync(id);
+            if (dto == null) return NotFound();
+
+            var vm = new CouponEditViewModel
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Code = dto.Code,
+                DiscountDescription = dto.DiscountDescription,
+                ReceivedCount = dto.ReceivedCount,
+                LimitCount = dto.LimitCount,
+                StatusText = dto.StatusText,
+                StatusBadgeClass = dto.StatusBadgeClass,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate
+            };
+            return View(vm);
+        }
+
+        // POST: /Coupons/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, CouponEditViewModel vm)
+        {
+            if (id != vm.Id) return BadRequest();
+            ModelState.Remove(nameof(vm.Code));
+            ModelState.Remove(nameof(vm.DiscountDescription));
+            ModelState.Remove(nameof(vm.StatusText));
+            ModelState.Remove(nameof(vm.StatusBadgeClass));
+            if (!ModelState.IsValid) return View(vm);
+
+            var result = await _couponService.EditAsync(vm.Id, vm.Name, vm.AddLimitCount);
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError("", result.ErrorMesssage);
+                return View(vm);
+            }
+            TempData["SuccessMessage"] = $"優惠券「{vm.Code}」已更新";
+            return RedirectToAction(nameof(Index));
+        }
+
         // GET: /Coupons/MemberCoupons  (後台領券紀錄)
         public async Task<IActionResult> MemberCoupons()
         {

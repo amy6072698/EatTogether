@@ -17,6 +17,22 @@ namespace EatTogether.Models.Services
 
         public async Task<IEnumerable<CouponDto>> GetAllAsync() => await _couponRepo.GetAllAsync();
 
+        public async Task<CouponDto?> GetByIdAsync(int id) => await _couponRepo.GetByIdAsync(id);
+
+        public async Task<Result> EditAsync(int id, string newName, int? addLimitCount)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(id);
+            if (coupon == null) return Result.Fail("找不到此優惠券");
+
+            if (!string.IsNullOrWhiteSpace(newName))
+                await _couponRepo.UpdateNameAsync(id, newName.Trim());
+
+            if (addLimitCount.HasValue && addLimitCount.Value > 0)
+                await _couponRepo.AddLimitCountAsync(id, addLimitCount.Value);
+
+            return Result.Success();
+        }
+
         public async Task<Result> CreateAsync(CouponDto dto)
         {
             if (await _couponRepo.IsCodeExistsAsync(dto.Code))

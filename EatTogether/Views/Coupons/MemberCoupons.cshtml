@@ -123,11 +123,7 @@
                     }
                 </tbody>
             </table>
-            <div class="mt-3 d-flex gap-3 small text-muted">
-                <span><span class="badge bg-success">未使用</span> 有效券，尚未核銷</span>
-                <span><span class="badge bg-secondary">已使用</span> 已核銷</span>
-                <span><span class="badge bg-warning text-dark">未使用（已過期）</span> IsUsed=0 但券已過期，防線②攔截</span>
-            </div>
+
         </div>
     </div>
 </div>
@@ -135,6 +131,17 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
     <script>
-        const dataTable = new simpleDatatables.DataTable("#memberCouponTable");
+        const dataTable = new simpleDatatables.DataTable("#memberCouponTable", {
+            labels: {
+                placeholder: "搜尋...",
+                searchTitle: "搜尋",
+                perPage: "每頁顯示",
+                noRows: "無資料",
+                info: "顯示第 {start} 至 {end} 筆，共 {rows} 筆",
+                loading: "載入中...",
+                infoFiltered: "（從 {rowsTotal} 筆中篩選）",
+                noResults: "無符合資料"
+            }
+        });
     </script>
 }

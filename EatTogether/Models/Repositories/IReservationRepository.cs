@@ -11,5 +11,7 @@ namespace EatTogether.Models.Repositories
         Task UpdateStatusAsync(int id, int newStatus);
         Task<bool> IsConflictAsync(DateTime reservationDate, int excludeId = 0);
         Task<int> GetMaxSeqOfMonthAsync(int year, int month);
+        Task<int> GetSessionBookedCountAsync(DateTime sessionStart, DateTime sessionEnd);
+        Task<IEnumerable<ReservationDto>> GetBySessionAsync(DateTime sessionStart, DateTime sessionEnd);
     }
 }

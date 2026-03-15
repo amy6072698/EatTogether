@@ -1,0 +1,120 @@
+﻿@model EatTogether.Models.ViewModels.CouponEditViewModel
+@{
+    ViewData["Title"] = "編輯優惠券";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">編輯優惠券</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">優惠券管理</a></li>
+        <li class="breadcrumb-item active">編輯優惠券</li>
+    </ol>
+
+    <div class="row g-4" style="max-width: 800px;">
+
+        <!-- 左：可編輯欄位 -->
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-edit me-1"></i>修改優惠券資訊
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">
+                                活動名稱 <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="AddLimitCount" class="form-label">增加限量張數</label>
+                            <div class="input-group">
+                                <span class="input-group-text text-muted small">
+                                    目前：@(Model.LimitCount.HasValue ? $"{Model.LimitCount} 張" : "無限量")
+                                </span>
+                                <input asp-for="AddLimitCount" type="number" min="1"
+                                       class="form-control" placeholder="輸入要增加的數量" />
+                            </div>
+                            <span asp-validation-for="AddLimitCount" class="text-danger small"></span>
+                            <div class="form-text">
+                                留空不異動。已領取 <strong>@Model.ReceivedCount</strong> 張。
+                                @if (Model.LimitCount.HasValue)
+                                {
+                                    <span>剩餘 <strong>@(Model.LimitCount - Model.ReceivedCount)</strong> 張可領。</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>儲存
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>返回列表
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右：唯讀資訊 -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>優惠券資訊
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted">折扣碼</dt>
+                        <dd class="col-7"><code>@Model.Code</code></dd>
+
+                        <dt class="col-5 text-muted">折扣內容</dt>
+                        <dd class="col-7">@Model.DiscountDescription</dd>
+
+                        <dt class="col-5 text-muted">有效期間</dt>
+                        <dd class="col-7">
+                            @if (!Model.EndDate.HasValue)
+                            {
+                                <span class="text-success">永久有效</span>
+                            }
+                            else
+                            {
+                                <span>@Model.StartDate.ToString("yyyy/M/d") ~<br />@Model.EndDate?.ToString("yyyy/M/d")</span>
+                            }
+                        </dd>
+
+                        <dt class="col-5 text-muted">狀態</dt>
+                        <dd class="col-7">
+                            <span class="badge @Model.StatusBadgeClass">@Model.StatusText</span>
+                        </dd>
+
+                        <dt class="col-5 text-muted">已領 / 限量</dt>
+                        <dd class="col-7">
+                            @Model.ReceivedCount /
+                            @(Model.LimitCount.HasValue? Model.LimitCount.ToString() : "無限量")
+                        </dd>
+                    </dl>
+                    <hr class="my-2" />
+                    <div class="text-muted small">
+                        <i class="fas fa-lock me-1"></i>
+                        折扣碼、折扣內容、有效期間等核心規則建立後不可修改。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

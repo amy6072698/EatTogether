@@ -575,6 +575,7 @@ public partial class EatTogetherDBContext : DbContext
         {
             entity.HasIndex(e => e.TableName, "IX_Tables_TableName").IsUnique();
 
+            entity.Property(e => e.Remark).HasMaxLength(200);
             entity.Property(e => e.SeatCount).HasDefaultValue(2);
             entity.Property(e => e.TableName)
                 .IsRequired()

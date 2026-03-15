@@ -10,6 +10,8 @@ namespace EatTogether.Models.Repositories
         Task CreateAsync(CouponDto dto);
         Task<bool> IsCodeExistsAsync(string code);
         Task IncrementReceivedCountAsync(int id);
+        Task UpdateNameAsync(int id, string newName);
+        Task AddLimitCountAsync(int id, int amount);
     }
 
     public interface IMemberCouponRepository

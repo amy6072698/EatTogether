@@ -31,6 +31,8 @@ namespace EatTogether.Controllers
                 all = all.Where(r => r.Status == statusFilter.Value);
 
             vm.Results = all;
+            // 今日統計：固定抓今日，不受篩選影響
+            ViewBag.TodayStats = await _reservationService.GetByDateAsync(DateTime.Today);
             return View(vm);
         }
 
@@ -48,11 +50,16 @@ namespace EatTogether.Controllers
             if (!ModelState.IsValid)
                 return View(vm);
 
-            var result = await _reservationService.CreateAsync(vm.ToDto());
+            var dto = vm.ToDto();
+            var result = await _reservationService.CreateAsync(dto);
 
             if (!result.IsSuccess)
             {
                 ViewBag.ErrorMessage = result.ErrorMesssage;
+                // 建議可用時段 = 衝突時段 + 91 分鐘（超出 ±90 分鐘衝突區）
+                ViewBag.SuggestedTime = vm.ReservationDate != default
+                    ? vm.ReservationDate.AddMinutes(91).ToString("yyyy/M/d HH:mm")
+                    : null;
                 return View(vm);
             }
 

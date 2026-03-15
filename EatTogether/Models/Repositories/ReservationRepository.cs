@@ -104,5 +104,26 @@ namespace EatTogether.Models.Repositories
 
             return 0;
         }
+        /// <summary>取得某時段（sessionStart ~ sessionEnd）的已訂人數（Status 0/1）</summary>
+        public async Task<int> GetSessionBookedCountAsync(DateTime sessionStart, DateTime sessionEnd)
+        {
+            return await _context.Reservations
+                .Where(r => (r.Status == 0 || r.Status == 1)
+                         && r.ReservationDate >= sessionStart
+                         && r.ReservationDate < sessionEnd)
+                .SumAsync(r => (int?)(r.AdultsCount + r.ChildrenCount)) ?? 0;
+        }
+
+        /// <summary>取得某時段內所有有效訂位</summary>
+        public async Task<IEnumerable<ReservationDto>> GetBySessionAsync(DateTime sessionStart, DateTime sessionEnd)
+        {
+            return await _context.Reservations
+                .Where(r => (r.Status == 0 || r.Status == 1)
+                         && r.ReservationDate >= sessionStart
+                         && r.ReservationDate < sessionEnd)
+                .OrderBy(r => r.ReservationDate)
+                .Select(r => r.ToDto())
+                .ToListAsync();
+        }
     }
 }

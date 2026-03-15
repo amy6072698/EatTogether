@@ -11,5 +11,6 @@ namespace EatTogether.Models.Repositories
         Task UpdateStatusAsync(int id, int newStatus);
         Task DeleteAsync(int id);
         Task<bool> IsNameExistsAsync(string tableName, int excludeId = 0);
+        Task UpdateRemarkAsync(int id, string? remark);
     }
 }

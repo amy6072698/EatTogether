@@ -44,6 +44,10 @@ namespace EatTogether.Models.Services
             return Result.Success();
         }
 
+
+        public async System.Threading.Tasks.Task UpdateRemarkAsync(int id, string? remark)
+            => await _repo.UpdateRemarkAsync(id, remark);
+
         public async Task<Result> DeleteAsync(int id)
         {
             var table = await _repo.GetByIdAsync(id);

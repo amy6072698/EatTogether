@@ -63,8 +63,23 @@ namespace EatTogether.Models.Repositories
         {
             var coupon = await _context.Coupons.FindAsync(id);
             if (coupon == null) return;
-
             coupon.ReceivedCount = (coupon.ReceivedCount ?? 0) + 1;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateNameAsync(int id, string newName)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null) return;
+            coupon.Name = newName;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddLimitCountAsync(int id, int amount)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null) return;
+            coupon.LimitCount = (coupon.LimitCount ?? 0) + amount;
             await _context.SaveChangesAsync();
         }
     }

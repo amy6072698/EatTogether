@@ -13,7 +13,8 @@ namespace EatTogether.Models.Extensions
                 Id = table.Id,
                 TableName = table.TableName,
                 SeatCount = table.SeatCount,
-                Status = table.Status
+                Status = table.Status,
+                Remark = table.Remark
             };
         }
     }
