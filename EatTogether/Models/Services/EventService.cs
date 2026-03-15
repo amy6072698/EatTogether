@@ -55,7 +55,6 @@ namespace EatTogether.Models.Services
 		{
 			try
 			{
-				// 即使 Repo 是 void，若執行過程出錯（如資料庫連不上），會跳入 catch
 				await _repo.EditAsync(dto);
 
 				return new EventServiceResult<bool>
@@ -70,5 +69,14 @@ namespace EatTogether.Models.Services
 				return EventServiceResult<bool>.Fail($"編輯失敗：{ex.Message}");
 			}
 		}
+
+		public async Task DeactivateAsync(int id)
+		{
+			var ev = await GetEditByIdAsync(id);
+			ev.Status = 2;
+			await _repo.EditAsync(ev);
+		}
+
+
 	}
 }

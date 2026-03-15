@@ -4,9 +4,11 @@ using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Controllers
 {
+	//[Authorize]
 	public class EventsController : Controller
 	{
 		private readonly EventService _service;
@@ -16,12 +18,15 @@ namespace EatTogether.Controllers
 			_service = service;
 		}
 
-		//[Authorize]
-		public IActionResult Create()
+		// GET: Event/Create
+		[HttpGet]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Create()
 		{
 			return View();
 		}
 
+		// POST: Event/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(EventCreateViewModel vm)
@@ -36,6 +41,8 @@ namespace EatTogether.Controllers
 			return View(vm);
 		}
 
+		[HttpGet]
+		// GET: Event/Index
 		public async Task<IActionResult> Index()
 		{
 			var events = (await _service.GetAllForIndexAsync())
@@ -44,7 +51,7 @@ namespace EatTogether.Controllers
 			return View(events);
 		}
 
-		//[Authorize]
+		[HttpGet]
 		// GET: Event/Edit/5
 		public async Task<IActionResult> Edit(int id)
 		{
@@ -60,7 +67,7 @@ namespace EatTogether.Controllers
 			return View(vm);
 		}
 
-
+		// POST: Event/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(EventEditDto dto)
@@ -75,6 +82,16 @@ namespace EatTogether.Controllers
 
 			ModelState.AddModelError("", result.Message);
 			return View(dto);
+		}
+
+		// POST: Event/Deactivate/5
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DeactivateAsync(int id)
+		{
+			await _service.DeactivateAsync(id);
+			TempData["Success"] = "活動已停用";
+			return RedirectToAction("Index");
 		}
 
 	}

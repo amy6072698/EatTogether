@@ -120,27 +120,40 @@
 <!-- ============================================================
      活動停用 Modal
      ============================================================ -->
-<div class="modal fade" id="modal-deactivate-confirm" tabindex="-1" aria-labelledby="modal-deactivate-confirm-label" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modal-deactivate-confirm-label">
-                    <i class="fa-solid fa-circle-exclamation"></i>活動停用
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-            </div>
-            <div class="modal-body">
-                <div class="detail-row">
-                    <span class="context">確定要停用這個活動嗎？停用後前台將不再顯示。</span>
-                </div>               
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">確定停用</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+<form asp-controller="Events" asp-action="Deactivate" method="post">
+
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="modal fade" id="modal-deactivate-confirm" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">停用活動</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    確定要停用此活動嗎？停用即結束此優惠活動。
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit" class="btn btn-danger">
+                        確定停用
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        取消
+                    </button>
+
+                </div>
+
             </div>
         </div>
     </div>
-</div>
+
+</form>
 
 
 
@@ -171,10 +184,9 @@
 
         function showModal(){
             //停用modal
-            $('#EventDeactivate').on('click', function (e) {
-                e.preventDefault();
+            $('#EventDeactivate').on('click', function () {
 
-                const modalElement = document.getElementById('modal-deactivate-confirm');
+                const modalElement = document.querySelector("#modal-deactivate-confirm");
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
             });
