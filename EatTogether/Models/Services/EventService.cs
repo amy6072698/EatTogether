@@ -1,5 +1,6 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.Repositories;
+using EatTogether.Models.ViewModels;
 
 namespace EatTogether.Models.Services
 {
@@ -18,13 +19,12 @@ namespace EatTogether.Models.Services
 			try
 			{
 				await _repo.CreateAsync(dto);
-				// 在 Ok() 中加入成功的文字訊息
-				return new EventServiceResult<bool>
-				{
-					Success = true,
-					Data = true,
-					Message = "新增活動完成！"
-				};
+				return EventServiceResult<bool>.Ok(true);
+				//{
+				//	Success = true,
+				//	Data = true,
+				//	Message = "新增活動完成！"
+				//};
 			}
 			catch (Exception ex)
 			{
@@ -57,12 +57,12 @@ namespace EatTogether.Models.Services
 			{
 				await _repo.EditAsync(dto);
 
-				return new EventServiceResult<bool>
-				{
-					Success = true,
-					Data = true,
-					Message = "編輯活動完成！"
-				};
+				return EventServiceResult<bool>.Ok(true);
+				//{
+				//	Success = true,
+				//	Data = true,
+				//	Message = "編輯活動完成！"
+				//};
 			}
 			catch (Exception ex)
 			{
@@ -70,11 +70,32 @@ namespace EatTogether.Models.Services
 			}
 		}
 
+		//停用活動
 		public async Task DeactivateAsync(int id)
 		{
 			var ev = await GetEditByIdAsync(id);
 			ev.Status = 2;
 			await _repo.EditAsync(ev);
+		}
+
+		//複製為新活動
+		public async Task<EventCreateViewModel> GetCopyCreateVm(int id)
+		{
+			var source = await GetEditByIdAsync(id);
+			if (source == null) return null;
+
+			return new EventCreateViewModel
+			{
+				Title = source.Title,
+				Summary = source.Summary,
+				MinSpend = source.MinSpend,
+				RewardItem = source.RewardItem,
+				DiscountType = source.DiscountType,
+				DiscountValue = source.DiscountValue,
+				StartDate = DateTime.Today,
+				EndDate = DateTime.Today
+				//,Status = 0
+			};
 		}
 
 

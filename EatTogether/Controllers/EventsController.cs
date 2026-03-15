@@ -20,7 +20,6 @@ namespace EatTogether.Controllers
 
 		// GET: Event/Create
 		[HttpGet]
-		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create()
 		{
 			return View();
@@ -37,8 +36,10 @@ namespace EatTogether.Controllers
 			}
 
 			var dto = vm.ToCreateDto();
-			await _service.CreateAsync(dto);
-			return View(vm);
+			await _service.CreateAsync(dto);			
+			TempData["SuccessMessage"] = "活動新增完成！";
+			return RedirectToAction("Index");
+
 		}
 
 		[HttpGet]
@@ -51,8 +52,8 @@ namespace EatTogether.Controllers
 			return View(events);
 		}
 
-		[HttpGet]
 		// GET: Event/Edit/5
+		[HttpGet]
 		public async Task<IActionResult> Edit(int id)
 		{
 			var dto = await _service.GetEditByIdAsync(id);
@@ -65,34 +66,47 @@ namespace EatTogether.Controllers
 			var vm = dto.ToEditVm();
 
 			return View(vm);
+
 		}
 
 		// POST: Event/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(EventEditDto dto)
+		public async Task<IActionResult> Edit(EventEditViewModel vm)
 		{
+			var dto = vm.ToEditDto();
 			var result = await _service.EditAsync(dto);
+
 			if (result.Success)
 			{
-				// 使用 TempData 把 Service 裡的 "編輯完成！" 文字傳到下一頁
-				TempData["SuccessMessage"] = result.Message;
-				return RedirectToAction("Index");
+				ViewData["SuccessMessage"] = "活動編輯完成！";
+				//return RedirectToAction("Index");
 			}
 
-			ModelState.AddModelError("", result.Message);
-			return View(dto);
+			//ModelState.AddModelError("", result.Message);
+			return View(vm);
 		}
+
 
 		// POST: Event/Deactivate/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeactivateAsync(int id)
+		public async Task<IActionResult> Deactivate(int id)
 		{
 			await _service.DeactivateAsync(id);
-			TempData["Success"] = "活動已停用";
+			TempData["SuccessMessage"] = "活動已停用";
 			return RedirectToAction("Index");
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> CopyCreate(int id)
+		{
+			var vm = await _service.GetCopyCreateVm(id);
+			if (vm == null) return NotFound();
+
+			return View("Create", vm);
+		}
+
 
 	}
 }
