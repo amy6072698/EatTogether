@@ -1,7 +1,7 @@
 後台部分
 
 開發活動機制
-[working]add 活動新增頁面 url:/Events/Create
+[V]add 活動新增頁面 url:/Events/Create
 	[V]add ViewModel, Dto
 		EventCreateViewModel class
 			Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -35,10 +35,10 @@
 		ctor(EventService eventService)
 		Create(EventCreateViewModel  vm)[Autorize]
 
-	[working]美化頁面
+	[V]美化頁面
 
 
-[working]add 活動首頁 url: /Events/Index
+[V]add 活動首頁 url: /Events/Index
 	[V]add ViewModel, Dto 
 		EventViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -67,7 +67,7 @@
 
 	**活動狀態:進行中、未開始、已結束
 
-	[working]美化頁面
+	[V]美化頁面
 	
 
 
@@ -110,7 +110,7 @@
 	    2.未開始活動則都可以改 
 	    3.編輯頁面放置「活動停用」超連結，跳出活動詳細視窗，按下停用再跳一個警告視窗
 
-	[working]美化頁面，已結束活動僅能唯讀，進行中活動不能改開始日期
+	[V]美化頁面，已結束活動僅能唯讀，進行中活動不能改開始日期
 
 
 [working]add 活動停用   >>情境:可能贈品送完、折扣有誤或是有臨時狀況需要緊急停止該活動
@@ -122,9 +122,7 @@
     	3. 確認後執行停用
 
   	停用後狀態邏輯：
-   	 - 停用 = 強制將 Status 設為「已結束」（或新增 IsDisabled 欄位區分）
-    	- 與「自然結束」（EndDate 到期）的差異建議透過 IsDisabled 欄位區分，
-     	 方便日後查詢「是否為提前停用的活動」
+   	 - 停用 = 強制將 Status 設為「已結束」
 	
 
 []add 活動複製

@@ -2,6 +2,7 @@
 
 namespace EatTogether.Models.ViewModels
 {
+	
 	public class EventEditViewModel
 	{
 		public int Id { get; set; }
