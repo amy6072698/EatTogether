@@ -154,7 +154,7 @@
 	
 
 
-	[working]add Service/Repository
+	[V]add Service/Repository
 		IArticleCategoryRepository interface
 			void Create (ArticleCategoryCreateDto dto)
 
@@ -167,7 +167,7 @@
 
 		在 Program.cs 註冊IArticleCategoryRepository , ArticleCategoryRepository, service
 
-	[]add ArticleCategoriesController
+	[working]add ArticleCategoriesController
 		Create()
 		ctor(ArticleCategoryService articleCategoryService)
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
