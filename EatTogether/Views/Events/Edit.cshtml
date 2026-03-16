@@ -1,0 +1,215 @@
+﻿@model EatTogether.Models.ViewModels.EventEditViewModel
+
+@{
+    ViewData["Title"] = "活動編輯";
+    bool isEnded = Model.Status == 2;
+    bool isRunning = Model.Status == 1;
+}
+
+@if (ViewData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @ViewData["SuccessMessage"]
+        @* <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
+    </div>
+}
+
+
+@section Styles{
+    <style>
+        /* 當 input 有 readonly 屬性時，改變背景顏色 */
+        input[readonly] {
+            background-color: #e9ecef !important;
+            cursor: not-allowed;
+            border: 1px solid #ced4da;
+        }
+    </style>        
+}
+
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>活動編輯</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">活動管理</a></li>
+        <li class="breadcrumb-item active">活動編輯</li>
+    </ol>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-dark">
+                <i class="bi bi-table me-2"></i>活動編輯
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <input asp-for="Id" type="hidden" />
+                            <input asp-for="Status" type="hidden" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="control-label"></label>
+                            <input asp-for="Title" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Summary" class="control-label"></label>
+                            <input asp-for="Summary" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="Summary" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="MinSpend" class="control-label"></label>
+                            <input asp-for="MinSpend" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="MinSpend" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="RewardItem" class="control-label"></label>    <span class="form-text">※非贈品活動可留白</span>
+                            <input asp-for="RewardItem" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="RewardItem" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="DiscountType" class="control-label"></label>
+                            <select asp-for="DiscountType" class="form-control" disabled="@(isEnded ? "disabled" : null)">
+                                <option value=""></option>
+                                <option value="FixedAmount">折抵金額</option>
+                                <option value="Percent">打折</option>
+                                <option value="Gift">贈品</option>
+                            </select>
+                            <span asp-validation-for="DiscountType" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="DiscountValue" class="control-label"></label>   <span class="form-text">※打折請輸入百分比，例：打85折即填寫0.85</span>
+                            <input asp-for="DiscountValue" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="DiscountValue" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    @* --!活動日期區塊-- *@
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="StartDate" class="control-label"></label>
+                            <input type="date" asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" readonly="@(isEnded || isRunning ? "readonly" : null)" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="EndDate" class="control-label"></label>
+                            <input type="date" asp-for="EndDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" readonly="@(isEnded ? "readonly" : null)" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+
+                        @* 如果是進行中活動才會有此按鈕 *@
+                        @if (isRunning)
+                        {
+                            <button type="button" id="EventDeactivate" class="btn btn-danger">停用活動</button>
+
+                        }
+                        else if (isEnded)                        
+                        {                           
+                            <a asp-action="CopyCreate" asp-route-id="@Model.Id"class="btn btn-success">
+                                複製並建立新活動
+                            </a>
+                        }
+
+                    </div>
+
+                    @* 判斷是否為已結束活動 *@
+                    @if (isEnded)
+                    {
+                        <div class="alert alert-warning mt-3">此活動已結束，僅供檢視。</div>
+                        <div class="form-group mt-3 d-flex align-items-center">
+                            <a asp-action="Index" class="btn btn-light">返回列表</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group mt-3 d-flex align-items-center">
+                            <input type="submit" value="儲存" class="btn btn-primary me-2" />
+
+                            <a asp-action="Index" class="btn btn-light">返回列表</a>
+                        </div>
+                    }
+
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     活動停用 Modal
+     ============================================================ -->
+<form asp-controller="Events" asp-action="Deactivate" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="modal fade" id="modal-deactivate-confirm" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">停用活動</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    確定要停用此活動嗎？停用即結束此優惠活動。
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit" class="btn btn-danger">
+                        確定停用
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {  
+            var status = @Model.Status;
+
+            if (status === 2) {
+                // 禁用所有輸入框、選單、按鈕（除了取消按鈕）
+                $('input, select, textarea').prop('readonly', true);
+                $('select').prop('disabled', true); 
+            }
+
+            if (status === 1) {
+                // 鎖定開始日期
+                $('input[name="StartDate"]').prop('readonly', true);
+            }
+
+            showModal();
+
+        });
+
+        function showModal(){
+            //停用modal
+            $('#EventDeactivate').on('click', function () {
+                const modalElement = document.querySelector("#modal-deactivate-confirm");
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
+        }
+
+
+
+
+    </script>
+}

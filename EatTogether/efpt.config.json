@@ -5,7 +5,7 @@
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
-   "MinimumProductVersion": "2.6.1378",
+   "MinimumProductVersion": "2.6.1382",
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Models\/EfModels",

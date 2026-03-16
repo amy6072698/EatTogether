@@ -7,20 +7,20 @@ namespace EatTogether.Models.Extensions
 	public static class EventsMappingExtension
 	{
 		//活動新增
-		public static EventCreateDto ToDto(this EventCreateViewModel vm)
+		public static EventCreateDto ToCreateDto(this EventCreateViewModel vm)
 		{
 			return new EventCreateDto
 			{
 				//Id = vm.Id,
 				Title = vm.Title,
 				Summary = vm.Summary,
-				MinSpend = vm.MinSpend,
-				StartDate = vm.StartDate,
-				EndDate = vm.EndDate,
+				MinSpend = vm.MinSpend.Value,
+				StartDate = vm.StartDate.Value,
+				EndDate = vm.EndDate.Value,
 				RewardItem = vm.RewardItem,
 				DiscountType = vm.DiscountType,
-				DiscountValue = vm.DiscountValue,
-				Status = CalculateStatus(vm.StartDate, vm.EndDate)
+				DiscountValue = vm.DiscountValue.Value,
+				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
 			};
 		}
 
@@ -28,7 +28,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new Event
 			{
-				//Id = dto.Id,
+				Id = dto.Id,
 				Title = dto.Title,
 				Summary = dto.Summary,
 				MinSpend = dto.MinSpend,
@@ -61,7 +61,7 @@ namespace EatTogether.Models.Extensions
 		//// Entity → Dto（Repository 讀取用）
 		//EventDto ToDto(this Event entity)
 
-		public static EventViewModel ToVm(this EventDto dto)
+		public static EventViewModel ToEventVm(this EventDto dto)
 		{
 			return new EventViewModel
 			{
@@ -78,7 +78,7 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
-		public static EventDto ToDto(this Event entity)
+		public static EventDto ToEventDto(this Event entity)
 		{
 			return new EventDto
 			{
@@ -106,6 +106,73 @@ namespace EatTogether.Models.Extensions
 		//	// Entity → Dto（Repository 讀取用）
 		//	EventDto ToDto(this Event entity)
 
+		public static EventEditDto ToEditDto(this EventEditViewModel vm)
+		{
+			return new EventEditDto
+			{
+				Id = vm.Id,
+				Title = vm.Title,
+				Summary = vm.Summary,
+				MinSpend = vm.MinSpend.Value,
+				StartDate = vm.StartDate.Value,
+				EndDate = vm.EndDate.Value,
+				RewardItem = vm.RewardItem,
+				DiscountType = vm.DiscountType,
+				DiscountValue = vm.DiscountValue.Value,
+				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
+			};
+		}
+
+		public static EventEditViewModel ToEditVm(this EventEditDto dto)
+		{
+			return new EventEditViewModel
+			{
+				Id = dto.Id,
+				Title = dto.Title,
+				Summary = dto.Summary,
+				MinSpend = dto.MinSpend,
+				StartDate = dto.StartDate,
+				EndDate = dto.EndDate,
+				RewardItem = dto.RewardItem,
+				DiscountType = dto.DiscountType,
+				DiscountValue = dto.DiscountValue,
+				Status = dto.Status
+			};
+		}
+
+		public static Event ToEntity(this EventEditDto dto)
+		{
+			return new Event
+			{
+				Id = dto.Id,
+				Title = dto.Title,
+				Summary = dto.Summary,
+				MinSpend = dto.MinSpend,
+				StartDate = dto.StartDate,
+				EndDate = dto.EndDate,
+				RewardItem = dto.RewardItem,
+				DiscountType = dto.DiscountType,
+				DiscountValue = dto.DiscountValue,
+				Status = CalculateStatus(dto.StartDate, dto.EndDate)
+			};
+		}
+
+		public static EventEditDto ToEditDto(this Event entity)
+		{
+			return new EventEditDto
+			{
+				Id = entity.Id,
+				Title = entity.Title,
+				Summary = entity.Summary,
+				MinSpend = entity.MinSpend,
+				StartDate = entity.StartDate,
+				EndDate = entity.EndDate,
+				RewardItem = entity.RewardItem,
+				DiscountType = entity.DiscountType,
+				DiscountValue = entity.DiscountValue,
+				Status = entity.Status
+			};
+		}
 
 
 	}

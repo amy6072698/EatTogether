@@ -1,7 +1,7 @@
 後台部分
 
 開發活動機制
-[working]add 活動新增頁面 url:/Events/Create
+[V]add 活動新增頁面 url:/Events/Create
 	[V]add ViewModel, Dto
 		EventCreateViewModel class
 			Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -35,10 +35,10 @@
 		ctor(EventService eventService)
 		Create(EventCreateViewModel  vm)[Autorize]
 
-	[working]美化頁面
+	[V]美化頁面
 
 
-[working]add 活動首頁 url: /Events/Index
+[V]add 活動首頁 url: /Events/Index
 	[V]add ViewModel, Dto 
 		EventViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -67,12 +67,12 @@
 
 	**活動狀態:進行中、未開始、已結束
 
-	[working]美化頁面
+	[V]美化頁面
 	
 
 
-[]add 活動編輯 url: /Events/Edit?eventsId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+[working]add 活動編輯 url: /Events/Edit?eventsId=00
+	[V]add ViewModel, Dto , VM轉Dto的擴充方法
 		EventEditViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
 
@@ -91,47 +91,46 @@
 			EventDto ToDto(this Event entity)	
 
 
-	[]modify EventRepository
+	[V]modify EventRepository
 		IEventRepository  interface
 			add void Edit(EventEditDto  dto)
 			add EventEditDto GetEditById(int id)
 
-	[]modify 	EventService
+	[V]modify	EventService
 			void Edit(EventEditDto dto)
 
-	[]modify EventsController
-		add IActionResult Edit action[Autorize]
+	[V]modify EventsController
+		add IActionResult Edit action[Authorize]
 			Edit.cshtml
-		HttpGet Edit(int id)[Autorize]
+		HttpGet Edit(int id)[Authorize]
 
-		HttpPost Edit(EventEditViewModel vm)[Autorize]
+		HttpPost Edit(EventEditViewModel vm)[Authorize]
 
 	**1.進行中活動開始日期不能改
 	    2.未開始活動則都可以改 
 	    3.編輯頁面放置「活動停用」超連結，跳出活動詳細視窗，按下停用再跳一個警告視窗
 
-	[]美化頁面
+	[V]美化頁面，已結束活動僅能唯讀，進行中活動不能改開始日期
 
 
-[]add 活動停用   >>情境:可能贈品送完、折扣有誤或是有臨時狀況需要緊急停止該活動
+[V]add 活動停用   >>情境:可能贈品送完、折扣有誤或是有臨時狀況需要緊急停止該活動
   	條件式：僅「進行中」活動可執行停用操作
-  	入口：Edit.cshtml 頁面內的「活動停用」超連結（已標記）
+  	入口：Edit.cshtml 頁面內的「活動停用」按鈕
   	流程：
-    	1. 點擊「活動停用」→ 跳出活動詳細資訊 Modal
-    	2. 按下停用 → 二次確認警告視窗
+    	1. 點擊「活動停用」
+    	2. 按下停用 → 確認視窗
     	3. 確認後執行停用
 
   	停用後狀態邏輯：
-   	 - 停用 = 強制將 Status 設為「已結束」（或新增 IsDisabled 欄位區分）
-    	- 與「自然結束」（EndDate 到期）的差異建議透過 IsDisabled 欄位區分，
-     	 方便日後查詢「是否為提前停用的活動」
+   	 - 停用 = 強制將 Status 設為「已結束」
 	
 
-[]add 活動複製
+[V]add 活動複製
 	條件式:已結束活動，edit頁面呈現資料為唯讀狀態，該頁面僅有「複製並建立新活動」超連結可以點擊
 	**複製並建立新活動: 跳轉至create頁面，輸入框自動填入資料
-	**撈EventId資料，日期清空，新的EventId一樣在新增完成時自動生成
+	**撈EventId資料，日期預設為當日日期，新的EventId一樣在新增完成時自動生成
 
+[working]add 系統自動偵測活動時間，自動更新活動狀態
 
 
 開發文章機制
