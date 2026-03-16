@@ -52,6 +52,14 @@
         </div>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div><i class="fas fa-ticket-alt me-1"></i>優惠券列表</div>
@@ -65,6 +73,14 @@
             </div>
         </div>
         <div class="card-body">
+            <!-- 狀態篩選 -->
+            <div class="mb-3 d-flex gap-2 flex-wrap" id="statusFilter">
+                <button class="btn btn-outline-secondary btn-sm active" data-filter="all">全部</button>
+                <button class="btn btn-outline-success btn-sm" data-filter="有效">有效</button>
+                <button class="btn btn-outline-danger btn-sm" data-filter="已過期">已過期</button>
+                <button class="btn btn-outline-secondary btn-sm" data-filter="尚未開始">尚未開始</button>
+                <button class="btn btn-outline-warning btn-sm" data-filter="已達限量">已達限量</button>
+            </div>
             <table id="couponTable" class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -191,6 +207,16 @@
                 infoFiltered: "（從 {rowsTotal} 筆中篩選）",
                 noResults: "無符合資料"
             }
+        });
+
+        // 狀態篩選按鈕
+        document.querySelectorAll('#statusFilter button').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#statusFilter button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.dataset.filter;
+                dataTable.search(filter === 'all' ? '' : filter);
+            });
         });
     </script>
 }

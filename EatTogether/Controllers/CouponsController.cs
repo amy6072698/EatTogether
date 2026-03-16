@@ -1,4 +1,5 @@
 ﻿using EatTogether.Models.Services;
+using System;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +43,11 @@ namespace EatTogether.Controllers
                 return View(vm);
             }
 
-            TempData["SuccessMessage"] = $"優惠券「{vm.Code}」建立成功";
+            var now = DateTime.Now;
+            bool notified = vm.StartDate <= now && (!vm.EndDate.HasValue || vm.EndDate.Value >= now);
+            TempData["SuccessMessage"] = notified
+                ? $"優惠券「{vm.Code}」建立成功，已發送通知給所有會員！"
+                : $"優惠券「{vm.Code}」建立成功";
             return RedirectToAction(nameof(Index));
         }
 

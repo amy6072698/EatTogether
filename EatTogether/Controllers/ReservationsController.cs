@@ -13,18 +13,23 @@ namespace EatTogether.Controllers
             _reservationService = reservationService;
         }
 
-        // GET: /Reservations?searchDate=yyyy-MM-dd&statusFilter=0
-        public async Task<IActionResult> Index(DateTime? searchDate, int? statusFilter)
+        // GET: /Reservations?searchDate=yyyy-MM-dd&searchPhone=09xx&statusFilter=0
+        public async Task<IActionResult> Index(DateTime? searchDate, string? searchPhone, int? statusFilter)
         {
             var vm = new ReservationSearchViewModel
             {
                 SearchDate = searchDate,
+                SearchPhone = searchPhone,
                 StatusFilter = statusFilter
             };
 
             var all = searchDate.HasValue
                 ? await _reservationService.GetByDateAsync(searchDate.Value)
                 : await _reservationService.GetAllAsync();
+
+            // 電話篩選（模糊搜尋）
+            if (!string.IsNullOrWhiteSpace(searchPhone))
+                all = all.Where(r => r.Phone.Contains(searchPhone.Trim()));
 
             // 狀態篩選
             if (statusFilter.HasValue)
@@ -63,7 +68,9 @@ namespace EatTogether.Controllers
                 return View(vm);
             }
 
-            TempData["SuccessMessage"] = "訂位新增成功";
+            TempData["SuccessMessage"] = string.IsNullOrEmpty(dto.Email)
+                ? "訂位新增成功"
+                : $"訂位新增成功！確認信已寄至 {dto.Email}";
             return RedirectToAction(nameof(Index));
         }
 

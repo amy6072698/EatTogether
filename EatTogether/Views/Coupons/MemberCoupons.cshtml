@@ -67,6 +67,32 @@
             </a>
         </div>
         <div class="card-body">
+            <!-- 搜尋列 -->
+            <div class="row g-2 mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">姓名</label>
+                    <input type="text" id="searchName" class="form-control form-control-sm" placeholder="搜尋姓名..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">折扣碼</label>
+                    <input type="text" id="searchCode" class="form-control form-control-sm" placeholder="搜尋折扣碼..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">使用狀態</label>
+                    <select id="searchStatus" class="form-select form-select-sm">
+                        <option value="">全部</option>
+                        <option value="未使用">未使用</option>
+                        <option value="已使用">已使用</option>
+                        <option value="已過期">已過期</option>
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-primary btn-sm" onclick="applyFilter()">
+                        <i class="fas fa-search me-1"></i>搜尋
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm ms-1" onclick="clearFilter()">重置</button>
+                </div>
+            </div>
             <table id="memberCouponTable" class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -186,5 +212,30 @@
                 noResults: "無符合資料"
             }
         });
+
+        function applyFilter() {
+            const name   = document.getElementById('searchName').value.trim();
+            const code   = document.getElementById('searchCode').value.trim();
+            const status = document.getElementById('searchStatus').value;
+            // 組合搜尋字串（簡單用 DataTable 搜尋功能）
+            // 依優先序：姓名 > 折扣碼 > 狀態
+            const query = name || code || status;
+            dataTable.search(query);
+        }
+
+        function clearFilter() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchCode').value = '';
+            document.getElementById('searchStatus').value = '';
+            dataTable.search('');
+        }
+
+        // Enter 觸發搜尋
+        ['searchName','searchCode'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') applyFilter();
+            });
+        });
+        document.getElementById('searchStatus').addEventListener('change', applyFilter);
     </script>
 }

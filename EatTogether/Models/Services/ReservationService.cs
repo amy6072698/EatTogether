@@ -9,10 +9,13 @@ namespace EatTogether.Models.Services
     {
         private readonly IReservationRepository _repo;
         private readonly ITableRepository _tableRepo;
-        public ReservationService(IReservationRepository repo, ITableRepository tableRepo)
+        private readonly ReservationEmailService _emailService;
+
+        public ReservationService(IReservationRepository repo, ITableRepository tableRepo, ReservationEmailService emailService)
         {
             _repo = repo;
             _tableRepo = tableRepo;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<ReservationDto>> GetAllAsync() => await _repo.GetAllAsync();
@@ -89,6 +92,19 @@ namespace EatTogether.Models.Services
             var seq = await _repo.GetMaxSeqOfMonthAsync(d.Year, d.Month) + 1;
             dto.BookingNumber = $"R{d.Year % 100:D2}{d.Month:D2}{seq:D3}";
             await _repo.CreateAsync(dto);
+
+            // ⑧ 寄發訂位確認信（寫入 EmailQueue）
+            if (!string.IsNullOrEmpty(dto.Email))
+            {
+                var body = _emailService.BuildReservationEmail(
+                    dto.Name, dto.BookingNumber, dto.ReservationDate,
+                    dto.AdultsCount, dto.ChildrenCount, dto.Remark);
+                await _emailService.EnqueueAsync(
+                    dto.Email,
+                    $"【義起吃】訂位確認 - {dto.BookingNumber}",
+                    body);
+            }
+
             return Result.Success();
         }
 

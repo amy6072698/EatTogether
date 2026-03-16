@@ -40,6 +40,7 @@ namespace EatTogether.Models.ViewModels
     public class ReservationSearchViewModel
     {
         public DateTime? SearchDate { get; set; }
+        public string? SearchPhone { get; set; }
         public int? StatusFilter { get; set; }
         public IEnumerable<DTOs.ReservationDto> Results { get; set; } = new List<DTOs.ReservationDto>();
     }

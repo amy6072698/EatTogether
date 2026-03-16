@@ -12,6 +12,14 @@
         <li class="breadcrumb-item active">訂位管理</li>
     </ol>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <!-- 今日統計卡片（固定顯示今日，不受篩選影響） -->
     @{
         var todayData = (ViewBag.TodayStats as IEnumerable<EatTogether.Models.DTOs.ReservationDto>)
@@ -76,6 +84,12 @@
                         <label class="form-label">預約日期</label>
                         <input type="date" name="searchDate" class="form-control"
                                value="@Model.SearchDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">電話</label>
+                        <input type="text" name="searchPhone" class="form-control"
+                               placeholder="輸入電話查詢"
+                               value="@Model.SearchPhone" />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">狀態</label>
