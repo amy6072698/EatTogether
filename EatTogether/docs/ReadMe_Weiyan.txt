@@ -174,7 +174,7 @@
 
 
 [working]add 文章分類首頁頁面 url:/ArticleCategories/Index
-	[working]add ViewModel, Dto, 轉換方法
+	[V]add ViewModel, Dto, 轉換方法
 		ArticleCategoryViewModel class
 			Name, SortOrder, IsEnabled
 			(分類名、排序、是否啟用)
@@ -189,20 +189,21 @@
 			ArticleCategoryDto ToDto(this ArticleCategory entity)	
 		
 
-	[]modify ArticleCategoryRepository 
+	[working]modify ArticleCategoryRepository 
 		ArticleCategoryRepository interface
 			add IEnumerable<ArticleCategoryDto> GetAll()
 
-	[]modify 	ArticleService
+	[working]modify ArticleService
 			List<ArticleCategoryDto> GetAllForIndex()
 
 		
 
-	[]modify ArticleCategoriesController
+	[working]modify ArticleCategoriesController
 		add IActionResult index action[Authorize]
 		**運用modal方式去增刪查改
 			Index.cshtml
 
+	[]新增頁紅字驗證的部分要再修改
 
 []add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)

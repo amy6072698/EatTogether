@@ -45,7 +45,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new ArticleCategoryViewModel
 			{
-				//Id = dto.Id,
+				Id = dto.Id,
 				Name = dto.Name,
 				SortOrder = dto.SortOrder,
 				IsEnabled = dto.IsEnabled
@@ -56,7 +56,7 @@ namespace EatTogether.Models.Extensions
 		{
 			return new ArticleCategoryDto
 			{
-				//Id = entity.Id,
+				Id = entity.Id,
 				Name = entity.Name,
 				SortOrder = entity.SortOrder,
 				IsEnabled = entity.IsEnabled

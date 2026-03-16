@@ -1,0 +1,11 @@
+﻿@model EatTogether.Models.DTOs.ArticleCategoryDto
+@{
+    ViewData["Title"] = "新增文章類別";
+}
+<h1>新增文章類別</h1>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        @await Html.PartialAsync("_CreatePartial", Model)
+    </div>
+</div>

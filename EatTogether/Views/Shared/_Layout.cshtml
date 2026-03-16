@@ -36,6 +36,7 @@
         bool inDish = ctrl is "Categories" or "Dishes" or "SetMeals";
         bool inOrder = ctrl is "PreOrders" or "Payments";
         bool inCoupon = ctrl == "Coupons";
+        bool inArticle = ctrl is "ArticleCategory" or "Article";
     }
 
     @if (ViewData["HideNav"] as bool? == true)
@@ -177,6 +178,18 @@
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-week"></i></div>
                                 活動管理
                             </a>
+
+                            <a class="nav-link @(inArticle ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseArticle" aria-expanded="@(inArticle ? "true" : "false")" aria-controls="collapseArticle">
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-feather-pointed"></i></div>
+                                文章管理
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse @(inArticle ? "show" : "")" id="collapseArticle" aria-labelledby="headingArticle" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link @(ctrl == "Article" && action == "Index" ? "active" : "")" asp-controller="Article" asp-action="Index">文章列表</a>
+                                    <a class="nav-link @(ctrl == "ArticleCategories" && action == "Index" ? "active" : "")" asp-controller="ArticleCategories" asp-action="Index">文章類別</a>
+                                </nav>
+                            </div>
 
                             <div class="sb-sidenav-menu-heading">報表管理</div>
                             <a class="nav-link @(ctrl == "Report" ? "active" : "")" asp-controller="Report" asp-action="Index">

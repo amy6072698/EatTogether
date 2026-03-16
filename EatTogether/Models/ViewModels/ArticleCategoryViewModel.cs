@@ -4,7 +4,7 @@ namespace EatTogether.Models.ViewModels
 {
 	public class ArticleCategoryViewModel
 	{
-		//public int Id { get; set; }
+		public int Id { get; set; }
 
 
 		[Display(Name = "分類名稱")]

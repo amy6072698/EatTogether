@@ -18,5 +18,10 @@ namespace EatTogether.Models.Services
 
 		}
 
+		public async Task<List<ArticleCategoryDto>> GetAllForIndexAsync()
+		{
+			return await _repo.GetAllAsync();
+		}
+
 	}
 }

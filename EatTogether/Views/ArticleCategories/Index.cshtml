@@ -1,0 +1,170 @@
+﻿@model IEnumerable<EatTogether.Models.DTOs.ArticleCategoryDto>
+@{
+    ViewData["Title"] = "文章類別";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>文章類別</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">文章類別</li>
+    </ol>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-dark">
+                <i class="bi bi-table me-2"></i>文章類別
+            </h5>
+            <button type="button" id="btnCreate" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> 新增類別
+            </button>
+        </div>
+
+
+        <div class="card-body w-100">
+            <table id="ArticleCategoryTable" class="table w-100">
+                <thead>
+                    <tr>
+                        <th>排序</th>
+                        <th>類別名稱</th>
+                        <th>是否啟用</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     文章類別新增 Modal
+     ============================================================ -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">新增文章類別</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="#createModal" aria-label="Close" onclick="$('#createModal').modal('hide')"></button>
+            </div>
+            <div class="modal-body" id="createModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+         $(document).ready(function() {
+            $('#ArticleCategoryTable').DataTable({
+                ajax: {
+                    type: "GET",
+                    url: `/ArticleCategories/Index`,
+                    dataSrc: ""
+                },
+                // dom: '<"d-flex justify-content-between"f>t<"mt-3"i>',
+                dom: '<"d-flex justify-content-between"f>t<"d-flex justify-content-between mt-3"ip>',
+                columns: [
+                    { data: "sortOrder", width: "15%" },
+                    { data: "name", width: "50%" },
+                    {
+                        data: "isEnabled",
+                        width: "20%",
+                        className: "text-center", // 讓圖示居中
+                        render: function(data) {
+                            // 啟用：黑底方框 + 打勾
+                            if (data) {
+                                return '<span class="p-1 px-2 rounded text-dark fs-4"  title="啟用">' +
+                                       '<i class="fa-solid fa-square-check"></i></span>';
+                            }
+                            // 停用：灰底方框 (無打勾)
+                            else {
+                                return '<span class="p-1 px-2 rounded text-secondary fs-4" title="停用">' +
+                                       '<i class="fa-solid fa-square"></i></span>';
+                            }
+                        }
+                    },
+                    {
+                        //新增編輯按鈕欄位
+                        data: "id", //假設你的 DTO 裡有 id 這個屬性
+                        width: "15%",
+                        className: "text-center",
+                        orderable: false, //這一欄不需要排序功能
+                        render: function(data) {
+                            return `
+                                <a href="/ArticleCategories/Edit/${data}" class="btn btn-primary btn-sm px-3">
+                                    <i class="bi bi-pencil-square me-1"></i> 編輯
+                                </a>
+                            `;
+                        }
+                    }
+                ],
+                fixedHeader:{
+                    header:true
+                },
+                paging: true,
+                pageLength: 10,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/zh-HANT.json',
+                }
+            });
+
+            // 點擊按鈕跳出新增 Modal
+            $('#btnCreate').on('click', function () {
+                $('#createModal').modal('show');
+
+                $.get('@Url.Action("Create", "ArticleCategories")', function (data) {
+                    $('#createModalBody').html(data);
+
+                    const form = $('#createModalBody form');
+                    form.removeData('validator').removeData('unobtrusiveValidation');
+                    $.validator.unobtrusive.parse(form);
+                });
+            });
+
+            // 攔截表單提交
+            $(document).on('submit', '#createModalBody form', function (e) {
+                e.preventDefault();
+                const form = $(this);
+
+                if (!form.valid()) return; // 前端驗證不過，顯示紅字並停止
+
+                $.post(form.attr('action'), form.serialize(), function (response) {
+                    if (response.success) {
+                        $('#createModal').modal('hide');
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        $('#createModalBody').html(response);
+                        const reloadedForm = $('#createModalBody form');
+                        reloadedForm.removeData('validator').removeData('unobtrusiveValidation');
+                        $.validator.unobtrusive.parse(reloadedForm);
+                    }
+                }).fail(function () {
+                    console.error("提交失敗");
+                });
+            });
+        });
+
+
+    </script>
+
+
+}

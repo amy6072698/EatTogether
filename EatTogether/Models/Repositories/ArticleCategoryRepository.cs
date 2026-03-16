@@ -1,6 +1,7 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
 using EatTogether.Models.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Repositories
 {
@@ -19,6 +20,22 @@ namespace EatTogether.Models.Repositories
 
 			_context.ArticleCategories.Add(category);
 			await _context.SaveChangesAsync();
+		}
+
+		public async Task<List<ArticleCategoryDto>> GetAllAsync()
+		{
+			var data = await _context.ArticleCategories
+				.AsNoTracking()
+				.Select(e => new ArticleCategoryDto
+				{
+					//Id = e.Id,
+					Name = e.Name,
+					SortOrder = e.SortOrder,
+					IsEnabled = e.IsEnabled					
+				})
+				.ToListAsync();
+
+			return data;
 		}
 	}
 }
