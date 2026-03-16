@@ -1,8 +1,6 @@
 ﻿@model EatTogether.Models.ViewModels.ReservationCreateViewModel
 @{
     ViewData["Title"] = "新增訂位";
-    // 有效時段：11, 13, 15, 17, 19, 20
-    var validHours = new[] { 11, 13, 15, 17, 19, 20 };
 }
 
 <div class="container-fluid px-4">
@@ -52,35 +50,39 @@
                 <!-- 預約時間與人數 -->
                 <h6 class="text-muted fw-bold text-uppercase small mb-3 border-bottom pb-2 mt-4">預約時間與人數</h6>
 
-                <!-- 日期選擇 -->
+                <!-- 日期 -->
                 <div class="mb-3">
                     <label class="form-label">預約日期 <span class="text-danger">*</span></label>
-                    <input type="date" id="reservationDate" class="form-control" style="max-width:220px" />
-                    <div class="form-text">最早可訂：30 分鐘後起</div>
+                    <input type="date" id="resDate" class="form-control" style="max-width:200px"
+                           onchange="updateHidden()" />
                 </div>
 
-                <!-- 時段選擇（按鈕式） -->
+                <!-- 時間：小時 + 分鐘 -->
                 <div class="mb-3">
-                    <label class="form-label">用餐時段 <span class="text-danger">*</span></label>
-                    <div class="d-flex flex-wrap gap-2" id="sessionButtons">
-                        @foreach (var h in validHours)
-                        {
-                            var endH = h == 20 ? 21 : h + 2;
-                            <button type="button"
-                                    class="btn btn-outline-secondary session-btn"
-                                    data-hour="@h"
-                                    onclick="selectSession(this, @h)">
-                                @($"{h:D2}:00") ~ @($"{endH:D2}:00")
-                            </button>
-                        }
+                    <label class="form-label">預約時間 <span class="text-danger">*</span></label>
+                    <div class="d-flex align-items-center gap-2">
+                        <select id="resHour" class="form-select" style="width:100px" onchange="updateHidden()">
+                            @for (int h = 11; h <= 19; h++)
+                            {
+                                <option value="@h">@h.ToString("D2")</option>
+                            }
+                        </select>
+                        <span class="fw-bold">:</span>
+                        <select id="resMinute" class="form-select" style="width:80px" onchange="updateHidden()">
+                            <option value="0">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <span class="text-muted small">（營業時間 11:00 ~ 21:00）</span>
                     </div>
-                    <div class="form-text">
-                        <i class="fas fa-clock me-1"></i>
-                        營業時間 11:00~21:00，每 2 小時一個時段，最晚可訂 20:00
-                    </div>
-                    <!-- 隱藏欄位傳遞實際 datetime -->
+                    <!-- 隱藏欄位傳遞完整 datetime -->
                     <input type="hidden" asp-for="ReservationDate" id="reservationDateHidden" />
                     <span asp-validation-for="ReservationDate" class="text-danger small"></span>
+                    @* <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        訂位時間須至少 30 分鐘後，系統將自動檢查前後 90 分鐘內的桌位使用狀況
+                    </div> *@
                 </div>
 
                 <!-- 人數 -->
@@ -105,11 +107,10 @@
                         </div>
                     </div>
                     <span asp-validation-for="AdultsCount" class="text-danger small"></span>
-                    <!-- 桌型提示 -->
                     <div id="seatHint" class="mt-2 small"></div>
-                    <div class="form-text">
-                        總人數上限 10 人。依人數自動配桌：1-2人→2人桌、3-4人→4人桌、5-6人→6人桌、7-10人→10人桌
-                    </div>
+                    @* <div class="form-text">
+                        依人數自動配桌：1-2人→2人桌、3-4人→4人桌、5-6人→6人桌、7-10人→10人桌
+                    </div> *@
                 </div>
 
                 <div class="mb-4">
@@ -119,7 +120,7 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success" id="submitBtn">
+                    <button type="submit" class="btn btn-success">
                         <i class="fas fa-calendar-check me-1"></i>確認新增訂位
                     </button>
                     <a asp-action="Index" class="btn btn-secondary">
@@ -136,53 +137,46 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        let selectedHour = null;
-
-        // 預設今日
+        // 頁面載入：預設今日，時間預設 30 分鐘後對齊到最近的 15 分鐘
         window.addEventListener('DOMContentLoaded', function () {
-            const dateInput = document.getElementById('reservationDate');
-            const today = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            dateInput.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-            dateInput.min = dateInput.value;
+            const now  = new Date(Date.now() + 30 * 60000);
+            const pad  = n => String(n).padStart(2, '0');
 
-            // 若 ModelState 回填有值，還原選中狀態
+            // 分鐘對齊到下一個 15 分鐘
+            const rawMin   = now.getMinutes();
+            const alignMin = Math.ceil(rawMin / 15) * 15;
+            let h = now.getHours(), m = alignMin;
+            if (m >= 60) { h += 1; m = 0; }
+            if (h < 11) { h = 11; m = 0; }
+            if (h > 20) { h = 20; m = 45; }
+
+            // 若 ModelState 回填有值，從 hidden 還原
             const hidden = document.getElementById('reservationDateHidden');
             if (hidden.value && !hidden.value.startsWith('0001')) {
                 const dt = new Date(hidden.value);
-                dateInput.value = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
-                selectedHour = dt.getHours();
-                document.querySelectorAll('.session-btn').forEach(btn => {
-                    if (parseInt(btn.dataset.hour) === selectedHour) {
-                        btn.classList.replace('btn-outline-secondary', 'btn-primary');
-                    }
-                });
+                document.getElementById('resDate').value =
+                    `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+                document.getElementById('resHour').value   = dt.getHours();
+                document.getElementById('resMinute').value = dt.getMinutes();
+            } else {
+                document.getElementById('resDate').value =
+                    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+                document.getElementById('resHour').value   = h;
+                document.getElementById('resMinute').value = m;
+                updateHidden();
             }
             updateSeatHint();
         });
 
-        function selectSession(btn, hour) {
-            // 取消其他選中
-            document.querySelectorAll('.session-btn').forEach(b => {
-                b.classList.remove('btn-primary');
-                b.classList.add('btn-outline-secondary');
-            });
-            btn.classList.remove('btn-outline-secondary');
-            btn.classList.add('btn-primary');
-            selectedHour = hour;
-            updateHidden();
-        }
-
         function updateHidden() {
-            if (!selectedHour) return;
-            const dateVal = document.getElementById('reservationDate').value;
+            const dateVal = document.getElementById('resDate').value;
+            const hour    = document.getElementById('resHour').value;
+            const minute  = document.getElementById('resMinute').value;
             if (!dateVal) return;
             const pad = n => String(n).padStart(2, '0');
             document.getElementById('reservationDateHidden').value =
-                `${dateVal}T${pad(selectedHour)}:00`;
+                `${dateVal}T${pad(hour)}:${pad(minute)}`;
         }
-
-        document.getElementById('reservationDate').addEventListener('change', updateHidden);
 
         function updateSeatHint() {
             const adults   = parseInt(document.getElementById('AdultsCount').value) || 0;
@@ -190,27 +184,22 @@
             const total    = adults + children;
             const el = document.getElementById('seatHint');
             if (total <= 0) { el.innerHTML = ''; return; }
-            let seats, warn = '';
-            if (total <= 2)      seats = 2;
-            else if (total <= 4) seats = 4;
-            else if (total <= 6) seats = 6;
-            else if (total <= 10) seats = 10;
-            else { el.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>總人數超過上限 10 人</span>'; return; }
+            if (total > 10) {
+                el.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>總人數超過上限 10 人</span>';
+                return;
+            }
+            const seats = total <= 2 ? 2 : total <= 4 ? 4 : total <= 6 ? 6 : 10;
             el.innerHTML = `<span class="text-primary"><i class="fas fa-chair me-1"></i>共 ${total} 人，將安排 <strong>${seats} 人桌</strong></span>`;
         }
 
         // 送出前驗證
         document.querySelector('form').addEventListener('submit', function(e) {
-            if (!selectedHour) {
-                e.preventDefault();
-                alert('請選擇用餐時段');
-                return;
-            }
             updateHidden();
             const hidden = document.getElementById('reservationDateHidden').value;
-            if (!hidden) { e.preventDefault(); alert('請選擇日期與時段'); return; }
+            if (!hidden) { e.preventDefault(); alert('請選擇日期與時間'); return; }
             const selected = new Date(hidden);
-            const min30    = new Date(Date.now() + 30 * 60000);
+            if (isNaN(selected.getTime())) { e.preventDefault(); alert('日期格式錯誤'); return; }
+            const min30 = new Date(Date.now() + 30 * 60000);
             if (selected < min30) {
                 e.preventDefault();
                 alert('訂位時間必須在 30 分鐘後，請重新選擇');

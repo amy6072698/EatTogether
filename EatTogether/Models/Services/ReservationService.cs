@@ -18,16 +18,15 @@ namespace EatTogether.Models.Services
         public async Task<IEnumerable<ReservationDto>> GetAllAsync() => await _repo.GetAllAsync();
         public async Task<IEnumerable<ReservationDto>> GetByDateAsync(DateTime date) => await _repo.GetByDateAsync(date);
 
-        // ── 時段設定（每天 11~20:00，每 2hr 一時段）──
-        private static readonly int[] ValidHours = { 11, 13, 15, 17, 19, 20 };
+        // ── 營業時間設定 ──
+        private const int OPEN_HOUR = 11;   // 最早 11:00
+        private const int CLOSE_HOUR = 19;   // 最晚 20:xx（含 20:45）
         private const int SESSION_CAPACITY_PERCENT = 70;
+        private static readonly int[] ValidMinutes = { 0, 15, 30, 45 };
 
-        private static (DateTime start, DateTime end) GetSessionRange(DateTime dt)
-        {
-            int h = dt.Hour;
-            int sessionStart = ValidHours.Where(x => x <= h).DefaultIfEmpty(11).Max();
-            return (dt.Date.AddHours(sessionStart), dt.Date.AddHours(sessionStart + 2));
-        }
+        /// <summary>取得以 dt 為中心的 ±90 分鐘衝突窗口</summary>
+        private static (DateTime start, DateTime end) GetConflictWindow(DateTime dt)
+            => (dt.AddMinutes(-90), dt.AddMinutes(90));
 
         public async Task<Result> CreateAsync(ReservationDto dto)
         {
@@ -38,16 +37,13 @@ namespace EatTogether.Models.Services
             if (d < DateTime.Now.AddMinutes(30))
                 return Result.Fail("訂位時間必須在 30 分鐘後，請重新選擇時間");
 
-            // ② 營業時間 11:00~20:00
-            if (d.Hour < 11 || d.Hour > 20 || (d.Hour == 20 && d.Minute > 0))
-                return Result.Fail("訂位時間須在 11:00~20:00 之間");
+            // ② 營業時間 11:00~20:45
+            if (d.Hour < OPEN_HOUR || d.Hour > CLOSE_HOUR)
+                return Result.Fail($"訂位時間須在 {OPEN_HOUR:D2}:00~{CLOSE_HOUR:D2}:45 之間");
 
-            // ③ 必須為合法整點時段
-            if (!ValidHours.Contains(d.Hour) || d.Minute != 0)
-            {
-                var validStr = string.Join("、", ValidHours.Select(h => $"{h:D2}:00"));
-                return Result.Fail($"訂位時間必須選擇整點時段：{validStr}");
-            }
+            // ③ 分鐘只能選 00、15、30、45
+            if (!ValidMinutes.Contains(d.Minute))
+                return Result.Fail("訂位時間分鐘只能選 00、15、30、45");
 
             // ④ 桌型對應
             var allTables = (await _tableRepo.GetAllAsync()).ToList();
@@ -55,22 +51,18 @@ namespace EatTogether.Models.Services
                               : totalPeople <= 4 ? 4
                               : totalPeople <= 6 ? 6 : 10;
 
-            // 超過最大桌型（10人）直接拒絕
             if (totalPeople > 10)
                 return Result.Fail("訂位人數上限為 10 人（最大桌型為 10 人桌）");
 
-            // ⑤ 同時段桌型組數限制
-            //    同一時段該桌型已訂組數 不可超過 該桌型的桌子總數
-            var (sessionStart, sessionEnd) = GetSessionRange(d);
-            var sessionReservations = (await _repo.GetBySessionAsync(sessionStart, sessionEnd)).ToList();
+            // ⑤ ±90 分鐘衝突窗口內，同桌型組數限制
+            var (windowStart, windowEnd) = GetConflictWindow(d);
+            var windowReservations = (await _repo.GetBySessionAsync(windowStart, windowEnd)).ToList();
 
-            // 計算各桌型對應的桌子數量
             int tableCountOfType = allTables.Count(t => t.SeatCount == requiredSeats);
             if (tableCountOfType == 0)
                 return Result.Fail($"目前沒有 {requiredSeats} 人桌");
 
-            // 計算同時段已訂同桌型的組數
-            int bookedGroupsOfType = sessionReservations.Count(r =>
+            int bookedGroupsOfType = windowReservations.Count(r =>
             {
                 int people = r.AdultsCount + r.ChildrenCount;
                 int seats = people <= 2 ? 2
@@ -81,17 +73,17 @@ namespace EatTogether.Models.Services
 
             if (bookedGroupsOfType >= tableCountOfType)
                 return Result.Fail(
-                    $"此時段（{sessionStart:HH:mm}~{sessionEnd:HH:mm}）{requiredSeats} 人桌已全數預訂" +
-                    $"（共 {tableCountOfType} 張，已訂 {bookedGroupsOfType} 組），請選擇其他時段或桌型");
+                    $"此時間（{d:HH:mm}）前後 90 分鐘內，{requiredSeats} 人桌已全數預訂" +
+                    $"（共 {tableCountOfType} 張，已訂 {bookedGroupsOfType} 組），請選擇其他時間或桌型");
 
-            // ⑥ 同時段總人數 70% 容量限制
+            // ⑥ ±90 分鐘窗口內總人數 70% 容量限制
             int totalCapacity = allTables.Sum(t => t.SeatCount);
             int maxCapacity = (int)(totalCapacity * SESSION_CAPACITY_PERCENT / 100.0);
-            int bookedCount = sessionReservations.Sum(r => r.AdultsCount + r.ChildrenCount);
+            int bookedCount = windowReservations.Sum(r => r.AdultsCount + r.ChildrenCount);
             if (bookedCount + totalPeople > maxCapacity)
                 return Result.Fail(
-                    $"此時段（{sessionStart:HH:mm}~{sessionEnd:HH:mm}）訂位人數已達上限" +
-                    $"（{bookedCount}/{maxCapacity}），請選擇其他時段");
+                    $"此時間（{d:HH:mm}）前後 90 分鐘內訂位人數已達上限" +
+                    $"（{bookedCount}/{maxCapacity}），請選擇其他時間");
 
             // ⑦ 產生 BookingNumber
             var seq = await _repo.GetMaxSeqOfMonthAsync(d.Year, d.Month) + 1;
