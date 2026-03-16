@@ -138,7 +138,7 @@
 ********************文章分類********************
 
 [working]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
-	[working]add ViewModel, Dto , 轉換擴充方法
+	[V]add ViewModel, Dto , 轉換擴充方法
 		ArticleCategoryCreateViewModel class
 			Name, SortOrder, IsEnabled
 
@@ -154,7 +154,7 @@
 	
 
 
-	[]add Service/Repository
+	[working]add Service/Repository
 		IArticleCategoryRepository interface
 			void Create (ArticleCategoryCreateDto dto)
 
