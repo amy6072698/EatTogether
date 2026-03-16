@@ -130,15 +130,15 @@
 	**複製並建立新活動: 跳轉至create頁面，輸入框自動填入資料
 	**撈EventId資料，日期預設為當日日期，新的EventId一樣在新增完成時自動生成
 
-[working]add 系統自動偵測活動時間，自動更新活動狀態
+[V]add 系統自動偵測活動時間，自動更新活動狀態
 
 
 開發文章機制
 
 ********************文章分類********************
 
-[]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
-	[]add ViewModel, Dto
+[working]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
+	[working]add ViewModel, Dto , 轉換擴充方法
 		ArticleCategoryCreateViewModel class
 			Name, SortOrder, IsEnabled
 
@@ -151,16 +151,7 @@
 			→ ToDto(this ArticleCategoryCreateViewModel vm)
 			Dto → Entity（Repository 寫入用）
 			→ArticleCategory ToEntity(this ArticleCategoryCreateDto dto)
-
-			文章分類編輯 
-			vm <-> dto
- 			→ ToDto(this ArticleCategoryEditViewModel vm)
-   			→ ToViewModel(this ArticleCategoryEditDto dto)
-			// Dto → Entity（Repository 寫入用）
-			→Article ToEntity(this ArticleCategoryEditDto dto)
-
-			// Entity → Dto（Repository 讀取用）
-			ArticleCategoryDto ToDto(this ArticleCategory entity)		
+	
 
 
 	[]add Service/Repository
@@ -215,12 +206,23 @@
 
 []add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[]add ViewModel, Dto , modify擴充方法
 		ArticleCategoryEditViewModel class
 			Id, Name, SortOrder, IsEnabled
 
 		ArticleCategoryEditDto class
 			Id, Name, SortOrder, IsEnabled
+
+		ArticleCategoryMappingExtension		
+			文章分類編輯 
+			vm <-> dto
+ 			→ ToDto(this ArticleCategoryEditViewModel vm)
+   			→ ToViewModel(this ArticleCategoryEditDto dto)
+			// Dto → Entity（Repository 寫入用）
+			→Article ToEntity(this ArticleCategoryEditDto dto)
+
+			// Entity → Dto（Repository 讀取用）
+			ArticleCategoryDto ToDto(this ArticleCategory entity)	
 
 		
 
