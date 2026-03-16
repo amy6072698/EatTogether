@@ -15,7 +15,7 @@ public partial class Table
 
     public int Status { get; set; }
 
-    public string? Remark { get; set; }
+    public string Remark { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
