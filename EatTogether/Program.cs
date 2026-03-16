@@ -1,4 +1,5 @@
 using EatTogether.Models.EfModels;
+using EatTogether.Models.Extensions;
 using EatTogether.Models.Repositories;
 using EatTogether.Models.Services;
 using Microsoft.EntityFrameworkCore;
@@ -54,11 +55,16 @@ namespace EatTogether
 
 			var app = builder.Build();
 
+            //每次執行，讓系統自動跑活動的狀態
+			using (var scope = app.Services.CreateScope())
+			{
+				EventInitializerExtensions.UpdateEventStatuses(app.Services);
+			}
 
 
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+			// Configure the HTTP request pipeline.
+			if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.

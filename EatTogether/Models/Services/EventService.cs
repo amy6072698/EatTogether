@@ -20,11 +20,6 @@ namespace EatTogether.Models.Services
 			{
 				await _repo.CreateAsync(dto);
 				return EventServiceResult<bool>.Ok(true);
-				//{
-				//	Success = true,
-				//	Data = true,
-				//	Message = "新增活動完成！"
-				//};
 			}
 			catch (Exception ex)
 			{
@@ -58,11 +53,6 @@ namespace EatTogether.Models.Services
 				await _repo.EditAsync(dto);
 
 				return EventServiceResult<bool>.Ok(true);
-				//{
-				//	Success = true,
-				//	Data = true,
-				//	Message = "編輯活動完成！"
-				//};
 			}
 			catch (Exception ex)
 			{

@@ -14,13 +14,13 @@ namespace EatTogether.Models.Extensions
 				//Id = vm.Id,
 				Title = vm.Title,
 				Summary = vm.Summary,
-				MinSpend = vm.MinSpend,
-				StartDate = vm.StartDate,
-				EndDate = vm.EndDate,
+				MinSpend = vm.MinSpend.Value,
+				StartDate = vm.StartDate.Value,
+				EndDate = vm.EndDate.Value,
 				RewardItem = vm.RewardItem,
 				DiscountType = vm.DiscountType,
-				DiscountValue = vm.DiscountValue,
-				Status = CalculateStatus(vm.StartDate, vm.EndDate)
+				DiscountValue = vm.DiscountValue.Value,
+				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
 			};
 		}
 
@@ -113,13 +113,13 @@ namespace EatTogether.Models.Extensions
 				Id = vm.Id,
 				Title = vm.Title,
 				Summary = vm.Summary,
-				MinSpend = vm.MinSpend,
-				StartDate = vm.StartDate,
-				EndDate = vm.EndDate,
+				MinSpend = vm.MinSpend.Value,
+				StartDate = vm.StartDate.Value,
+				EndDate = vm.EndDate.Value,
 				RewardItem = vm.RewardItem,
 				DiscountType = vm.DiscountType,
-				DiscountValue = vm.DiscountValue,
-				Status = CalculateStatus(vm.StartDate, vm.EndDate)
+				DiscountValue = vm.DiscountValue.Value,
+				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
 			};
 		}
 

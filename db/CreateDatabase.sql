@@ -224,7 +224,7 @@ CREATE TABLE [dbo].[Events](
 	[StartDate] [datetime2](0) NOT NULL,
 	[EndDate] [datetime2](0) NOT NULL,
 	[RewardItem] [nvarchar](100) NULL,
-	[DiscountType] [nvarchar](20) NULL,
+	[DiscountType] [nvarchar](20) NOT NULL,
 	[DiscountValue] [decimal](10, 2) NOT NULL,
 	[Status] [int] NOT NULL,
  CONSTRAINT [PK_Events] PRIMARY KEY CLUSTERED 

@@ -143,8 +143,18 @@
                                     string discountDisplay = "";
                                     if (item.DiscountType == "Percent")
                                     {
-                                        var percent = (item.DiscountValue * 100).ToString("0");
-                                        discountDisplay = $"{percent} 折";
+                                        double val = (double)(item.DiscountValue * 100);
+
+                                        if (val % 10 == 0)
+                                        {
+                                            // 如果是 90, 80，顯示為 9 折, 8 折
+                                            discountDisplay = (val / 10).ToString("0") + " 折";
+                                        }
+                                        else
+                                        {
+                                            discountDisplay = val.ToString("0") + " 折";
+                                        }
+
                                     }
                                     else
                                     {

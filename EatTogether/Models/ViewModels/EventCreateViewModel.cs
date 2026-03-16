@@ -19,24 +19,24 @@ namespace EatTogether.Models.ViewModels
 		public string Summary { get; set; }
 
 		[Display(Name = "門檻")]
-		[Required(ErrorMessage = "{0}必填")]
+		[Required(ErrorMessage = "門檻必填")]
 		[Range(0.0000001, int.MaxValue, ErrorMessage = "{0}必須大於零")]
-		public int MinSpend { get; set; }
+		public int? MinSpend { get; set; }
 
 		[Display(Name = "開始日期")]
 		[Required(ErrorMessage = "{0}必填")]
 		[DataType(DataType.Date)]
-		public DateTime StartDate { get; set; }
+		public DateTime? StartDate { get; set; }
 
 
-		private DateTime _endDate;
+		private DateTime? _endDate;
 		[Display(Name = "結束日期")]
 		[Required(ErrorMessage = "{0}必填")]
 		[DataType(DataType.Date)]
-		public DateTime EndDate
+		public DateTime? EndDate
 		{
 			get => _endDate;
-			set => _endDate = value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+			set => _endDate = value?.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
 		}
 
 
@@ -46,11 +46,12 @@ namespace EatTogether.Models.ViewModels
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]
-		public string? DiscountType { get; set; }
+		[Required(ErrorMessage = "{0}必填")]
+		public string DiscountType { get; set; }
 
 		[Display(Name = "折扣金額")]
 		[Required(ErrorMessage = "{0}必填")]
-		public decimal DiscountValue { get; set; }
+		public decimal? DiscountValue { get; set; }
 
 		[Display(Name = "狀態")]
 		public int Status { get; set; }
@@ -59,10 +60,10 @@ namespace EatTogether.Models.ViewModels
 		// 後端驗證：開始日期不能是過去
 		public IEnumerable<ValidationResult> Validate(ValidationContext context)
 		{
-			if (StartDate.Date < DateTime.Today)
+			if (StartDate.Value.Date < DateTime.Today)
 				yield return new ValidationResult("開始日期不能早於今天", new[] { nameof(StartDate) });
 
-			if (EndDate.Date < StartDate.Date)
+			if (EndDate.Value.Date < StartDate.Value.Date)
 				yield return new ValidationResult("結束日期不能早於開始日期", new[] { nameof(EndDate) });
 		}
 

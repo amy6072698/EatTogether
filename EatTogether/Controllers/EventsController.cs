@@ -74,16 +74,18 @@ namespace EatTogether.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(EventEditViewModel vm)
 		{
+			if (!ModelState.IsValid)
+			{
+				return View(vm);
+			}
 			var dto = vm.ToEditDto();
 			var result = await _service.EditAsync(dto);
 
 			if (result.Success)
 			{
 				ViewData["SuccessMessage"] = "活動編輯完成！";
-				//return RedirectToAction("Index");
 			}
 
-			//ModelState.AddModelError("", result.Message);
 			return View(vm);
 		}
 
