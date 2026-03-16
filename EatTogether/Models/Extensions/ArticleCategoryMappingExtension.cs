@@ -36,6 +36,32 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
+		//文章分類列表 dto -> vm
+		//	→ ToViewModel(this ArticleCategoryDto dto)
+		//	// Entity → Dto（Repository 讀取用）
+		//	ArticleCategoryDto ToDto(this ArticleCategory entity)
+
+		public static ArticleCategoryViewModel ToEventVm(this ArticleCategoryDto dto)
+		{
+			return new ArticleCategoryViewModel
+			{
+				//Id = dto.Id,
+				Name = dto.Name,
+				SortOrder = dto.SortOrder,
+				IsEnabled = dto.IsEnabled
+			};
+		}
+
+		public static ArticleCategoryDto ToEventDto(this ArticleCategory entity)
+		{
+			return new ArticleCategoryDto
+			{
+				//Id = entity.Id,
+				Name = entity.Name,
+				SortOrder = entity.SortOrder,
+				IsEnabled = entity.IsEnabled
+			};
+		}
 
 
 

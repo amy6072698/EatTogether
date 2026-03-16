@@ -167,14 +167,14 @@
 
 		在 Program.cs 註冊IArticleCategoryRepository , ArticleCategoryRepository, service
 
-	[working]add ArticleCategoriesController
+	[V]add ArticleCategoriesController
 		Create()
 		ctor(ArticleCategoryService articleCategoryService)
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
 
 
-[]add 文章分類首頁頁面 url:/ArticleCategories/Index
-	[]add ViewModel, Dto
+[working]add 文章分類首頁頁面 url:/ArticleCategories/Index
+	[working]add ViewModel, Dto, 轉換方法
 		ArticleCategoryViewModel class
 			Name, SortOrder, IsEnabled
 			(分類名、排序、是否啟用)
