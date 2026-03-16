@@ -128,6 +128,49 @@
     </div>
 </div>
 
+@section Styles {
+    <style>
+        /* 列高固定 */
+        #memberCouponTable tbody tr {
+            height: 52px !important;
+        }
+
+            #memberCouponTable tbody tr td {
+                vertical-align: middle !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        /* 頁碼樣式 */
+        .datatable-pagination-list-item-link {
+            display: inline-block;
+            padding: 4px 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            color: #0d6efd;
+            text-decoration: none;
+            min-width: 34px;
+            text-align: center;
+        }
+
+            .datatable-pagination-list-item-link:hover {
+                background-color: #e7f0ff;
+            }
+
+        .datatable-pagination-list-item.datatable-active .datatable-pagination-list-item-link {
+            background-color: #0d6efd !important;
+            color: #fff !important;
+            border-color: #0d6efd !important;
+            font-weight: 700;
+        }
+
+        .datatable-pagination-list-item:first-child .datatable-pagination-list-item-link,
+        .datatable-pagination-list-item:last-child .datatable-pagination-list-item-link {
+            color: #6c757d;
+        }
+    </style>
+}
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
     <script>
