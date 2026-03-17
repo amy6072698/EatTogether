@@ -205,9 +205,9 @@
 
 	[working]新增頁紅字驗證的部分要再修改
 
-[]add 文章分類編輯
+[working]add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)
-	[]add ViewModel, Dto , modify擴充方法
+	[working]add ViewModel, Dto , modify擴充方法
 		ArticleCategoryEditViewModel class
 			Id, Name, SortOrder, IsEnabled
 

@@ -75,6 +75,51 @@ namespace EatTogether.Models.Extensions
 		//Entity → Dto（Repository 讀取用）
 		//	ArticleCategoryDto ToDto(this ArticleCategory entity)
 
+		public static ArticleCategoryEditDto ToEditDto(this ArticleCategoryEditViewModel vm)
+		{
+			return new ArticleCategoryEditDto
+			{
+				Id = vm.Id,
+				Name = vm.Name,
+				SortOrder = vm.SortOrder,
+				IsEnabled = vm.IsEnabled
+			};
+		}
+
+		public static ArticleCategoryEditViewModel ToEditVm(this ArticleCategoryEditDto dto)
+		{
+			return new ArticleCategoryEditViewModel
+			{
+				Id = dto.Id,
+				Name = dto.Name,
+				SortOrder = dto.SortOrder,
+				IsEnabled = dto.IsEnabled
+			};
+		}
+
+		public static ArticleCategory ToEntity(this ArticleCategoryEditDto dto)
+		{
+			return new ArticleCategory
+			{
+				Id = dto.Id,
+				Name = dto.Name,
+				SortOrder = dto.SortOrder,
+				IsEnabled = dto.IsEnabled
+			};
+		}
+
+		public static ArticleCategoryEditDto ToEditDto(this ArticleCategory entity)
+		{
+			return new ArticleCategoryEditDto
+			{
+				Id = entity.Id,
+				Name = entity.Name,
+				SortOrder = entity.SortOrder,
+				IsEnabled = entity.IsEnabled
+			};
+		}
+
+
 
 	}
 }
