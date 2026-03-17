@@ -152,6 +152,24 @@ namespace EatTogether.Models.Services
             return Result.Success();
         }
 
+        public async Task<Result> DisableAsync(int id)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(id);
+            if (coupon == null) return Result.Fail("找不到此優惠券");
+            if (coupon.IsDisabled) return Result.Fail("此優惠券已是停用狀態");
+            await _couponRepo.DisableAsync(id);
+            return Result.Success();
+        }
+
+        public async Task<Result> EnableAsync(int id)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(id);
+            if (coupon == null) return Result.Fail("找不到此優惠券");
+            if (!coupon.IsDisabled) return Result.Fail("此優惠券已是啟用狀態");
+            await _couponRepo.EnableAsync(id);
+            return Result.Success();
+        }
+
         public async Task<Result> EditAsync(int id, string newName, int? addLimitCount)
         {
             var coupon = await _couponRepo.GetByIdAsync(id);
