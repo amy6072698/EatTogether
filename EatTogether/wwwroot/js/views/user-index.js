@@ -15,14 +15,14 @@
    apiFetch — 統一 API 呼叫封裝
    ============================================================ */
 async function apiFetch(url, options = {}) {
-    const defaults = {
+    const config = {
         credentials: 'include',
+        ...options,
         headers: {
             'Content-Type': 'application/json',
             ...(options.headers || {})
         }
     };
-    const config = { ...options, ...defaults };
     try {
         const response = await fetch(url, config);
         if (response.status === 401) {
@@ -90,8 +90,13 @@ function initSearch() {
             const account = document.querySelector('#search-account')?.value.trim()  ?? '';
             const email   = document.querySelector('#search-email')?.value.trim()    ?? '';
 
-            const combined = [empNo, name, account, email].filter(v => v).join(' ');
-            if (userTable) userTable.search(combined).draw();
+            if (userTable) {
+                userTable.column(0).search(empNo)
+                    .column(1).search(name)
+                    .column(2).search(account)
+                    .column(3).search(email)
+                    .draw();
+            }
         });
     }
 }

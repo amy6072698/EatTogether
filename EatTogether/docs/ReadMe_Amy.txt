@@ -7,7 +7,7 @@
 		Account VARCHAR(50) Unique
 		HashedPassword VARCHAR(70)
 		Name NVARCHAR(50)
-		Email VARCHAR(100) Unique、允許 NULL
+		Email VARCHAR(100) Unique
 		Phone VARCHAR(10) 允許 NULL
 		HireDate DATE 允許 NULL
 		IsActive BIT 預設 1
@@ -262,7 +262,7 @@
 			說明：「即將進入後台系統...」
 			按鈕：「進入系統」，5 秒倒數後自動跳轉 Home/Index
 
-[working] add 忘記密碼 / 重設密碼功能
+[V] add 忘記密碼 / 重設密碼功能
 	url: POST /Auth/ForgotPassword
 	url: GET  /Auth/ResetPassword?token=xxx
 	url: POST /Auth/ResetPassword
@@ -352,53 +352,51 @@
 [RequirePermission("Staff_View")] 套用於 GET /User/Index
 [RequirePermission("Staff_Manage")] 套用於 Create / Edit / Resign / Reinstate
 
-[] add 員工列表功能
+[working] add 員工列表功能
 	url: GET /User/Index
 
-	[] DTO（Models/DTOs/UserListDto.cs）
+	[V] DTO（Models/DTOs/UserListDto.cs）
 		UserListDto
 			int Id
 			string EmployeeNumber, Name, Account, Email, Phone
-			DateTime? HireDate, CreatedAt
-			bool IsActive, IsDeleted
+			DateOnly? HireDate
+			DateTime CreatedAt
+			bool IsActive, IsDeleted, CanEdit, CanResign, CanReinstate
 			List<int> RoleIds
 			List<string> RoleNames
 
-	[] DTO（Models/DTOs/UserSearchDto.cs）
+	[V] DTO（Models/DTOs/UserSearchDto.cs）
 		UserSearchDto
 			string? EmployeeNumber, Name, Account, Email
-			bool ActiveOnly
+			bool HideResigned
 			string SortBy   // HireDate_Desc / HireDate_Asc / CreatedAt_Desc
 
-	[] IUserRepository / UserRepository（modify）
+	[V] IUserRepository / UserRepository（modify）
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto)
-		Task<string> GetLastEmployeeNumberByYearAsync(int year)
-		// 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
-		// 取最後一個員工編號 → 流水號 +1
-
-	[] IUserService / UserService（Models/Services/UserService.cs）
-		ctor(IUserRepository repo, IRoleRepository roleRepo)
+		
+	[V] IUserService / UserService（Models/Services/UserService.cs）
+		ctor(IUserRepository userRepo, IRoleRepository roleRepo)
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto)
-		Task<string> GenerateEmployeeNumberAsync()
+		
 
-	[] ViewModel（Models/ViewModels/UserIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserIndexViewModel.cs）
 		UserIndexViewModel
 			IEnumerable<UserRowViewModel> Rows
 			string? EmployeeNumber, Name, Account, Email
-			bool ActiveOnly
+			bool HideResigned
 			string SortBy
 
-	[] ViewModel（Models/ViewModels/UserRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserRowViewModel.cs）
 		UserRowViewModel
 			// 對應 UserListDto + 前端顯示用欄位
 			string StatusText    // 在職 / 請假 / 離職
 			string StatusColor   // green / orange / gray
 			bool CanEdit, CanResign, CanReinstate
 
-	[] Extension（Models/Extensions/UserDtoExtension.cs）
+	[V] Extension（Models/Extensions/UserDtoExtension.cs）
 		UserRowViewModel ToRowViewModel(this UserListDto dto)
 
-	[] UserController（Controllers/UserController.cs）
+	[V] UserController（Controllers/UserController.cs）
 		GET /User/Index
 
 	[V] User/Index.cshtml（Views/User/Index.cshtml）
@@ -412,13 +410,6 @@
 		表格欄位：員工編號 / 姓名 / 帳號 / Email / 手機 / 到職日期 / 建立時間 / 角色 / 狀態 / 操作
 		狀態標籤：在職（綠）/ 請假（橘）/ 離職（灰）
 		操作欄：在職/請假 → 🔵編輯 + 🔴離職；離職 → 🔵編輯 + 🟢復職
-
-	[] user-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .users-index { } 命名空間外
-		改用 #user-table_wrapper 選取器
-			#user-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#user-table_wrapper .dataTables_paginate { text-align: right; }
-			#user-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
 
 [] add 新增員工功能
 	url: POST /User/Create
@@ -435,6 +426,9 @@
 		Task CreateAsync(UserCreateDto dto)
 		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null)
 		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
+		Task<string> GetLastEmployeeNumberByYearAsync(int year)
+		// 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
+		// 取最後一個員工編號 → 流水號 +1
 
 	[] UserService（modify）
 		Task<Result> CreateAsync(UserCreateDto dto)
@@ -443,7 +437,7 @@
 			// 比對明文密碼 == 員工編號 → MustChangePassword=1，否則=0
 			// HashUtility.HashPassword → 寫入 HashedPassword
 			// BatchInsert UserRoles
-			// 員工編號產生 UserNumberGenerator Service 層呼叫步驟
+			// 員工編號產生 UserNumberGenerator Service 層呼叫步驟(Task<string> GenerateEmployeeNumberAsync())
 				// 1. BeginTransactionAsync() 開啟交易
 				// 2. 呼叫 UserNumberGenerator.GenerateAsync() 產生編號
 				// 3. SaveChangesAsync() 寫入資料庫
