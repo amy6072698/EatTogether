@@ -173,6 +173,8 @@
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
 		Create.cshtml
 
+	[V]新增輸入框紅字驗證
+
 [working]add 文章分類首頁頁面 url:/ArticleCategories/Index
 	[V]add ViewModel, Dto, 轉換方法
 		ArticleCategoryViewModel class
@@ -203,7 +205,7 @@
 		**運用modal方式去增刪查改
 			Index.cshtml
 
-	[working]新增頁紅字驗證的部分要再修改
+	
 
 [working]add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)

@@ -20,7 +20,7 @@ namespace EatTogether.Models.Extensions
 			{
 				//Id = vm.Id,
 				Name = vm.Name,
-				SortOrder = vm.SortOrder,
+				SortOrder = vm.SortOrder.Value,
 				IsEnabled = vm.IsEnabled
 			};
 		}

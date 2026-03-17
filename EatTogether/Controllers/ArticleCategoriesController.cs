@@ -32,50 +32,48 @@ namespace EatTogether.Controllers
 
 		}
 
-		// GET: ArticleCategory/Create
+
 		[HttpGet]
 		public async Task<IActionResult> Create()
 		{
-			var dto = new ArticleCategoryDto { IsEnabled = true, SortOrder = 0 };
+			// 非 AJAX 請求直接導回列表
+			if (Request.Headers["X-Requested-With"] != "XMLHttpRequest")
+				return RedirectToAction(nameof(Index));
 
-			// 如果是 AJAX 請求
-			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+			var vm = new ArticleCategoryCreateViewModel
 			{
-				return PartialView("_CreatePartial", dto);
-			}
+				IsEnabled = true,
+				//SortOrder = 0
+			};
 
-			return  View(dto);
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+				return PartialView("_CreatePartial", vm);
+
+			return View(vm);
 		}
 
-		// POST: ArticleCategory/Create		
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(ArticleCategoryCreateViewModel vm)
 		{
-			var dto = vm.ToCreateDto();
-
 			if (ModelState.IsValid)
 			{
+				var dto = vm.ToCreateDto();
 				await _service.CreateAsync(dto);
 				TempData["SuccessMessage"] = "分類新增完成！";
 
 				if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-				{
-					//return Json(new { success = true });
 					return Json(new { success = true, redirectUrl = Url.Action("Index") });
-				}
 
 				return RedirectToAction(nameof(Index));
 			}
 
-			// 驗證失敗：同樣判斷回傳 Partial 或 View
+			// 驗證失敗傳 vm，不是 dto
 			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-			{
-				return PartialView("_CreatePartial", dto);
-			}
-			return View(dto);
+				return PartialView("_CreatePartial", vm);
 
-
+			return View(vm);
 		}
 
 

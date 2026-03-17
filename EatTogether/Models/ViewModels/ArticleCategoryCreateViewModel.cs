@@ -11,11 +11,11 @@ namespace EatTogether.Models.ViewModels
 		[Display(Name = "分類名稱")]
 		[Required(ErrorMessage = "{0}必填")]
 		[StringLength(50)]
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		[Display(Name = "排序順序")]
 		[Required(ErrorMessage = "{0}必填")]
-		public int SortOrder { get; set; }
+		public int? SortOrder { get; set; }
 
 
 		[Display(Name = "是否啟用")]
