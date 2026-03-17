@@ -109,6 +109,8 @@ namespace EatTogether
 			builder.Services.AddScoped<EventService>();
 			builder.Services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
 			builder.Services.AddScoped<ArticleCategoryService>();
+			builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+			builder.Services.AddScoped<ArticleService>();
 
 
 

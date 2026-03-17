@@ -27,7 +27,6 @@ namespace EatTogether.Models.ViewModels
 		public string Description { get; set; }
 
 		[Display(Name = "上傳封面圖")]
-		[Required(ErrorMessage = "{0}必填")]
 		public IFormFile? CoverImageFile { get; set; } // 接收實體檔案
 
 		// 用來存儲「存檔後的路徑」，寫入資料庫用

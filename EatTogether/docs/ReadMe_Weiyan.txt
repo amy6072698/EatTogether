@@ -280,7 +280,7 @@
 
 [working]add 文章新增頁面
 	url: /Articles/Create
-	[working]add ViewModel, Dto , 擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleCreateViewModel class
 			CategoryName, EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 			IEnumerable<SelectListItem> 用於選取文章分類及活動;需要注入對應 Service 填充(ICategoryService.GetSelectList()+ IEventService.GetSelectList())
@@ -296,7 +296,7 @@
 			→Article ToEntity(this ArticleCreateDto dto)	            
 				
 
-	[]add Service/Repository
+	[working]add Service/Repository
 		IArticleRepository interface
 			void Create(ArticleCreateDto dto)
 
