@@ -103,10 +103,13 @@ namespace EatTogether
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IReportService, ReportService>();
 
-            builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
 			builder.Services.AddScoped<EventService>();
 			builder.Services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
 			builder.Services.AddScoped<ArticleCategoryService>();
+
 
 
 			// 註冊 Infra（需要 DI 的才註冊）
