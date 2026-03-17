@@ -6,6 +6,7 @@ namespace EatTogether.Models.Repositories
 {
 	public interface IUserRepository
 	{
+		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto);
 		Task<UserDto?> GetByAccountAsync(string account);
 		Task<UserDto?> GetByEmailAsync(string email);
 		Task<UserDto?> GetByIdAsync(int userId);
@@ -20,6 +21,67 @@ namespace EatTogether.Models.Repositories
 		public UserRepository(EatTogetherDBContext context)
 		{
 			_context = context;
+		}
+
+		public async Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto)
+		{
+			var query = _context.Users.AsQueryable(); // 尚未執行的查詢
+
+
+			// 加上篩選條件
+			if (!string.IsNullOrWhiteSpace(dto.EmployeeNumber))
+			{
+				query = query.Where(u => u.EmployeeNumber.Contains(dto.EmployeeNumber));
+			}
+
+			if (!string.IsNullOrWhiteSpace(dto.Name))
+			{
+				query = query.Where(u => u.Name.Contains(dto.Name));
+			}
+
+			if (!string.IsNullOrWhiteSpace(dto.Account))
+			{
+				query = query.Where(u => u.Account.Contains(dto.Account));
+			}
+
+			if (!string.IsNullOrWhiteSpace(dto.Email))
+			{
+				query = query.Where(u => u.Email.Contains(dto.Email));
+			}
+
+			if (dto.HideResigned)
+			{
+				query = query.Where(u => !u.IsDeleted);
+			}
+
+
+			// 排序
+			query = dto.SortBy switch
+			{
+				"HireDate_Asc" => query.OrderBy(u => u.HireDate),
+				"CreatedAt_Desc" => query.OrderByDescending(u => u.CreatedAt),
+				_ => query.OrderByDescending(u => u.HireDate) // HireDate_Desc（預設）
+			};
+
+			var queryResult = await query
+				.Select(u => new UserListDto
+				{
+					Id = u.Id,
+					EmployeeNumber = u.EmployeeNumber,
+					Name = u.Name,
+					Account = u.Account,
+					Email = u.Email,
+					Phone = u.Phone,
+					HireDate = u.HireDate,
+					CreatedAt = u.CreatedAt,
+					IsActive = u.IsActive,
+					IsDeleted = u.IsDeleted,
+					RoleIds = u.UserRoles.Select(ur => ur.RoleId).ToList(),
+					RoleNames = u.UserRoles.Select(ur => ur.Role.RoleName).ToList()
+				})
+				.ToListAsync();
+
+			return queryResult;
 		}
 
 		public async Task<UserDto?> GetByAccountAsync(string account)
