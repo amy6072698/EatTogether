@@ -23,7 +23,7 @@ namespace EatTogether.Models.Services
 
         // ── 營業時間設定 ──
         private const int OPEN_HOUR = 11;   // 最早 11:00
-        private const int CLOSE_HOUR = 19;   // 最晚 20:xx（含 20:45）
+        private const int CLOSE_HOUR = 19;   // 最晚 19:xx（含 19:45）
         private const int SESSION_CAPACITY_PERCENT = 70;
         private static readonly int[] ValidMinutes = { 0, 15, 30, 45 };
 
@@ -40,7 +40,7 @@ namespace EatTogether.Models.Services
             if (d < DateTime.Now.AddMinutes(30))
                 return Result.Fail("訂位時間必須在 30 分鐘後，請重新選擇時間");
 
-            // ② 營業時間 11:00~20:45
+            // ② 營業時間 11:00~19:45
             if (d.Hour < OPEN_HOUR || d.Hour > CLOSE_HOUR)
                 return Result.Fail($"訂位時間須在 {OPEN_HOUR:D2}:00~{CLOSE_HOUR:D2}:45 之間");
 

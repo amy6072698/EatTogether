@@ -121,13 +121,11 @@ namespace EatTogether.Models.Services
             if (issued > 0)
             {
                 await _context.SaveChangesAsync();
-                // 更新 ReceivedCount
-                await _couponRepo.IncrementReceivedCountAsync(couponId);
-                // 補正：IncrementReceivedCount 每次 +1，批次需直接更新
+                // 直接更新 ReceivedCount += issued（不用補正）
                 var couponEntity = await _context.Coupons.FindAsync(couponId);
                 if (couponEntity != null)
                 {
-                    couponEntity.ReceivedCount = (couponEntity.ReceivedCount ?? 0) + issued - 1;
+                    couponEntity.ReceivedCount = (couponEntity.ReceivedCount ?? 0) + issued;
                     await _context.SaveChangesAsync();
                 }
             }
@@ -152,7 +150,7 @@ namespace EatTogether.Models.Services
             return Result.Success();
         }
 
- 
+
 
         public async Task<Result> EditAsync(int id, string newName, int? addLimitCount)
         {

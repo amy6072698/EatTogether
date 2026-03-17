@@ -81,7 +81,8 @@ namespace EatTogether.Models.Services
                 {
                     MemberId = member.Id,
                     CouponId = coupon.Id,
-                    IsUsed = false
+                    IsUsed = false,
+                    ClaimedAt = DateTime.Now
                 });
                 coupon.ReceivedCount = (coupon.ReceivedCount ?? 0) + 1;
                 await _context.SaveChangesAsync();

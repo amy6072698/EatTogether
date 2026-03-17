@@ -52,6 +52,7 @@ namespace EatTogether.Models.Services
                     // 找出今天開始生效的優惠券（StartDate = 今天，且不是生日專屬券）
                     var newCoupons = await context.Coupons
                         .Where(c => c.StartDate.Date == today
+                                 && !c.IsDisabled
                                  && !c.Name.Contains("生日"))
                         .ToListAsync(stoppingToken);
 
