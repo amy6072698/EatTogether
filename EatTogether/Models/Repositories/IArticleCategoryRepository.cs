@@ -6,7 +6,8 @@ namespace EatTogether.Models.Repositories
 	{
 		Task CreateAsync(ArticleCategoryCreateDto dto);
 		Task<List<ArticleCategoryDto>> GetAllAsync();
-
+		Task EditAsync(ArticleCategoryEditDto dto);
+		Task<ArticleCategoryEditDto> GetEditByIdAsync(int id);
 
 	}
 }

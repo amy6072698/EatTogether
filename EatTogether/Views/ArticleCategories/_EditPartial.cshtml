@@ -1,7 +1,7 @@
-﻿@model EatTogether.Models.ViewModels.ArticleCategoryCreateViewModel
+﻿@model EatTogether.Models.ViewModels.ArticleCategoryEditViewModel
 
 
-<form asp-action="Create" id="createForm">
+<form asp-action="Edit" id="editForm">
     <div class="mb-3">
         <label asp-for="Name" class="form-label">類別名稱</label>
         <input asp-for="Name" class="form-control" />
@@ -17,7 +17,7 @@
         <label asp-for="IsEnabled" class="form-check-label">是否啟用</label>
     </div>
     <div class="modal-footer px-0 pb-0">
-        <button type="button" class="btn btn-secondary" onclick="$('#createModal').modal('hide')">取消</button>
-        <button type="submit" class="btn btn-primary">新增</button>
+        <button type="button" class="btn btn-secondary" onclick="$('#editModal').modal('hide')">取消</button>
+        <button type="submit" class="btn btn-primary">儲存</button>
     </div>
 </form>

@@ -171,11 +171,11 @@
 		Create()
 		ctor(ArticleCategoryService articleCategoryService)
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
-		Create.cshtml
+		_CreatePartial.cshtml
 
 	[V]新增輸入框紅字驗證
 
-[working]add 文章分類首頁頁面 url:/ArticleCategories/Index
+[V]add 文章分類首頁頁面 url:/ArticleCategories/Index
 	[V]add ViewModel, Dto, 轉換方法
 		ArticleCategoryViewModel class
 			Name, SortOrder, IsEnabled
@@ -234,14 +234,14 @@
 			add void Edit(ArticleCategoryEditDto dto)
 			add ArticleCategoryEditDto GetEditById(int id)
 
-	[]modify 	ArticleCategoryService
+	[working]modify 	ArticleCategoryService
 			void Edit(ArticleCategoryEditDto dto)
 
-	[]modify ArticleCategoriesController
+	[working]modify ArticleCategoriesController
 		add IActionResult Edit action[Authorize]
 		HttpGet Edit(int id)[Authorize]
 		HttpPost Edit(ArticleCategoryEditViewModel  vm)[Authorize]
-		Edit.cshtml
+		_EditPartial.cshtml
 
 
 

@@ -6,7 +6,7 @@ namespace EatTogether.Models.ViewModels
 {
 	public class ArticleCategoryCreateViewModel	
 	{
-		//public int Id { get; set; }
+		public int Id { get; set; }
 
 		[Display(Name = "分類名稱")]
 		[Required(ErrorMessage = "{0}必填")]

@@ -53,12 +53,36 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="createModalLabel">新增文章類別</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="#createModal" aria-label="Close" onclick="$('#createModal').modal('hide')"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#createModal" aria-label="Close" onclick="$('#createModal').modal('hide')"></button>
             </div>
             <div class="modal-body" id="createModalBody">
                 <div class="text-center">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     文章類別編輯 Modal
+     ============================================================ -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">編輯文章類別</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#editModal" aria-label="Close" onclick="$('#editModal').modal('hide')"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                        @* <a href="/ArticleCategories/Edit/${data}" class="btn btn-primary btn-sm px-3">
+                            <i class="bi bi-pencil-square me-1"></i> 編輯
+                        </a> *@
                     </div>
                 </div>
             </div>
@@ -103,16 +127,15 @@
                         }
                     },
                     {
-                        //新增編輯按鈕欄位
-                        data: "id", //假設你的 DTO 裡有 id 這個屬性
+                        data: "id", 
                         width: "15%",
                         className: "text-center",
                         orderable: false, //這一欄不需要排序功能
                         render: function(data) {
                             return `
-                                <a href="/ArticleCategories/Edit/${data}" class="btn btn-primary btn-sm px-3">
+                                <button type="button" class="btn-edit btn btn-primary btn-sm px-3" data-id="${data}">
                                     <i class="bi bi-pencil-square me-1"></i> 編輯
-                                </a>
+                                </button>
                             `;
                         }
                     }
@@ -127,7 +150,7 @@
                 }
             });
 
-            // 點擊按鈕跳出新增 Modal
+            // 點擊跳出新增 Modal
             $('#btnCreate').on('click', function () {
                 $('#createModal').modal('show');
 
@@ -161,6 +184,52 @@
                     console.error("提交失敗");
                 });
             });
+
+
+            // 點擊跳出編輯 Modal
+            $(document).on('click', '.btn-edit', function () {
+                const id = $(this).data('id');
+                $('#editModal').modal('show');
+
+                $.ajax({
+                    url: '/ArticleCategories/Edit/' + id,
+                    type: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // ← 加這行
+                    success: function (data) {
+                        $('#editModalBody').html(data);
+                        const form = $('#editModalBody form');
+                        form.removeData('validator').removeData('unobtrusiveValidation');
+                        $.validator.unobtrusive.parse(form);
+                    },
+                    error: function () {
+                        console.error('載入編輯表單失敗');
+                    }
+                });
+            });
+
+            // 攔截表單提交
+            $(document).on('submit', '#editModalBody form', function (e) {
+                e.preventDefault();
+                const form = $(this);
+
+                if (!form.valid()) return; // 前端驗證不過，顯示紅字並停止
+
+                $.post(form.attr('action'), form.serialize(), function (response) {
+                    if (response.success) {
+                        $('#editModal').modal('hide');
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        $('#editModalBody').html(response);
+                        const reloadedForm = $('#editModalBody form');
+                        reloadedForm.removeData('validator').removeData('unobtrusiveValidation');
+                        $.validator.unobtrusive.parse(reloadedForm);
+                    }
+                }).fail(function () {
+                    console.error("提交失敗");
+                });
+            });
+
+
         });
 
 

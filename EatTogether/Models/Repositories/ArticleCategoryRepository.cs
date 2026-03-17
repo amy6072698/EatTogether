@@ -22,13 +22,14 @@ namespace EatTogether.Models.Repositories
 			await _context.SaveChangesAsync();
 		}
 
+
 		public async Task<List<ArticleCategoryDto>> GetAllAsync()
 		{
 			var data = await _context.ArticleCategories
 				.AsNoTracking()
 				.Select(e => new ArticleCategoryDto
 				{
-					//Id = e.Id,
+					Id = e.Id,
 					Name = e.Name,
 					SortOrder = e.SortOrder,
 					IsEnabled = e.IsEnabled					
@@ -36,6 +37,39 @@ namespace EatTogether.Models.Repositories
 				.ToListAsync();
 
 			return data;
+		}
+
+
+		public async Task EditAsync(ArticleCategoryEditDto dto)
+		{
+			var entity = await _context.ArticleCategories.FindAsync(dto.Id);
+			if (entity == null)
+			{
+				return;
+			}
+
+			entity.Id = dto.Id;
+			entity.Name = dto.Name;
+			entity.SortOrder = dto.SortOrder;
+			entity.IsEnabled = dto.IsEnabled;
+
+			await _context.SaveChangesAsync();
+		}
+
+
+		public async Task<ArticleCategoryEditDto> GetEditByIdAsync(int id)
+		{
+			var entity = await _context.ArticleCategories.FindAsync(id);
+
+			if (entity == null) return null;
+
+			return new ArticleCategoryEditDto
+			{
+				Id = id,
+				Name= entity.Name,
+				SortOrder = entity.SortOrder,
+				IsEnabled = entity.IsEnabled
+			};
 		}
 	}
 }
