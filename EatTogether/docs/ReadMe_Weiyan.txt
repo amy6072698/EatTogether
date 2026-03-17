@@ -171,7 +171,7 @@
 		Create()
 		ctor(ArticleCategoryService articleCategoryService)
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
-
+		Create.cshtml
 
 [working]add 文章分類首頁頁面 url:/ArticleCategories/Index
 	[V]add ViewModel, Dto, 轉換方法
@@ -207,7 +207,7 @@
 
 [working]add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)
-	[working]add ViewModel, Dto , modify擴充方法
+	[V]add ViewModel, Dto , modify擴充方法
 		ArticleCategoryEditViewModel class
 			Id, Name, SortOrder, IsEnabled
 
@@ -227,7 +227,7 @@
 
 		
 
-	[]modify ArticleCategoryRepository
+	[working]modify ArticleCategoryRepository
 		IArticleCategoryRepository interface
 			add void Edit(ArticleCategoryEditDto dto)
 			add ArticleCategoryEditDto GetEditById(int id)
@@ -239,6 +239,7 @@
 		add IActionResult Edit action[Authorize]
 		HttpGet Edit(int id)[Authorize]
 		HttpPost Edit(ArticleCategoryEditViewModel  vm)[Authorize]
+		Edit.cshtml
 
 
 
