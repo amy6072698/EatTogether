@@ -17,6 +17,8 @@ public partial class MemberCoupon
 
     public DateTime? UsedDate { get; set; }
 
+    public DateTime? ClaimedAt { get; set; }
+
     public virtual Coupon Coupon { get; set; }
 
     public virtual Member Member { get; set; }

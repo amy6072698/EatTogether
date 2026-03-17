@@ -14,6 +14,7 @@
         public DateTime? EndDate { get; set; }
         public bool IsUsed { get; set; }
         public DateTime? UsedDate { get; set; }
+        public DateTime? ClaimedAt { get; set; }
 
         public string DiscountDescription => DiscountType == 0
             ? $"折 ${DiscountValue}"

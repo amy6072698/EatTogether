@@ -103,6 +103,16 @@ namespace EatTogether.Controllers
             return View(dtos);
         }
 
+        // POST: /Coupons/IssueToAll/5（一鍵發放給全會員）
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> IssueToAll(int id)
+        {
+            var (issued, skipped) = await _couponService.IssueToAllMembersAsync(id);
+            TempData["SuccessMessage"] = $"發放完成！新增 {issued} 筆，跳過（已領） {skipped} 筆";
+            return RedirectToAction(nameof(Index));
+        }
+
         // POST: /Coupons/Disable/5
         [HttpPost]
         [ValidateAntiForgeryToken]

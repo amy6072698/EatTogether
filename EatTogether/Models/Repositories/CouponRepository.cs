@@ -128,7 +128,8 @@ namespace EatTogether.Models.Repositories
                     DiscountValue = mc.Coupon.DiscountValue,
                     EndDate = mc.Coupon.EndDate,
                     IsUsed = mc.IsUsed,
-                    UsedDate = mc.UsedDate
+                    UsedDate = mc.UsedDate,
+                    ClaimedAt = mc.ClaimedAt
                 })
                 .ToListAsync();
         }
@@ -155,7 +156,8 @@ namespace EatTogether.Models.Repositories
                 DiscountValue = mc.Coupon.DiscountValue,
                 EndDate = mc.Coupon.EndDate,
                 IsUsed = mc.IsUsed,
-                UsedDate = mc.UsedDate
+                UsedDate = mc.UsedDate,
+                ClaimedAt = mc.ClaimedAt
             };
         }
 
@@ -178,7 +180,8 @@ namespace EatTogether.Models.Repositories
                     DiscountValue = mc.Coupon.DiscountValue,
                     EndDate = mc.Coupon.EndDate,
                     IsUsed = mc.IsUsed,
-                    UsedDate = mc.UsedDate
+                    UsedDate = mc.UsedDate,
+                    ClaimedAt = mc.ClaimedAt
                 })
                 .ToListAsync();
         }
@@ -189,7 +192,8 @@ namespace EatTogether.Models.Repositories
             {
                 MemberId = memberId,
                 CouponId = couponId,
-                IsUsed = false
+                IsUsed = false,
+                ClaimedAt = DateTime.Now
             };
             _context.MemberCoupons.Add(mc);
             await _context.SaveChangesAsync();

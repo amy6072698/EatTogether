@@ -98,10 +98,10 @@
                 <tbody>
                     @foreach (var c in Model)
                     {
-                        <tr>
+                        <tr class="@(c.IsExpired ? "table-secondary text-muted opacity-75" : "")">
                             <td class="fw-semibold">@c.Name</td>
                             <td>
-                                <code class="@(c.IsExpired ? "text-danger" : "")">@c.Code</code>
+                                <code class="@(c.IsExpired ? "text-muted" : "")">@c.Code</code>
                             </td>
                             <td>@c.DiscountDescription</td>
                             <td>@(c.MinSpend > 0 ? $"${c.MinSpend}" : "無門檻")</td>
@@ -112,9 +112,7 @@
                                 }
                                 else if (c.IsExpired)
                                 {
-                                    <span class="text-danger">
-                                        @c.StartDate.ToString("yyyy/M/d") ~ @c.EndDate?.ToString("yyyy/M/d")
-                                    </span>
+                                    <span>@c.StartDate.ToString("yyyy/M/d") ~ @c.EndDate?.ToString("yyyy/M/d")</span>
                                 }
                                 else
                                 {
@@ -137,33 +135,52 @@
                             <td>
                                 <span class="badge @c.StatusBadgeClass">@c.StatusText</span>
                             </td>
-                            <td class="text-nowrap">
-                                <a asp-action="Edit" asp-route-id="@c.Id"
-                                   class="btn btn-warning btn-sm me-1" title="編輯">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                @if (c.IsDisabled)
-                                {
-                                    <form asp-action="Enable" asp-route-id="@c.Id"
-                                          method="post" class="d-inline"
-                                          onsubmit="return confirm('確定要重新啟用此優惠券？')">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-success btn-sm" title="重新啟用">
-                                            <i class="fas fa-toggle-on"></i>
-                                        </button>
-                                    </form>
-                                }
-                                else if (!c.IsExpired && !c.IsLimitHit)
-                                {
-                                    <form asp-action="Disable" asp-route-id="@c.Id"
-                                          method="post" class="d-inline"
-                                          onsubmit="return confirm('確定要停用「@c.Name」？停用後此券將無法使用。')">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-danger btn-sm" title="停用">
-                                            <i class="fas fa-ban"></i>
-                                        </button>
-                                    </form>
-                                }
+                            <td style="white-space:nowrap; min-width:120px;">
+                                <div class="d-flex gap-1 align-items-center">
+                                    @* 左側：編輯 + 一鍵發放 *@
+                                    @if (!c.IsExpired)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@c.Id"
+                                           class="btn btn-warning btn-sm" title="編輯">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    }
+                                    @if (!c.IsDisabled && !c.IsUpcoming && !c.IsExpired && !c.IsLimitHit && !c.LimitCount.HasValue && !c.Name.Contains("生日"))
+                                    {
+                                        <form asp-action="IssueToAll" asp-route-id="@c.Id"
+                                              method="post"
+                                              onsubmit="return confirm('確定要將「@c.Name」發放給全部會員？')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-info btn-sm" title="一鍵發放給全會員">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @* 右側：停用/啟用，用 ms-auto 推到最右 *@
+                                    @if (!c.IsDisabled && !c.IsExpired)
+                                    {
+                                        <form asp-action="Disable" asp-route-id="@c.Id"
+                                              method="post" class="ms-auto"
+                                              onsubmit="return confirm('確定要停用「@c.Name」？停用後此券將無法使用。')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm" title="停用">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (c.IsDisabled)
+                                    {
+                                        <form asp-action="Enable" asp-route-id="@c.Id"
+                                              method="post" class="ms-auto"
+                                              onsubmit="return confirm('確定要重新啟用此優惠券？')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm" title="重新啟用">
+                                                <i class="fas fa-toggle-on"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }

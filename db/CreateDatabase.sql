@@ -267,6 +267,7 @@ CREATE TABLE [dbo].[MemberCoupons](
 	[CouponId] [int] NOT NULL,
 	[IsUsed] [bit] NOT NULL,
 	[UsedDate] [datetime2](0) NULL,
+	[ClaimedAt] [datetime2](0) NULL,  
  CONSTRAINT [PK_MemberCoupons] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
