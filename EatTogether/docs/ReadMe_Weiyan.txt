@@ -296,7 +296,7 @@
 			→Article ToEntity(this ArticleCreateDto dto)	            
 				
 
-	[working]add Service/Repository
+	[V]add Service/Repository
 		IArticleRepository interface
 			void Create(ArticleCreateDto dto)
 
@@ -310,7 +310,7 @@
 
 		在 Program.cs 註冊IArticleRepository, ArticleRepository, service
 
-	[]add ArticlesController
+	[working]add ArticlesController
 		Create()
 			Create.cshtml
 		ctor(ArticleService articleService)
