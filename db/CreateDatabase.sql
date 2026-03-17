@@ -161,6 +161,7 @@ CREATE TABLE [dbo].[Coupons](
 	[EndDate] [datetime2](0) NULL,
 	[LimitCount] [int] NULL,
 	[ReceivedCount] [int] NULL,
+	[IsDisabled] [bit] NOT NULL DEFAULT 0,
  CONSTRAINT [PK_Coupons] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC

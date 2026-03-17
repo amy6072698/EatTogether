@@ -27,6 +27,8 @@ public partial class Coupon
 
     public int? ReceivedCount { get; set; }
 
+    public bool IsDisabled { get; set; }
+
     public virtual ICollection<MemberCoupon> MemberCoupons { get; set; } = new List<MemberCoupon>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

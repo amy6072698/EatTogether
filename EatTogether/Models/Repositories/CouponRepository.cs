@@ -82,6 +82,22 @@ namespace EatTogether.Models.Repositories
             coupon.LimitCount = (coupon.LimitCount ?? 0) + amount;
             await _context.SaveChangesAsync();
         }
+
+        public async Task DisableAsync(int id)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null) return;
+            coupon.IsDisabled = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task EnableAsync(int id)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null) return;
+            coupon.IsDisabled = false;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public class MemberCouponRepository : IMemberCouponRepository

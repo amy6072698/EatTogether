@@ -19,7 +19,8 @@ namespace EatTogether.Models.Extensions
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
                 LimitCount = c.LimitCount,
-                ReceivedCount = c.ReceivedCount ?? 0
+                ReceivedCount = c.ReceivedCount ?? 0,
+                IsDisabled = c.IsDisabled
             };
         }
     }

@@ -181,5 +181,37 @@ namespace EatTogether.Models.Services
   </div>
 </div>";
         }
+        /// <summary>只做 SMTP 發送，不寫 EmailQueue（供背景任務使用）</summary>
+        public async Task SendOnlyAsync(string recipientEmail, string subject, string body)
+        {
+            if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+            try
+            {
+                var smtp = _config.GetSection("Smtp");
+                var host = smtp["Host"] ?? "smtp.gmail.com";
+                var port = int.Parse(smtp["Port"] ?? "587");
+                var enableSsl = bool.Parse(smtp["EnableSsl"] ?? "true");
+                var userName = smtp["UserName"] ?? "";
+                var password = smtp["Password"] ?? "";
+                var fromName = smtp["FromName"] ?? "義起吃後台系統";
+                var fromAddress = smtp["FromAddress"] ?? userName;
+
+                using var client = new SmtpClient(host, port)
+                {
+                    EnableSsl = enableSsl,
+                    Credentials = new NetworkCredential(userName, password)
+                };
+                var mail = new MailMessage
+                {
+                    From = new MailAddress(fromAddress, fromName),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
+                mail.To.Add(recipientEmail);
+                await client.SendMailAsync(mail);
+            }
+            catch { /* 發送失敗靜默處理 */ }
+        }
     }
 }

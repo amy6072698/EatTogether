@@ -34,6 +34,7 @@ namespace EatTogether.Models.ViewModels
 
         [Display(Name = "活動結束日")]
         public DateTime? EndDate { get; set; }
+        public bool IsDisabled { get; set; }
 
         [Range(1, 999999, ErrorMessage = "限量張數必須大於 0")]
         [Display(Name = "限量張數")]
@@ -57,9 +58,13 @@ namespace EatTogether.Models.ViewModels
         public string StatusBadgeClass { get; set; } = null!;
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public bool IsDisabled { get; set; }
 
         [System.ComponentModel.DataAnnotations.Range(1, 999999, ErrorMessage = "請輸入大於 0 的數字")]
         [System.ComponentModel.DataAnnotations.Display(Name = "增加限量張數")]
         public int? AddLimitCount { get; set; }
+
+        public bool IsExpired => EndDate.HasValue && EndDate.Value < DateTime.Now;
+        public bool IsLimitHit => LimitCount.HasValue && ReceivedCount >= LimitCount.Value;
     }
 }

@@ -42,7 +42,38 @@ namespace EatTogether.Models.Services
                             && (!dto.EndDate.HasValue || dto.EndDate.Value >= now);
 
             if (isActiveNow)
-                await NotifyAllMembersAsync(dto);
+            {
+                // 先在 Scope 內查好資料，再丟背景執行（避免 DbContext 被 dispose）
+                var members = await _context.Members
+                    .Where(m => !m.IsDeleted && !m.IsBlacklisted
+                             && !string.IsNullOrEmpty(m.Email))
+                    .Select(m => new { m.Name, m.Email })
+                    .ToListAsync();
+
+                var discountDesc = dto.DiscountType == 0
+                    ? $"折 ${dto.DiscountValue}"
+                    : $"打 {100 - dto.DiscountValue} 折";
+
+                // 背景發送：所有資料已取出，不依賴 DbContext
+                _ = Task.Run(async () =>
+                {
+                    foreach (var member in members)
+                    {
+                        try
+                        {
+                            var body = _emailService.BuildCouponNotifyEmail(
+                                member.Name, dto.Name, dto.Code,
+                                discountDesc, dto.MinSpend, dto.EndDate);
+
+                            await _emailService.SendOnlyAsync(
+                                member.Email,
+                                $"🎉 義起吃新優惠上線！{dto.Name}，快來領取",
+                                body);
+                        }
+                        catch { /* 單筆失敗不影響其他 */ }
+                    }
+                });
+            }
 
             return Result.Success();
         }
@@ -76,6 +107,24 @@ namespace EatTogether.Models.Services
             }
         }
 
+        public async Task<Result> DisableAsync(int id)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(id);
+            if (coupon == null) return Result.Fail("找不到此優惠券");
+            if (coupon.IsDisabled) return Result.Fail("此優惠券已是停用狀態");
+            await _couponRepo.DisableAsync(id);
+            return Result.Success();
+        }
+
+        public async Task<Result> EnableAsync(int id)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(id);
+            if (coupon == null) return Result.Fail("找不到此優惠券");
+            if (!coupon.IsDisabled) return Result.Fail("此優惠券已是啟用狀態");
+            await _couponRepo.EnableAsync(id);
+            return Result.Success();
+        }
+
         public async Task<Result> EditAsync(int id, string newName, int? addLimitCount)
         {
             var coupon = await _couponRepo.GetByIdAsync(id);
@@ -99,6 +148,9 @@ namespace EatTogether.Models.Services
             var coupon = await _couponRepo.GetByCodeAsync(code);
             if (coupon == null)
                 return (Result.Fail("折扣碼不存在"), 0);
+
+            if (coupon.IsDisabled)
+                return (Result.Fail("此優惠券已停用"), 0);
 
             if (DateTime.Now < coupon.StartDate)
                 return (Result.Fail("此優惠活動尚未開始"), 0);

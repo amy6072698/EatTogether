@@ -42,6 +42,4 @@ public partial class SetMeal
     public bool IsRecommended { get; set; }
 
     public virtual ICollection<SetMealItem> SetMealItems { get; set; } = new List<SetMealItem>();
-
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

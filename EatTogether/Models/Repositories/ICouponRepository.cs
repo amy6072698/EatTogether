@@ -12,6 +12,8 @@ namespace EatTogether.Models.Repositories
         Task IncrementReceivedCountAsync(int id);
         Task UpdateNameAsync(int id, string newName);
         Task AddLimitCountAsync(int id, int amount);
+        Task DisableAsync(int id);
+        Task EnableAsync(int id);
     }
 
     public interface IMemberCouponRepository

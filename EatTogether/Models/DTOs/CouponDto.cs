@@ -12,6 +12,7 @@
         public DateTime? EndDate { get; set; }
         public int? LimitCount { get; set; }
         public int ReceivedCount { get; set; }
+        public bool IsDisabled { get; set; }
 
         // 計算屬性
         public string DiscountTypeText => DiscountType == 0 ? "折金額" : "打折";
@@ -28,6 +29,7 @@
         {
             get
             {
+                if (IsDisabled) return "已停用";
                 if (IsUpcoming) return "尚未開始";
                 if (IsExpired) return "已過期";
                 if (IsLimitHit) return "已達限量";
@@ -39,6 +41,7 @@
         {
             get
             {
+                if (IsDisabled) return "bg-dark";
                 if (IsUpcoming) return "bg-secondary";
                 if (IsExpired) return "bg-danger";
                 if (IsLimitHit) return "bg-warning text-dark";
