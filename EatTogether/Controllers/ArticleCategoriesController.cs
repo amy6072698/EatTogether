@@ -44,7 +44,7 @@ namespace EatTogether.Controllers
 				return PartialView("_CreatePartial", dto);
 			}
 
-			return View(dto);
+			return  View(dto);
 		}
 
 		// POST: ArticleCategory/Create		
