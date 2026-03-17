@@ -108,7 +108,7 @@
                             <td class="small">
                                 @if (!c.EndDate.HasValue)
                                 {
-                                    <span class="text-success">永久有效</span>
+                                    <span class="text-success">@c.StartDate.ToString("yyyy/M/d") 起永久有效</span>
                                 }
                                 else if (c.IsExpired)
                                 {
