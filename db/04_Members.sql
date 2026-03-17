@@ -42,9 +42,9 @@ VALUES
 -- ── 一般正常會員（有填生日）──────────────────────────────
 ( 1, 'amy_chen',    N'陳怡伶', 'amy.chen.eng@gmail.com',           '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0912111001', '1988-04-15', 0, '2023-01-08', 0, NULL, 1, NULL, NULL),
 ( 2, 'brian_lin',     N'鄭婷方', 'una06021209@gmail.com',             '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0923222002', '1995-07-22', 0, '2023-02-14', 0, NULL, 1, NULL, NULL),
-( 3, 'cindy_wu99',    N'吳欣怡', 'cindy.wu99@yahoo.tw',         '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0934333003', '1999-12-03', 0, '2023-03-05', 0, NULL, 1, NULL, NULL),
-( 4, 'david_huang',   N'黃大衛', 'david.huang@hotmail',         '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0945444004', '1990-02-28', 0, '2023-03-20', 0, NULL, 1, NULL, NULL),
-( 5, 'ellen_zhang',   N'張雅惠', 'ellen.zhang@gmail',           '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0956555005', '1987-09-10', 0, '2023-04-01', 0, NULL, 1, NULL, NULL),
+( 3, 'cindy_wu99',    N'楊晴淳', 'Yang0005111@gmail.com',         '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0934333003', '1999-12-03', 0, '2023-03-05', 0, NULL, 1, NULL, NULL),
+( 4, 'david_huang',   N'吳欣柔', 'rrr20118@gmail.com',         '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0945444004', '1990-02-28', 0, '2023-03-20', 0, NULL, 1, NULL, NULL),
+( 5, 'ellen_zhang',   N'李燕芳', 'g2301149040@gmail.com',           '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0956555005', '1987-09-10', 0, '2023-04-01', 0, NULL, 1, NULL, NULL),
 ( 6, 'frank_liu77',   N'劉宗翰', 'frank.liu77@gmail',           '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0967666006', '1977-06-18', 0, '2023-04-18', 0, NULL, 1, NULL, NULL),
 ( 7, 'grace_xu',      N'許雅柔', 'grace.xu@gmail',              '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0978777007', '2001-03-25', 0, '2023-05-07', 0, NULL, 1, NULL, NULL),
 ( 8, 'henry_cai',     N'蔡明輝', 'henry.cai@gmail',             '$2a$11$rBnqTpOHBLFvFM1yKFVcAuXskO9BWlVjDKRmHHlm5Qo9sVFkNeV5C', '0989888008', '1983-11-14', 0, '2023-05-22', 0, NULL, 1, NULL, NULL),
