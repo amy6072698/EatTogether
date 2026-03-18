@@ -132,8 +132,8 @@ function initCreateModal() {
                 body: JSON.stringify({
                     roleName,
                     description: roleDesc,
-                    functions: selectedFunctions,
-                    employeeIds: selectedEmployeeIds
+                    functionIds: selectedFunctions.map(v => parseInt(v, 10)),
+                    userIds: selectedEmployeeIds
                 })
             });
             if (!res) return;
@@ -219,10 +219,11 @@ function initEditModal() {
             const res = await apiFetch(`/Role/Edit/${roleId}`, {
                 method: 'PUT',
                 body: JSON.stringify({
+                    id: parseInt(roleId, 10),
                     roleName,
                     description: roleDesc,
-                    functions: selectedFunctions,
-                    employeeIds: selectedEmployeeIds
+                    functionIds: selectedFunctions.map(v => parseInt(v, 10)),
+                    userIds: selectedEmployeeIds
                 })
             });
             if (!res) return;

@@ -504,7 +504,7 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[working] add 編輯員工功能
+[V] add 編輯員工功能
 	url: GET  /User/Edit/{id}
 	url: PUT  /User/Edit/{id}
 
@@ -599,10 +599,10 @@
 =========
 [RequirePermission("Staff_Manage")] 套用於所有 Role Actions
 
-[] add 角色列表功能
+[working] add 角色列表功能
 	url: GET /Role/Index
 
-	[] DTO（Models/DTOs/RoleListDto.cs）
+	[V] DTO（Models/DTOs/RoleListDto.cs）
 		RoleListDto
 			int Id
 			string RoleName, Description
@@ -610,30 +610,37 @@
 			List<string> FunctionDisplayNames
 			int UserCount
 
-	[] IFunctionRepository / FunctionRepository（Models/Repositories/FunctionRepository.cs）
+	[V] DTO（Models/DTOs/FunctionDto.cs）
+		FunctionDto
+			int Id
+			string Category, FunctionName, DisplayName
+			string? Description
+			bool IsOwnerOnly
+
+	[V] IFunctionRepository / FunctionRepository（Models/Repositories/FunctionRepository.cs）
 		Task<IEnumerable<Function>> GetAllAsync()
 
-	[] IRoleRepository / RoleRepository（Models/Repositories/RoleRepository.cs）
+	[V] IRoleRepository / RoleRepository（Models/Repositories/RoleRepository.cs）
 		Task<IEnumerable<RoleListDto>> GetAllAsync()
 
-	[] IRoleService / RoleService（Models/Services/RoleService.cs）
+	[V] IRoleService / RoleService（Models/Services/RoleService.cs）
 		ctor(IRoleRepository repo, IFunctionRepository funcRepo)
 		Task<IEnumerable<RoleListDto>> GetAllAsync()
 
-	[] ViewModel（Models/ViewModels/RoleIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleIndexViewModel.cs）
 		RoleIndexViewModel
 			IEnumerable<RoleRowViewModel> Rows
 
-	[] ViewModel（Models/ViewModels/RoleRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleRowViewModel.cs）
 		RoleRowViewModel
 			// 對應 RoleListDto
 			bool CanDelete   // 預設 6 個角色 = false
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）
 		RoleRowViewModel ToRowViewModel(this RoleListDto dto)
 
-	[] RoleController（Controllers/RoleController.cs）
-		GET /Role/Index
+	[V] RolesController（Controllers/RolesController.cs）
+		GET /Roles/Index
 
 	[V] Role/Index.cshtml（Views/Role/Index.cshtml）
 		DataTables + zh-HANT.json 中文化 + 支援分頁
@@ -643,13 +650,6 @@
 		「查看總覽」按鈕（開權限總覽 Modal）
 		「+ 新增角色」按鈕
 		表格欄位：角色名稱 / 角色描述 / 已擁有的權限（綠色標籤）/ 員工數 / 操作
-
-	[] roles-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .roles-index { } 命名空間外
-		改用 #roles-table_wrapper 選取器
-			#roles-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#roles-table_wrapper .dataTables_paginate { text-align: right; }
-			#roles-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
 
 [] add 權限總覽功能
 	url: GET /Role/Overview
