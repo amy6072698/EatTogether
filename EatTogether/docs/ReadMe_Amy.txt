@@ -3,19 +3,21 @@
 =========
 [V] 建立資料表（T-SQL）
 	Users
-		EmployeeNumber VARCHAR(20) Unique
+		Id INT PK IDENTITY(1,1)
 		Account VARCHAR(50) Unique
 		HashedPassword VARCHAR(70)
+		EmployeeNumber VARCHAR(20) Unique
 		Name NVARCHAR(50)
 		Email VARCHAR(100) Unique
-		Phone VARCHAR(10) 允許 NULL
-		HireDate DATE 允許 NULL
+		Phone VARCHAR(10)
+		HireDate DATE
+		CreatedAt DATETIME2(0) 預設 GETDATE()
 		IsActive BIT 預設 1
 		IsDeleted BIT 預設 0
 		MustChangePassword BIT 預設 0
-		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	PasswordResetTokens
+		Id INT PK IDENTITY(1,1)
 		UserId INT FK→Users、Index
 		Token VARCHAR(32) Unique（Guid 去除符號，32 碼）
 		ExpiresAt DATETIME2(0)（建立時間 +60 分鐘）
@@ -23,41 +25,46 @@
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	Roles
+		Id INT PK IDENTITY(1,1)
 		RoleName NVARCHAR(20) Unique
 		Description NVARCHAR(100) 允許 NULL
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	Functions
-		Category NVARCHAR(30)
+		Id INT PK IDENTITY(1,1)
+		Category NVARCHAR(10)
 		FunctionName VARCHAR(50) Unique（程式識別碼，如 Staff_Manage）
 		DisplayName NVARCHAR(50)
 		Description NVARCHAR(200) 允許 NULL
 		IsOwnerOnly BIT 預設 0
 
 	RoleFunctions
+		Id INT PK IDENTITY(1,1)
 		RoleId INT FK→Roles
 		FunctionId INT FK→Functions
 		Unique Index(RoleId, FunctionId)
 
 	UserRoles
+		Id INT PK IDENTITY(1,1)
 		UserId INT FK→Users
 		RoleId INT FK→Roles
 		Unique Index(UserId, RoleId)
 
 	Members
+		Id INT PK IDENTITY(1,1)
 		Account VARCHAR(100) Unique
 		Name NVARCHAR(50)
 		Email VARCHAR(100) Unique
 		HashedPassword VARCHAR(70)
 		Phone VARCHAR(10) 允許 NULL
 		BirthDate DATE 允許 NULL
-		AvatarFileName VARCHAR(100) 允許 NULL
-		IsConfirmed BIT 預設 0
 		IsBlacklisted BIT 預設 0
-		BlacklistReason NVARCHAR(200) 允許 NULL
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 		IsDeleted BIT 預設 0、Index
 		DeletedAt DATETIME2(0) 允許 NULL
+		IsConfirmed BIT 預設 0
+		AvatarFileName VARCHAR(100) 允許 NULL 預設 NULL
+		BlacklistReason NVARCHAR(200) 允許 NULL 預設 NULL
 
 [V] Seed Data — 預設 6 個角色
 	店長、副店長、收銀員、外場服務生、內場廚師、工讀生
@@ -352,14 +359,14 @@
 [RequirePermission("Staff_View")] 套用於 GET /User/Index
 [RequirePermission("Staff_Manage")] 套用於 Create / Edit / Resign / Reinstate
 
-[working] add 員工列表功能
+[V] add 員工列表功能
 	url: GET /User/Index
 
 	[V] DTO（Models/DTOs/UserListDto.cs）
 		UserListDto
 			int Id
 			string EmployeeNumber, Name, Account, Email, Phone
-			DateOnly? HireDate
+			DateOnly HireDate
 			DateTime CreatedAt
 			bool IsActive, IsDeleted, CanEdit, CanResign, CanReinstate
 			List<int> RoleIds
@@ -411,55 +418,80 @@
 		狀態標籤：在職（綠）/ 請假（橘）/ 離職（灰）
 		操作欄：在職/請假 → 🔵編輯 + 🔴離職；離職 → 🔵編輯 + 🟢復職
 
-[] add 新增員工功能
+[working] add 新增員工功能
 	url: POST /User/Create
 
-	[] DTO（Models/DTOs/UserCreateDto.cs）
-		UserCreateDto
-			string Name, Account, Password
-			string? Email, Phone
-			DateTime? HireDate
-			bool IsActive   // true=在職 / false=請假
+	[V] DTO（Models/DTOs/UserInsertDto.cs）
+		UserInsertDto
+			string EmployeeNumber, Name, Account, HashedPassword, Email, Phone
+			DateOnly HireDate
+			bool IsActive, MustChangePassword
 			List<int> RoleIds
 
-	[] UserRepository（modify）
-		Task CreateAsync(UserCreateDto dto)
-		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null)
-		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
-		Task<string> GetLastEmployeeNumberByYearAsync(int year)
-		// 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
-		// 取最後一個員工編號 → 流水號 +1
+	[V] DTO（Models/DTOs/UserCreateDto.cs）
+		UserCreateDto
+			string Name, Account, Password, Email, Phone
+			DateOnly HireDate
+			bool IsActive
+			List<int> RoleIds
 
-	[] UserService（modify）
+	[V] UserNumberGenerator（modify）
+		string Generate(string lastEmployeeNumber)
+		 只負責編號產生邏輯，不存取資料庫
+		 // 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
+		 // 取最後一個員工編號 → 流水號 +1
+
+	[V] UserRepository（modify）
+		Task<string> GetLastEmployeeNumberByYearAsync(int year); => 找出當年最後一筆員工編號
+		Task InsertAsync(UserInsertDto dto);
+		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null);
+		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null);
+		
+
+	[V] UserService（modify）
+		Task<string> GetEmployeeNumberPreviewAsync()
+        // 預產員工編號（僅供前端開 Modal 顯示用，不在 Transaction 內）
+        // 注意：此編號僅供顯示，實際寫入時會在 Transaction 內重新產生
+
 		Task<Result> CreateAsync(UserCreateDto dto)
-			// 驗證帳號唯一性（IsAccountExistsAsync）
-			// 驗證密碼複雜度（PasswordValidator.IsValid）
-			// 比對明文密碼 == 員工編號 → MustChangePassword=1，否則=0
-			// HashUtility.HashPassword → 寫入 HashedPassword
-			// BatchInsert UserRoles
-			// 員工編號產生 UserNumberGenerator Service 層呼叫步驟(Task<string> GenerateEmployeeNumberAsync())
-				// 1. BeginTransactionAsync() 開啟交易
-				// 2. 呼叫 UserNumberGenerator.GenerateAsync() 產生編號
-				// 3. SaveChangesAsync() 寫入資料庫
-				// 4. CommitAsync() 提交交易
-				// 5. 捕捉 DbUpdateException（UNIQUE / duplicate）→ RollbackAsync() → 進入 RetryCreateAsync()
-				// 6. 其他例外 → RollbackAsync() → Result.Fail
+			// 業務驗證：帳號唯一性（GetByAccountAsync → 不為 null 則 Fail）
+			// 業務驗證：Email 唯一性（GetByEmailAsync → 不為 null 則 Fail）
+			// 業務驗證：密碼複雜度（PasswordValidator.IsValid）
+			// HashUtility.HashPassword → 取得 hashedPassword（明文只在此處使用）
+			// BeginTransactionAsync() 開啟交易
+			//   → ExecuteInsertAsync(dto, hashedPassword)
+			//   → CommitAsync() 提交交易
+			// 捕捉 DbUpdateException（UNIQUE / duplicate）
+			//   → RollbackAsync() → 進入 RetryCreateAsync(dto, hashedPassword)
+			// 其他例外 → RollbackAsync() → Result.Fail("新增員工失敗，請稍後再試")
 
-		Task<Result> RetryCreateAsync(UserCreateDto dto)  // private
-			// 重新開啟 Transaction，重新 GenerateAsync()，只重試一次
-			// 再次失敗 → Result.Fail("新增員工失敗，請重試")
+		Task<Result> RetryCreateAsync(UserCreateDto dto, string hashedPassword)  // private
+			// 重新開啟 Transaction，重新呼叫 ExecuteInsertAsync(dto, hashedPassword)，只重試一次
+			// 再次失敗 → RollbackAsync() → Result.Fail("新增員工失敗，請重試")
 
-	[] ViewModel（Models/ViewModels/UserCreateViewModel.cs）
-		UserCreateViewModel
+		Task ExecuteInsertAsync(UserCreateDto dto, string hashedPassword)  // private
+			// 必須在 Transaction 內呼叫（UPDLOCK/HOLDLOCK 才有效）
+			// 1. GetLastEmployeeNumberByYearAsync(DateTime.Now.Year) 取得最後編號
+			// 2. UserNumberGenerator.Generate(lastEmpNo) 產生員工編號
+			// 3. 比對明文密碼 == 員工編號 → MustChangePassword=true，否則=false
+			// 4. 組裝 UserInsertDto
+			// 5. InsertAsync(insertDto) 寫入 Users + UserRoles（同一 Transaction）
+
+	[V] ViewModel（Models/ViewModels/UserCreateViewModel.cs）
+		UserCreateViewModel  // 前端 Modal 綁定用，ConfirmPassword 僅供前端驗證，不傳後端
 			string Name, Account, Password, ConfirmPassword
-			string? Email, Phone
-			DateTime? HireDate
+			string Email, Phone
+			DateOnly HireDate
 			string IsActive   // 下拉：在職 / 請假
 			List<int> RoleIds
 
-	[] UserController（modify）
-		GET  /User/Create → 回傳 UserCreateViewModel（含全部角色清單）
-		POST /User/Create
+	[V] UserController（modify）
+		GET  /Users/NextEmployeeNumber → 呼叫 GetEmployeeNumberPreviewAsync()，回傳 { employeeNumber }
+		POST /Users/Create
+        → ModelState 驗證（格式：必填、長度、Email 格式、角色必選）
+        → 呼叫 UserService.CreateAsync(dto)
+        → 成功 → Ok()
+        → 失敗 → BadRequest({ message })
 
 	[V] 新增員工 Modal（嵌入 User/Index.cshtml）
 		員工編號：唯讀，「系統自動產生，不可修改」
@@ -482,9 +514,9 @@
 			string EmployeeNumber（唯讀）
 			DateTime CreatedAt（唯讀）
 			string Name, Account
-			string? Password   // 留空 = 不修改
-			string? Email, Phone
-			DateTime? HireDate
+			string Password
+			string Email, Phone
+			DateOnly HireDate
 			bool IsActive
 			List<int> RoleIds
 

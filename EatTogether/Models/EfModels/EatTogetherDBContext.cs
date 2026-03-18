@@ -265,6 +265,7 @@ public partial class EatTogetherDBContext : DbContext
 
         modelBuilder.Entity<MemberCoupon>(entity =>
         {
+            entity.Property(e => e.ClaimedAt).HasPrecision(0);
             entity.Property(e => e.UsedDate).HasPrecision(0);
 
             entity.HasOne(d => d.Coupon).WithMany(p => p.MemberCoupons)
@@ -467,6 +468,10 @@ public partial class EatTogetherDBContext : DbContext
             entity.HasOne(d => d.Dish).WithMany(p => p.Products)
                 .HasForeignKey(d => d.DishId)
                 .HasConstraintName("FK_Products_Dishes");
+
+            entity.HasOne(d => d.SetMeal).WithMany(p => p.Products)
+                .HasForeignKey(d => d.SetMealId)
+                .HasConstraintName("FK_Products_SetMeals");
         });
 
         modelBuilder.Entity<Reservation>(entity =>

@@ -94,17 +94,17 @@
                             data-name="@row.Name"
                             data-is-active="@(row.IsActive ? "1" : "0")"
                             data-account="@row.Account"
-                            data-email="@(row.Email ?? "")"
-                            data-phone="@(row.Phone ?? "")"
-                            data-hire-date="@(row.HireDate?.ToString("yyyy-MM-dd") ?? "")"
+                            data-email="@(row.Email)"
+                            data-phone="@(row.Phone)"
+                            data-hire-date="@(row.HireDate?.ToString("yyyy-MM-dd"))"
                             data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")"
                             data-role-ids="@string.Join(",", row.RoleIds)">
                             <td>@row.EmployeeNumber</td>
                             <td>@row.Name</td>
                             <td>@row.Account</td>
-                            <td>@(row.Email ?? "-")</td>
-                            <td>@(row.Phone ?? "-")</td>
-                            <td>@(row.HireDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td>@(row.Email)</td>
+                            <td>@(row.Phone)</td>
+                            <td>@(row.HireDate?.ToString("yyyy-MM-dd"))</td>
                             <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                             <td>
                                 @foreach (var roleName in row.RoleNames)
@@ -336,21 +336,27 @@
 
                             <!-- Email -->
                             <div class="col-md-6">
-                                <label class="form-label" for="create-email">Email</label>
+                                <label class="form-label" for="create-email">
+                                    Email <span class="text-danger">*</span>
+                                </label>
                                 <input type="email" class="form-control" id="create-email"
                                        placeholder="example@email.com" maxlength="100" />
                             </div>
 
                             <!-- 手機 -->
                             <div class="col-md-6">
-                                <label class="form-label" for="create-phone">手機</label>
+                                <label class="form-label" for="create-phone">
+                                    手機 <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control" id="create-phone"
                                        placeholder="0912345678" maxlength="10" />
                             </div>
 
                             <!-- 到職日期 -->
                             <div class="col-md-6">
-                                <label class="form-label" for="create-hire-date">到職日期</label>
+                                <label class="form-label" for="create-hire-date">
+                                    到職日期 <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control" id="create-hire-date"
                                        placeholder="YYYY-MM-DD" />
                             </div>

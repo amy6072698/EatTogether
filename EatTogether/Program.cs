@@ -109,7 +109,7 @@ namespace EatTogether
 			// 註冊 Infra（需要 DI 的才註冊）
 			builder.Services.AddHttpContextAccessor();
 			builder.Services.AddScoped<JwtHelper>();
-			builder.Services.AddScoped<UserNumberGenerator>();
+			builder.Services.AddSingleton<UserNumberGenerator>();
 
 			var app = builder.Build();
 

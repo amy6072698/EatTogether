@@ -238,7 +238,7 @@ function initCreateModal() {
 
     if (!modal) return;
 
-    modal.addEventListener('show.bs.modal', function () {
+    modal.addEventListener('show.bs.modal', async function () {
         clearAllFieldErrors(form);
         if (form) form.reset();
 
@@ -252,8 +252,19 @@ function initCreateModal() {
         if (acctField) acctField.readOnly = false;
         if (pwdField)  pwdField.readOnly  = false;
 
-        // TODO（後端連線後）：apiFetch GET /Users/NextUserNumber
-        if (empNoField) empNoField.value = '（系統自動產生）';
+        
+
+        // 呼叫後端取得預覽編號
+        try {
+            const res = await apiFetch('/Users/NextEmployeeNumber');
+            if (res && res.ok) {
+                const data = await res.json();
+                if (empNoField) empNoField.value = data.employeeNumber;
+            }
+        } catch {
+            if (empNoField) empNoField.value = '（取得失敗，請關閉重試）';
+        }
+
     });
 
     initSameEmpNoCheckboxes('create');
@@ -300,9 +311,9 @@ function initCreateModal() {
             isActive: status?.value === '1',
             account:  account.value.trim(),
             password: pwd.value,
-            email:    email?.value.trim() || null,
-            phone:    phone?.value.trim() || null,
-            hireDate: hireDate?.value || null,
+            email: email?.value.trim() ?? '',
+            phone: phone?.value.trim() ?? '',
+            hireDate: hireDate?.value ?? '',
             roleIds:  Array.from(checkedRoles).map(cb => parseInt(cb.value))
         };
 
@@ -416,6 +427,10 @@ function initEditModal() {
             const pwdError = validatePassword(pwd.value);
             if (pwdError) { showFieldError(pwd, pwdError); hasError = true; }
         }
+
+        if (!email?.value.trim()) { showFieldError(email, '請輸入 Email'); hasError = true; }
+        if (!phone?.value.trim()) { showFieldError(phone, '請輸入手機號碼'); hasError = true; }
+        if (!hireDate?.value.trim()) { showFieldError(hireDate, '請選擇到職日期'); hasError = true; }
 
         if (checkedRoles.length === 0) {
             let errEl = form.querySelector('#edit-role-error');

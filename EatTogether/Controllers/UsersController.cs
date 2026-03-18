@@ -18,15 +18,15 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/Index
-		[HttpGet]
 		//[RequirePermission("Staff_View")]
+		[HttpGet]
 		public async Task<IActionResult> Index(UserIndexViewModel vm)
 		{
 			// // 從 JWT 取得目前登入者資訊
 			var currentUserId = int.Parse(User.FindFirstValue("UserId") ?? "0");
 
 			// 檢查目前登入者是否擁有「管理員工」的權限標記 (Claim)
-			var canMange = User.HasClaim("Premission", "Staff_Manage");
+			var canManage = User.HasClaim("Permission", "Staff_Manage");
 
 			// 查詢條件
 			var searchDto = new UserSearchDto
@@ -39,7 +39,7 @@ namespace EatTogether.Controllers
 				SortBy = string.IsNullOrEmpty(vm.SortBy) ? "HireDate_Desc" : vm.SortBy
 			};
 
-			var dtos = await _userService.GetAllAsync(searchDto, currentUserId, canMange);
+			var dtos = await _userService.GetAllAsync(searchDto, currentUserId, canManage);
 
 			var result = new UserIndexViewModel
 			{
@@ -55,5 +55,39 @@ namespace EatTogether.Controllers
 			return View(result);
 		}
 
+		/* --------------------------------------------------------
+           預產員工編號（前端開 Modal 時呼叫）
+        -------------------------------------------------------- */
+		// GET /Users/NextEmployeeNumber
+		//[RequirePermission("Staff_Manage")]
+		[HttpGet]
+		public async Task<IActionResult> NextEmployeeNumber()
+		{
+			var empNo = await _userService.GetEmployeeNumberPreviewAsync();
+			return Ok(new { employeeNumber = empNo });
+		}
+
+		/* --------------------------------------------------------
+           新增員工
+        -------------------------------------------------------- */
+		// POST /Users/Create
+		//[RequirePermission("Staff_Manage")]
+		[HttpPost]
+		public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				var errors = ModelState.Values
+					.SelectMany(v => v.Errors)
+					.Select(e => e.ErrorMessage);
+				return BadRequest(new { message = string.Join("、", errors) });
+			}
+
+			var result = await _userService.CreateAsync(dto);
+
+			if (result.IsSuccess) return Ok();
+
+			return BadRequest(new { message = result.ErrorMessage });
+		}
 	}
 }
