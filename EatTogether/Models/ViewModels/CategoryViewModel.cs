@@ -26,12 +26,10 @@ namespace EatTogether.Models.ViewModels
 		public string? ParentCategoryName { get; set; }
 
 
-		[Required(ErrorMessage = "顯示順序為必填")]
-		[Range(1, 999, ErrorMessage = "顯示順序請填1到999之間")]
 		[Display(Name = "顯示順序")]
 		public int DisplayOrder { get; set; }
 
-		[StringLength(200, ErrorMessage = "圖片網址最多200個字元")]
+		[MaxLength(int.MaxValue)]
 		[Display(Name = "圖片網址")]
 		public string? ImageUrl { get; set; }
 

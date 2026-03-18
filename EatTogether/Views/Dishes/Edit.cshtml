@@ -127,25 +127,23 @@
 
                     <div class="col-lg-5 ps-lg-5 mt-4 mt-lg-0">
                         <label class="form-label fw-bold d-block mb-3">商品圖片展示</label>
-                        
-                        <div id="imageFrame" class="position-relative border rounded-4 bg-white shadow-sm overflow-hidden" 
+
+                        <div id="imageFrame" class="position-relative border rounded-4 bg-white shadow-sm overflow-hidden"
                              style="aspect-ratio: 4/3; border: 2px dashed #cbd5e0 !important;">
-                            
-                            <div id="displayArea" class="w-100 h-100 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
-                                <img id="currentImg" src="@(Model.ImageUrl ?? "")" 
-                                     class="w-100 h-100" 
-                                     style="object-fit: cover; cursor: pointer; display: block;" 
-                                     onclick="triggerFileInput()"
+
+                            <div id="displayArea" class="w-100 h-100 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")" style="cursor: pointer;" onclick="editOrUploadImage()">
+                                <img id="currentImg" src="@(Model.ImageUrl ?? "")"
+                                     class="w-100 h-100"
+                                     style="object-fit: cover; display: block;"
                                      onerror="this.src='/images/no-image.png'; this.onerror=null;" />
-                                <div class="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-50 text-white text-center py-2" 
-                                     style="cursor: pointer;" onclick="triggerFileInput()">
-                                    <i class="fas fa-camera me-1"></i> 點擊更換圖片 (支援拖曳)
+                                <div class="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-50 text-white text-center py-2">
+                                    <i class="fas fa-camera me-1"></i> 點擊更換或重新裁切 (支援拖曳)
                                 </div>
                             </div>
 
                             <div id="emptyArea" class="w-100 h-100 d-flex flex-column align-items-center justify-content-center"
-                                 style="cursor: pointer; @(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none")"
-                                 onclick="triggerFileInput()">
+                                 style="cursor: pointer; @(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none!important;")"
+                                 onclick="editOrUploadImage()">
                                 <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                                 <span class="text-muted fw-bold">拖曳圖片至此裁切</span>
                             </div>
@@ -199,19 +197,30 @@
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <style>
-        #imageFrame.drag-over { border-color: #0d6efd !important; background: #f8fbff; }
-        .x-small { font-size: 0.8rem; }
+        #imageFrame.drag-over {
+            border-color: #0d6efd !important;
+            background: #f8fbff;
+        }
+
+        .x-small {
+            font-size: 0.8rem;
+        }
         /* 隱藏裁切框的四個角控制點，讓它看起來不能縮放 */
-        .cropper-line, .cropper-point { display: none !important; }
-        .cropper-view-box { outline: 2px solid #0d6efd; outline-opacity: 0.7; }
+        .cropper-line, .cropper-point {
+            display: none !important;
+        }
+
+        .cropper-view-box {
+            outline: 2px solid #0d6efd;
+            outline-opacity: 0.7;
+        }
     </style>
 }
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    
+
     <script>
         let myCropper = null;
         const realInput = document.getElementById("realInput");
@@ -228,43 +237,53 @@
             document.getElementById("dateRange").classList.toggle("d-none", !isChecked);
         }
 
-        function triggerFileInput() {
-            realInput.click();
+        // --- Main Image Handling Logic ---
+
+        function editOrUploadImage() {
+            const hasExistingImage = currentImg.src && !currentImg.src.includes('no-image.png') && !displayArea.classList.contains('d-none');
+            if (hasExistingImage) {
+                // If an image exists, load it into the cropper for re-cropping
+                openCropperWithUrl(currentImg.src);
+            } else {
+                // Otherwise, open the file dialog for a new upload
+                realInput.click();
+            }
+        }
+
+        function openCropperWithUrl(url) {
+            displayArea.classList.add("d-none");
+            emptyArea.classList.add("d-none");
+            cropperArea.classList.remove("d-none");
+            cropControls.classList.remove("d-none");
+
+            cropperImg.src = url;
+
+            cropperImg.onload = function() {
+                if (myCropper) myCropper.destroy();
+                myCropper = new Cropper(cropperImg, {
+                    aspectRatio: 4 / 3,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    background: false,
+                    responsive: true,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+                cropperImg.onload = null;
+            };
+            if (cropperImg.complete) cropperImg.onload();
         }
 
         function processFile(file) {
             if (!file || !file.type.startsWith("image/")) return;
-
             const reader = new FileReader();
-            reader.onload = function(e) {
-                displayArea.classList.add("d-none");
-                emptyArea.classList.add("d-none");
-                cropperArea.classList.remove("d-none");
-                cropControls.classList.remove("d-none");
-
-                cropperImg.src = e.target.result;
-                
-                cropperImg.onload = function() {
-                    if (myCropper) myCropper.destroy();
-                    
-                    myCropper = new Cropper(cropperImg, {
-                        aspectRatio: 4 / 3,
-                        viewMode: 1,      
-                        dragMode: 'move',  // 【關鍵】改為「移動圖片」模式
-                        autoCropArea: 1,   // 裁切框佔滿顯示區域
-                        background: false,
-                        responsive: true,
-                        restore: false,
-                        guides: false,
-                        center: false,
-                        highlight: false,
-                        cropBoxMovable: false,  // 【關鍵】禁止移動裁切框
-                        cropBoxResizable: false, // 【關鍵】禁止縮放裁切框
-                        toggleDragModeOnDblclick: false,
-                    });
-                    cropperImg.onload = null;
-                };
-            };
+            reader.onload = (e) => openCropperWithUrl(e.target.result);
             reader.readAsDataURL(file);
         }
 
@@ -280,22 +299,36 @@
             const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
             document.getElementById("croppedImageData").value = dataUrl;
             currentImg.src = dataUrl;
+            currentImg.onerror = () => { this.src='/images/no-image.png'; this.onerror=null; };
             exitCropper();
         }
 
-        function cancelCrop() { exitCropper(); }
+        function cancelCrop() {
+            exitCropper();
+        }
 
         function exitCropper() {
-            if (myCropper) { myCropper.destroy(); myCropper = null; }
+            if (myCropper) {
+                myCropper.destroy();
+                myCropper = null;
+            }
             cropperArea.classList.add("d-none");
             cropControls.classList.add("d-none");
-            if (currentImg.src && !currentImg.src.includes("window.location") && currentImg.src !== "") {
+
+            const hasImage = currentImg.src
+                && !currentImg.src.endsWith("/")
+                && !currentImg.src.includes("no-image.png")
+                && currentImg.src !== window.location.href;
+            if (hasImage) {
                 displayArea.classList.remove("d-none");
+                emptyArea.style.display = "none";
             } else {
-                emptyArea.style.display = "flex";
+                emptyArea.style.display = "";
+                displayArea.classList.add("d-none");
             }
         }
 
+        // --- Drag and Drop ---
         frame.addEventListener("dragover", e => { e.preventDefault(); frame.classList.add("drag-over"); });
         frame.addEventListener("dragleave", () => { frame.classList.remove("drag-over"); });
         frame.addEventListener("drop", e => {

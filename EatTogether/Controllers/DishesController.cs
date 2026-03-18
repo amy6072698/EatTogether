@@ -22,8 +22,8 @@ namespace EatTogether.Controllers
             _categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index()
-        {
+		public async Task<IActionResult> Index(bool newDish = false)
+		{
             var dtos = await _dishService.GetAllAsync();
             var vms = dtos.Select(d => {
                 var vm = d.ToViewModel();
@@ -88,8 +88,8 @@ namespace EatTogether.Controllers
             }
 
             await _dishService.CreateAsync(vm.ToDto());
-            return RedirectToAction(nameof(Index));
-        }
+			return RedirectToAction(nameof(Index), new { newDish = true });
+		}
 
         public async Task<IActionResult> Edit(int id)
         {
@@ -97,7 +97,20 @@ namespace EatTogether.Controllers
             if (dto == null) return NotFound();
             var vm = dto.ToViewModel();
             vm.CategoryOptions = await GetCategoryOptionsAsync();
-            return View(vm);
+
+			// 若資料庫沒有圖片路徑，自動用餐點名稱去找本地檔案
+			if (string.IsNullOrEmpty(vm.ImageUrl))
+			{
+				string safeName = vm.DishName;
+				foreach (char c in Path.GetInvalidFileNameChars())
+					safeName = safeName.Replace(c, '_');
+				var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+				if (System.IO.File.Exists(Path.Combine(folder, safeName + ".jpg")))
+					vm.ImageUrl = "/images/" + safeName + ".jpg";
+				else if (System.IO.File.Exists(Path.Combine(folder, safeName + ".png")))
+					vm.ImageUrl = "/images/" + safeName + ".png";
+			}
+			return View(vm);
         }
 
         [HttpPost]
@@ -191,7 +204,7 @@ namespace EatTogether.Controllers
         }
 
         /// <summary>
-        /// 儲存圖片並強制使用餐點名稱命名（達成覆蓋效果）
+        /// 儲存裁切後的圖片。存檔前會先刪除同名的 .png 和 .jpeg 檔案，確保只保留最新的 .jpg。
         /// </summary>
         private async Task<string> SaveBase64ImageAsync(string base64Data, string dishName)
         {
@@ -200,13 +213,11 @@ namespace EatTogether.Controllers
             var base64 = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
             var bytes = Convert.FromBase64String(base64);
 
-            // 【強制規範】：檔名 = 餐點名稱.jpg
-            // 這樣不論改幾次，只要餐點名稱不變，檔案就會被 WriteAllBytesAsync 強制覆蓋
-            string fileName = $"{dishName}.jpg";
-            
-            // 移除檔名中可能導致報錯的特殊字元
-            foreach (char c in Path.GetInvalidFileNameChars()) {
-                fileName = fileName.Replace(c, '_');
+            // 移除檔名中不合法的字元
+            string fileNamePrefix = dishName;
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                fileNamePrefix = fileNamePrefix.Replace(c, '_');
             }
 
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
@@ -215,12 +226,24 @@ namespace EatTogether.Controllers
                 Directory.CreateDirectory(folderPath);
             }
 
-            var savePath = Path.Combine(folderPath, fileName);
-            
-            // 執行寫入（若檔案已存在，System.IO 會直接覆蓋它）
+            // 刪除舊的 .png 和 .jpeg 檔案
+            string pngToDelete = Path.Combine(folderPath, $"{fileNamePrefix}.png");
+            if (System.IO.File.Exists(pngToDelete))
+            {
+                System.IO.File.Delete(pngToDelete);
+            }
+            string jpegToDelete = Path.Combine(folderPath, $"{fileNamePrefix}.jpeg");
+            if (System.IO.File.Exists(jpegToDelete))
+            {
+                System.IO.File.Delete(jpegToDelete);
+            }
+
+            // 儲存新的 .jpg 檔案
+            string newJpgFileName = $"{fileNamePrefix}.jpg";
+            var savePath = Path.Combine(folderPath, newJpgFileName);
             await System.IO.File.WriteAllBytesAsync(savePath, bytes);
 
-            return "/images/" + fileName;
+            return "/images/" + newJpgFileName;
         }
     }
 }

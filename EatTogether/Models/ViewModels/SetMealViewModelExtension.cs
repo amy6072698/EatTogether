@@ -50,7 +50,8 @@ namespace EatTogether.Models.ViewModels
                 EndTime       = vm.EndTime,
                 DisplayOrder  = vm.DisplayOrder,
                 IsPopular     = vm.IsPopular,
-                IsRecommended = vm.IsRecommended
+                IsRecommended = vm.IsRecommended,
+                Items         = vm.Items.Select(i => i.ToItemDto()).ToList()
             };
         }
 

@@ -137,7 +137,7 @@ CREATE TABLE [dbo].[Categories](
 	[CreatedAt] [datetime2](0) NOT NULL,
 	[ParentCategoryId] [int] NULL,
 	[DisplayOrder] [int] NOT NULL,
-	[ImageUrl] [nvarchar](300) NULL,
+	[ImageUrl] [nvarchar](MAX) NULL,
 	[UpdatedAt] [datetime2](0) NULL,
  CONSTRAINT [PK_Categories] PRIMARY KEY CLUSTERED 
 (
@@ -181,7 +181,7 @@ CREATE TABLE [dbo].[Dishes](
 	[IsActive] [bit] NOT NULL,
 	[CreatedAt] [datetime2](0) NOT NULL,
 	[Description] [nvarchar](300) NULL,
-	[ImageUrl] [nvarchar](300) NULL,
+	[ImageUrl] [nvarchar](MAX) NULL,
 	[IsTakeOut] [bit] NOT NULL,
 	[IsLimited] [bit] NOT NULL,
 	[IsRecommended] [bit] NOT NULL DEFAULT 0,
@@ -555,7 +555,7 @@ CREATE TABLE [dbo].[SetMeals](
 	[CreatedAt] [datetime] NOT NULL,
 	[SetPrice] [decimal](10, 2) NULL,
 	[Description] [nvarchar](300) NULL,
-	[ImageUrl] [nvarchar](255) NULL,
+	[ImageUrl] [nvarchar](MAX) NULL,
 	[StartDate] [date] NULL,
 	[EndDate] [date] NULL,
 	[StartTime] [time](7) NULL,
