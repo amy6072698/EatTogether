@@ -15,10 +15,10 @@ namespace EatTogether.Models.Services
 		IEnumerable<FunctionDto> AllFunctions,
 		IEnumerable<UserForRoleDto> AllUsers);
 
-
 	public interface IRoleService
 	{
 		Task<Result> CreateAsync(RoleCreateDto dto);
+		Task<Result> DeleteAsync(int id);
 		Task<IEnumerable<RoleListDto>> GetAllAsync();
 		Task<RoleCreateViewModel_Data> GetCreateFormDataAsync();
 		Task<RoleEditViewModel_Data?> GetEditFormDataAsync(int id);
@@ -143,6 +143,20 @@ namespace EatTogether.Models.Services
 
 			dto.Id = id;
 			await _roleRepo.UpdateAsync(dto);
+			return Result.Success();
+		}
+
+		// 刪除角色
+		public async Task<Result> DeleteAsync(int id)
+		{
+			var role = await _roleRepo.GetForEditAsync(id);
+			if (role == null) return Result.Fail("找不到此角色");
+
+			// 預設 6 個角色不可刪除
+			if (_defaultRoleNames.Contains(role.RoleName))
+				return Result.Fail($"「{role.RoleName}」為系統預設角色，不允許刪除");
+
+			await _roleRepo.DeleteAsync(id);
 			return Result.Success();
 		}
 	}

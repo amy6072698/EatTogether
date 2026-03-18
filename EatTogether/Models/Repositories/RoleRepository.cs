@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Repositories
 {
-	
 	public interface IRoleRepository
 	{
 		Task CreateAsync(RoleCreateDto dto);
+		Task DeleteAsync(int id);
 		Task<IEnumerable<UserForRoleDto>> GetActiveUsersAsync();
 		Task<IEnumerable<RoleListDto>> GetAllAsync();
 		Task<RoleEditDto?> GetForEditAsync(int id);
@@ -37,6 +37,7 @@ namespace EatTogether.Models.Repositories
 			return roleNames;
 		}
 
+		// 角色列表（含權限顯示名稱與員工數）
 		public async Task<IEnumerable<RoleListDto>> GetAllAsync()
 		{
 			var roles = await _context.Roles
@@ -60,6 +61,7 @@ namespace EatTogether.Models.Repositories
 			return roles;
 		}
 
+		// 權限總覽 Modal（矩陣）
 		public async Task<RoleOverviewDto> GetOverviewAsync()
 		{
 			// 取得所有角色（依 Id 排序，確保矩陣欄位順序固定）
@@ -128,6 +130,7 @@ namespace EatTogether.Models.Repositories
 			return await query.AnyAsync();
 		}
 
+		// 新增角色（含 RoleFunctions + UserRoles）
 		public async Task CreateAsync(RoleCreateDto dto)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
@@ -233,8 +236,29 @@ namespace EatTogether.Models.Repositories
 			}
 		}
 
+		// 刪除角色（RoleFunctions → UserRoles → Role）
+		public async Task DeleteAsync(int id)
+		{
+			using var transaction = await _context.Database.BeginTransactionAsync();
+			try
+			{
+				_context.RoleFunctions.RemoveRange(
+					_context.RoleFunctions.Where(rf => rf.RoleId == id));
 
+				_context.UserRoles.RemoveRange(
+					_context.UserRoles.Where(ur => ur.RoleId == id));
 
+				var role = await _context.Roles.FindAsync(id);
+				if (role != null) _context.Roles.Remove(role);
 
+				await _context.SaveChangesAsync();
+				await transaction.CommitAsync();
+			}
+			catch
+			{
+				await transaction.RollbackAsync();
+				throw;
+			}
+		}
 	}
 }

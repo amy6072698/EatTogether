@@ -728,7 +728,7 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[working] add 編輯角色功能
+[V] add 編輯角色功能
 	url: GET /Role/Edit/{id}
 	url: PUT /Role/Edit/{id}
 
@@ -772,18 +772,18 @@
 
 	[V] 補上驗證 RoleCreateDto、RoleEditDto
 
-[] add 刪除角色功能
+[working] add 刪除角色功能
 	url: DELETE /Role/Delete/{id}
 
-	[] RoleRepository（modify）
+	[V] RoleRepository（modify）
 		Task DeleteAsync(int id)
 			// Delete RoleFunctions → Delete UserRoles → Delete Role
 
-	[] RoleService（modify）
+	[V] RoleService（modify）
 		Task<Result> DeleteAsync(int id)
 			// 預設 6 個角色不可刪除 → 回傳錯誤訊息
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		DELETE /Role/Delete/{id}
 
 	[V] 刪除角色（Role/Index.cshtml JS）
@@ -855,13 +855,6 @@
 			啟用中 / 未驗證 → 加入黑名單（紅，可點）
 			黑名單 → 解除黑名單（綠，可點）
 			已刪除 → 加入黑名單（灰，Disabled）；解除黑名單不顯示
-
-	[] members-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .members-index { } 命名空間外
-		改用 #members-table_wrapper 選取器
-			#members-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#members-table_wrapper .dataTables_paginate { text-align: right; }
-			#members-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
 
 [] add 會員詳情功能
 	url: GET /Member/Detail/{id}

@@ -113,5 +113,16 @@ namespace EatTogether.Controllers
 			return BadRequest(new { message = result.ErrorMessage });
 		}
 
+
+		// DELETE /Role/Delete/{id}
+		// 刪除角色
+		[HttpDelete]
+		public async Task<IActionResult> Delete(int id)
+		{
+			var result = await _roleService.DeleteAsync(id);
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
 	}
 }
