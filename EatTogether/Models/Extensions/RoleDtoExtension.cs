@@ -39,5 +39,25 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
+		/// <summary>
+		/// RoleEditDto → RoleEditViewModel（預填現有資料，帶入所有 Functions 與員工）
+		/// </summary>
+		public static RoleEditViewModel ToEditViewModel(
+			this RoleEditDto dto,
+			IEnumerable<FunctionDto> allFunctions,
+			IEnumerable<UserForRoleDto> allUsers)
+		{
+			return new RoleEditViewModel
+			{
+				Id = dto.Id,
+				RoleName = dto.RoleName,
+				Description = dto.Description,
+				SelectedFunctionIds = dto.FunctionIds,
+				SelectedUserIds = dto.UserIds,
+				AllFunctions = allFunctions,
+				AllUsers = allUsers
+			};
+		}
+
 	}
 }

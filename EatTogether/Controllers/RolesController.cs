@@ -73,5 +73,45 @@ namespace EatTogether.Controllers
 			return BadRequest(new { message = result.ErrorMessage });
 		}
 
+
+		// GET /Role/Edit/{id}
+		// 編輯角色 Modal 預填資料（AJAX，回傳 JSON）
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id)
+		{
+			var data = await _roleService.GetEditFormDataAsync(id);
+			if (data == null) return NotFound(new { message = "找不到此角色" });
+
+			return Ok(new
+			{
+				id = data.EditDto.Id,
+				roleName = data.EditDto.RoleName,
+				description = data.EditDto.Description,
+				selectedFunctionIds = data.EditDto.FunctionIds,
+				selectedUserIds = data.EditDto.UserIds,
+				allFunctions = data.AllFunctions,
+				allUsers = data.AllUsers
+			});
+		}
+
+		// PUT /Role/Edit/{id}
+		// 儲存角色變更
+		[HttpPut]
+		public async Task<IActionResult> Edit(int id, [FromBody] RoleEditDto dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				var error = ModelState.Values
+					.SelectMany(v => v.Errors)
+					.Select(e => e.ErrorMessage)
+					.FirstOrDefault();
+				return BadRequest(new { message = error });
+			}
+
+			var result = await _roleService.UpdateAsync(id, dto);
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
 	}
 }

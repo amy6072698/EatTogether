@@ -673,7 +673,7 @@
 		標題：「權限總覽」
 		13 項 × 所有角色矩陣（✓ / —），唯讀
 
-[working] add 新增角色功能
+[V] add 新增角色功能
 	url: POST /Role/Create
 
 	[V] DTO（Models/DTOs/RoleCreateDto.cs）
@@ -728,11 +728,11 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 編輯角色功能
+[working] add 編輯角色功能
 	url: GET /Role/Edit/{id}
 	url: PUT /Role/Edit/{id}
 
-	[] DTO（Models/DTOs/RoleEditDto.cs）
+	[V] DTO（Models/DTOs/RoleEditDto.cs）
 		RoleEditDto
 			int Id
 			string RoleName
@@ -740,25 +740,26 @@
 			List<int> FunctionIds
 			List<int> UserIds
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
 		RoleEditViewModel ToEditViewModel(this RoleEditDto dto, IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
 
-	[] RoleRepository（modify）
-		Task<RoleEditDto?> GetForEditAsync(int id)
-		Task UpdateAsync(RoleEditDto dto)
+	[V] RoleRepository（modify）
+		Task<RoleEditDto?> GetForEditAsync(int id);
+		Task UpdateAsync(RoleEditDto dto);
 			// 更新 RoleName、Description
 			// 同步更新 RoleFunctions（先刪後插）
 			// 同步更新 UserRoles（先刪後插）
 
-	[] RoleService（modify）
-		Task<RoleEditDto?> GetForEditAsync(int id)
-		Task<Result> UpdateAsync(int id, RoleEditDto dto)
+	[V] RoleService（modify）
+		Task<RoleEditViewModel_Data?> GetEditFormDataAsync(int id);
+		Task<RoleEditDto?> GetForEditAsync(int id);
+		Task<Result> UpdateAsync(int id, RoleEditDto dto);
 
-	[] ViewModel（Models/ViewModels/RoleEditViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleEditViewModel.cs）
 		RoleEditViewModel
 			// 同 RoleCreateViewModel + Id
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET /Role/Edit/{id} → 回傳 RoleEditViewModel（預填現有資料）
 		PUT /Role/Edit/{id}
 
@@ -768,6 +769,8 @@
 		員工清單顯示格式同新增 Modal
 		按鈕：「取消」、「儲存變更」
 		成功 → SweetAlert2 success，關閉後重新整理列表
+
+	[V] 補上驗證 RoleCreateDto、RoleEditDto
 
 [] add 刪除角色功能
 	url: DELETE /Role/Delete/{id}

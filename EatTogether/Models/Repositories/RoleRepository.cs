@@ -4,14 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Repositories
 {
+	
 	public interface IRoleRepository
 	{
 		Task CreateAsync(RoleCreateDto dto);
 		Task<IEnumerable<UserForRoleDto>> GetActiveUsersAsync();
 		Task<IEnumerable<RoleListDto>> GetAllAsync();
+		Task<RoleEditDto?> GetForEditAsync(int id);
 		Task<RoleOverviewDto> GetOverviewAsync();
 		Task<List<string>> GetRoleNamesByIdsAsync(List<int> roleIds);
 		Task<bool> IsNameDuplicateAsync(string roleName, int? excludeId = null);
+		Task UpdateAsync(RoleEditDto dto);
 	}
 
 	public class RoleRepository : IRoleRepository
@@ -169,6 +172,66 @@ namespace EatTogether.Models.Repositories
 			}
 		}
 
+		// 取得單筆角色（供編輯 Modal 預填）
+		public async Task<RoleEditDto?> GetForEditAsync(int id)
+		{
+			return await _context.Roles
+				.AsNoTracking()
+				.Where(r => r.Id == id)
+				.Select(r => new RoleEditDto
+				{
+					Id = r.Id,
+					RoleName = r.RoleName,
+					Description = r.Description,
+					FunctionIds = r.RoleFunctions.Select(rf => rf.FunctionId).ToList(),
+					UserIds = r.UserRoles.Select(ur => ur.UserId).ToList()
+				})
+				.FirstOrDefaultAsync();
+		}
+
+		// 更新角色（先刪後插 RoleFunctions / UserRoles）
+		public async Task UpdateAsync(RoleEditDto dto)
+		{
+			using var transaction = await _context.Database.BeginTransactionAsync();
+			try
+			{
+				var role = await _context.Roles.FindAsync(dto.Id);
+				if (role == null) return;
+
+				role.RoleName = dto.RoleName.Trim();
+				role.Description = dto.Description?.Trim();
+
+				// 同步 RoleFunctions（先刪後插）
+				var oldFunctions = _context.RoleFunctions.Where(rf => rf.RoleId == dto.Id);
+				_context.RoleFunctions.RemoveRange(oldFunctions);
+				_context.RoleFunctions.AddRange(
+					dto.FunctionIds.Select(fid => new RoleFunction
+					{
+						RoleId = dto.Id,
+						FunctionId = fid
+					})
+				);
+
+				// 同步 UserRoles（先刪後插，只動此角色的對應）
+				var oldUserRoles = _context.UserRoles.Where(ur => ur.RoleId == dto.Id);
+				_context.UserRoles.RemoveRange(oldUserRoles);
+				_context.UserRoles.AddRange(
+					dto.UserIds.Select(uid => new UserRole
+					{
+						RoleId = dto.Id,
+						UserId = uid
+					})
+				);
+
+				await _context.SaveChangesAsync();
+				await transaction.CommitAsync();
+			}
+			catch
+			{
+				await transaction.RollbackAsync();
+				throw;
+			}
+		}
 
 
 

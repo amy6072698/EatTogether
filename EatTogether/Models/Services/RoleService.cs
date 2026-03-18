@@ -10,13 +10,21 @@ namespace EatTogether.Models.Services
 	public record RoleCreateViewModel_Data(
 		IEnumerable<FunctionDto> AllFunctions,
 		IEnumerable<UserForRoleDto> AllUsers);
+	public record RoleEditViewModel_Data(
+		RoleEditDto EditDto,
+		IEnumerable<FunctionDto> AllFunctions,
+		IEnumerable<UserForRoleDto> AllUsers);
+
 
 	public interface IRoleService
 	{
 		Task<Result> CreateAsync(RoleCreateDto dto);
 		Task<IEnumerable<RoleListDto>> GetAllAsync();
 		Task<RoleCreateViewModel_Data> GetCreateFormDataAsync();
+		Task<RoleEditViewModel_Data?> GetEditFormDataAsync(int id);
+		Task<RoleEditDto?> GetForEditAsync(int id);
 		Task<RoleOverviewDto> GetOverviewAsync();
+		Task<Result> UpdateAsync(int id, RoleEditDto dto);
 	}
 
 	public class RoleService : IRoleService
@@ -76,6 +84,65 @@ namespace EatTogether.Models.Services
 				.ToList();
 
 			await _roleRepo.CreateAsync(dto);
+			return Result.Success();
+		}
+
+		// 取得編輯角色 Modal 所需資料（含預填值）
+		public async Task<RoleEditDto?> GetForEditAsync(int id)
+		{
+			return await _roleRepo.GetForEditAsync(id);
+		}
+
+		public async Task<RoleEditViewModel_Data?> GetEditFormDataAsync(int id)
+		{
+			var editDto = await _roleRepo.GetForEditAsync(id);
+			if (editDto == null) return null;
+
+			var functions = await _functionRepo.GetAllAsync();
+			var users = await _roleRepo.GetActiveUsersAsync();
+			return new RoleEditViewModel_Data(editDto, functions, users);
+		}
+
+		// 更新角色 
+		public async Task<Result> UpdateAsync(int id, RoleEditDto dto)
+		{
+			var existing = await _roleRepo.GetForEditAsync(id);
+			if (existing == null) return Result.Fail("找不到此角色");
+
+			if (string.IsNullOrWhiteSpace(dto.RoleName))
+				return Result.Fail("角色名稱不可為空");
+
+			if (await _roleRepo.IsNameDuplicateAsync(dto.RoleName, excludeId: id))
+				return Result.Fail($"角色名稱「{dto.RoleName}」已存在");
+
+			var allFunctions = (await _functionRepo.GetAllAsync()).ToList();
+
+			if (existing.RoleName == "店長")
+			{
+				// 店長必須保留 IsOwnerOnly 權限（不允許從 UI 移除）
+				var ownerOnlyIds = allFunctions
+					.Where(f => f.IsOwnerOnly)
+					.Select(f => f.Id)
+					.ToHashSet();
+				dto.FunctionIds = dto.FunctionIds
+					.Concat(ownerOnlyIds)
+					.Distinct()
+					.ToList();
+			}
+			else
+			{
+				// 非店長角色：過濾掉 IsOwnerOnly 項目
+				var allowedIds = allFunctions
+					.Where(f => !f.IsOwnerOnly)
+					.Select(f => f.Id)
+					.ToHashSet();
+				dto.FunctionIds = dto.FunctionIds
+					.Where(fid => allowedIds.Contains(fid))
+					.ToList();
+			}
+
+			dto.Id = id;
+			await _roleRepo.UpdateAsync(dto);
 			return Result.Success();
 		}
 	}
