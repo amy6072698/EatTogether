@@ -1,15 +1,22 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace EatTogether.Models.Repositories
 {
 	public interface IUserRepository
 	{
+		Task<IDbContextTransaction> BeginTransactionAsync();
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto);
 		Task<UserDto?> GetByAccountAsync(string account);
 		Task<UserDto?> GetByEmailAsync(string email);
 		Task<UserDto?> GetByIdAsync(int userId);
+		Task<string> GetLastEmployeeNumberByYearAsync(int year);
+		Task InsertAsync(UserInsertDto dto);
+		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null);
+		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null);
 		Task SetMustChangePasswordAsync(int userId, bool value);
 		Task UpdatePasswordAsync(int userId, string hashedPassword);
 	}
@@ -145,6 +152,88 @@ namespace EatTogether.Models.Repositories
 				.FirstOrDefaultAsync();
 
 			return user;
+		}
+
+		public async Task InsertAsync(UserInsertDto dto)
+		{
+			var user = new User
+			{
+				EmployeeNumber = dto.EmployeeNumber,
+				Name = dto.Name,
+				Account = dto.Account,
+				HashedPassword = dto.HashedPassword,
+				Email = dto.Email,
+				Phone = dto.Phone,
+				HireDate = dto.HireDate,
+				IsActive = dto.IsActive,
+				IsDeleted = false,
+				MustChangePassword = dto.MustChangePassword,
+				CreatedAt = DateTime.Now
+			};
+
+			_context.Users.Add(user);
+			await _context.SaveChangesAsync(); // 先取得 user.Id
+
+			foreach (var roleId in dto.RoleIds)
+			{
+				_context.UserRoles.Add(new UserRole
+				{
+					UserId = user.Id,
+					RoleId = roleId
+				});
+			}
+
+			await _context.SaveChangesAsync(); // 寫入 UserRoles（同一個 Transaction 內）
+		}
+
+		public async Task<bool> IsAccountExistsAsync(string account, int? excludeId = null)
+		{
+			return await _context.Users
+				.Where(u => u.Account == account && (!excludeId.HasValue || u.Id != excludeId.Value))
+				.AnyAsync();
+		}
+
+		public async Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
+		{
+			return await _context.Users
+				.Where(u => u.Email == email && (!excludeId.HasValue || u.Id != excludeId.Value))
+				.AnyAsync();
+		}
+
+		public async Task<IDbContextTransaction> BeginTransactionAsync()
+		{
+			return await _context.Database.BeginTransactionAsync();
+		}
+
+		public async Task<string> GetLastEmployeeNumberByYearAsync(int year)
+		{
+			string prefix = $"EMP{year}";
+
+			// UPDLOCK + HOLDLOCK 防止併發重複，必須在 Transaction 內才有效
+			string sql = @"
+SELECT MAX(EmployeeNumber)
+FROM Users WITH(UPDLOCK, HOLDLOCK)
+WHERE EmployeeNumber LIKE @prefix
+AND LEN(EmployeeNumber) = 10
+";
+
+			var conn = _context.Database.GetDbConnection();
+			if (conn.State != ConnectionState.Open)
+				await conn.OpenAsync();
+
+			using var cmd = conn.CreateCommand();
+			cmd.Transaction = _context.Database.CurrentTransaction?.GetDbTransaction();
+			cmd.CommandText = sql;
+
+			var param = cmd.CreateParameter();
+			param.ParameterName = "@prefix";
+			param.Value = prefix + "%";
+			cmd.Parameters.Add(param);
+
+			var result = await cmd.ExecuteScalarAsync();
+
+
+			return result is string maxNumber ? maxNumber : "";
 		}
 
 		public async Task UpdatePasswordAsync(int userId, string hashedPassword)
