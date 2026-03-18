@@ -3,19 +3,21 @@
 =========
 [V] 建立資料表（T-SQL）
 	Users
-		EmployeeNumber VARCHAR(20) Unique
+		Id INT PK IDENTITY(1,1)
 		Account VARCHAR(50) Unique
 		HashedPassword VARCHAR(70)
+		EmployeeNumber VARCHAR(20) Unique
 		Name NVARCHAR(50)
-		Email VARCHAR(100) Unique、允許 NULL
-		Phone VARCHAR(10) 允許 NULL
-		HireDate DATE 允許 NULL
+		Email VARCHAR(100) Unique
+		Phone VARCHAR(10)
+		HireDate DATE
+		CreatedAt DATETIME2(0) 預設 GETDATE()
 		IsActive BIT 預設 1
 		IsDeleted BIT 預設 0
 		MustChangePassword BIT 預設 0
-		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	PasswordResetTokens
+		Id INT PK IDENTITY(1,1)
 		UserId INT FK→Users、Index
 		Token VARCHAR(32) Unique（Guid 去除符號，32 碼）
 		ExpiresAt DATETIME2(0)（建立時間 +60 分鐘）
@@ -23,41 +25,46 @@
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	Roles
+		Id INT PK IDENTITY(1,1)
 		RoleName NVARCHAR(20) Unique
 		Description NVARCHAR(100) 允許 NULL
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 
 	Functions
-		Category NVARCHAR(30)
+		Id INT PK IDENTITY(1,1)
+		Category NVARCHAR(10)
 		FunctionName VARCHAR(50) Unique（程式識別碼，如 Staff_Manage）
 		DisplayName NVARCHAR(50)
 		Description NVARCHAR(200) 允許 NULL
 		IsOwnerOnly BIT 預設 0
 
 	RoleFunctions
+		Id INT PK IDENTITY(1,1)
 		RoleId INT FK→Roles
 		FunctionId INT FK→Functions
 		Unique Index(RoleId, FunctionId)
 
 	UserRoles
+		Id INT PK IDENTITY(1,1)
 		UserId INT FK→Users
 		RoleId INT FK→Roles
 		Unique Index(UserId, RoleId)
 
 	Members
+		Id INT PK IDENTITY(1,1)
 		Account VARCHAR(100) Unique
 		Name NVARCHAR(50)
 		Email VARCHAR(100) Unique
 		HashedPassword VARCHAR(70)
 		Phone VARCHAR(10) 允許 NULL
 		BirthDate DATE 允許 NULL
-		AvatarFileName VARCHAR(100) 允許 NULL
-		IsConfirmed BIT 預設 0
 		IsBlacklisted BIT 預設 0
-		BlacklistReason NVARCHAR(200) 允許 NULL
 		CreatedAt DATETIME2(0) 預設 GETDATE()
 		IsDeleted BIT 預設 0、Index
 		DeletedAt DATETIME2(0) 允許 NULL
+		IsConfirmed BIT 預設 0
+		AvatarFileName VARCHAR(100) 允許 NULL 預設 NULL
+		BlacklistReason NVARCHAR(200) 允許 NULL 預設 NULL
 
 [V] Seed Data — 預設 6 個角色
 	店長、副店長、收銀員、外場服務生、內場廚師、工讀生
@@ -262,7 +269,7 @@
 			說明：「即將進入後台系統...」
 			按鈕：「進入系統」，5 秒倒數後自動跳轉 Home/Index
 
-[working] add 忘記密碼 / 重設密碼功能
+[V] add 忘記密碼 / 重設密碼功能
 	url: POST /Auth/ForgotPassword
 	url: GET  /Auth/ResetPassword?token=xxx
 	url: POST /Auth/ResetPassword
@@ -352,53 +359,51 @@
 [RequirePermission("Staff_View")] 套用於 GET /User/Index
 [RequirePermission("Staff_Manage")] 套用於 Create / Edit / Resign / Reinstate
 
-[] add 員工列表功能
+[V] add 員工列表功能
 	url: GET /User/Index
 
-	[] DTO（Models/DTOs/UserListDto.cs）
+	[V] DTO（Models/DTOs/UserListDto.cs）
 		UserListDto
 			int Id
 			string EmployeeNumber, Name, Account, Email, Phone
-			DateTime? HireDate, CreatedAt
-			bool IsActive, IsDeleted
+			DateOnly HireDate
+			DateTime CreatedAt
+			bool IsActive, IsDeleted, CanEdit, CanResign, CanReinstate
 			List<int> RoleIds
 			List<string> RoleNames
 
-	[] DTO（Models/DTOs/UserSearchDto.cs）
+	[V] DTO（Models/DTOs/UserSearchDto.cs）
 		UserSearchDto
 			string? EmployeeNumber, Name, Account, Email
-			bool ActiveOnly
+			bool HideResigned
 			string SortBy   // HireDate_Desc / HireDate_Asc / CreatedAt_Desc
 
-	[] IUserRepository / UserRepository（modify）
+	[V] IUserRepository / UserRepository（modify）
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto)
-		Task<string> GetLastEmployeeNumberByYearAsync(int year)
-		// 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
-		// 取最後一個員工編號 → 流水號 +1
-
-	[] IUserService / UserService（Models/Services/UserService.cs）
-		ctor(IUserRepository repo, IRoleRepository roleRepo)
+		
+	[V] IUserService / UserService（Models/Services/UserService.cs）
+		ctor(IUserRepository userRepo, IRoleRepository roleRepo)
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto)
-		Task<string> GenerateEmployeeNumberAsync()
+		
 
-	[] ViewModel（Models/ViewModels/UserIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserIndexViewModel.cs）
 		UserIndexViewModel
 			IEnumerable<UserRowViewModel> Rows
 			string? EmployeeNumber, Name, Account, Email
-			bool ActiveOnly
+			bool HideResigned
 			string SortBy
 
-	[] ViewModel（Models/ViewModels/UserRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserRowViewModel.cs）
 		UserRowViewModel
 			// 對應 UserListDto + 前端顯示用欄位
 			string StatusText    // 在職 / 請假 / 離職
 			string StatusColor   // green / orange / gray
 			bool CanEdit, CanResign, CanReinstate
 
-	[] Extension（Models/Extensions/UserDtoExtension.cs）
+	[V] Extension（Models/Extensions/UserDtoExtension.cs）
 		UserRowViewModel ToRowViewModel(this UserListDto dto)
 
-	[] UserController（Controllers/UserController.cs）
+	[V] UserController（Controllers/UserController.cs）
 		GET /User/Index
 
 	[V] User/Index.cshtml（Views/User/Index.cshtml）
@@ -413,59 +418,80 @@
 		狀態標籤：在職（綠）/ 請假（橘）/ 離職（灰）
 		操作欄：在職/請假 → 🔵編輯 + 🔴離職；離職 → 🔵編輯 + 🟢復職
 
-	[] user-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .users-index { } 命名空間外
-		改用 #user-table_wrapper 選取器
-			#user-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#user-table_wrapper .dataTables_paginate { text-align: right; }
-			#user-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
-
-[] add 新增員工功能
+[V] add 新增員工功能
 	url: POST /User/Create
 
-	[] DTO（Models/DTOs/UserCreateDto.cs）
-		UserCreateDto
-			string Name, Account, Password
-			string? Email, Phone
-			DateTime? HireDate
-			bool IsActive   // true=在職 / false=請假
+	[V] DTO（Models/DTOs/UserInsertDto.cs）
+		UserInsertDto
+			string EmployeeNumber, Name, Account, HashedPassword, Email, Phone
+			DateOnly HireDate
+			bool IsActive, MustChangePassword
 			List<int> RoleIds
 
-	[] UserRepository（modify）
-		Task CreateAsync(UserCreateDto dto)
-		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null)
-		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
+	[V] DTO（Models/DTOs/UserCreateDto.cs）
+		UserCreateDto
+			string Name, Account, Password, Email, Phone
+			DateOnly HireDate
+			bool IsActive
+			List<int> RoleIds
 
-	[] UserService（modify）
+	[V] UserNumberGenerator（modify）
+		string Generate(string lastEmployeeNumber)
+		 只負責編號產生邏輯，不存取資料庫
+		 // 員工編號自動產生：EMP + 年份(4碼) + 流水號(3碼)，如 EMP2025001
+		 // 取最後一個員工編號 → 流水號 +1
+
+	[V] UserRepository（modify）
+		Task<string> GetLastEmployeeNumberByYearAsync(int year); => 找出當年最後一筆員工編號
+		Task InsertAsync(UserInsertDto dto);
+		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null);
+		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null);
+		
+
+	[V] UserService（modify）
+		Task<string> GetEmployeeNumberPreviewAsync()
+        // 預產員工編號（僅供前端開 Modal 顯示用，不在 Transaction 內）
+        // 注意：此編號僅供顯示，實際寫入時會在 Transaction 內重新產生
+
 		Task<Result> CreateAsync(UserCreateDto dto)
-			// 驗證帳號唯一性（IsAccountExistsAsync）
-			// 驗證密碼複雜度（PasswordValidator.IsValid）
-			// 比對明文密碼 == 員工編號 → MustChangePassword=1，否則=0
-			// HashUtility.HashPassword → 寫入 HashedPassword
-			// BatchInsert UserRoles
-			// 員工編號產生 UserNumberGenerator Service 層呼叫步驟
-				// 1. BeginTransactionAsync() 開啟交易
-				// 2. 呼叫 UserNumberGenerator.GenerateAsync() 產生編號
-				// 3. SaveChangesAsync() 寫入資料庫
-				// 4. CommitAsync() 提交交易
-				// 5. 捕捉 DbUpdateException（UNIQUE / duplicate）→ RollbackAsync() → 進入 RetryCreateAsync()
-				// 6. 其他例外 → RollbackAsync() → Result.Fail
+			// 業務驗證：帳號唯一性（GetByAccountAsync → 不為 null 則 Fail）
+			// 業務驗證：Email 唯一性（GetByEmailAsync → 不為 null 則 Fail）
+			// 業務驗證：密碼複雜度（PasswordValidator.IsValid）
+			// HashUtility.HashPassword → 取得 hashedPassword（明文只在此處使用）
+			// BeginTransactionAsync() 開啟交易
+			//   → ExecuteInsertAsync(dto, hashedPassword)
+			//   → CommitAsync() 提交交易
+			// 捕捉 DbUpdateException（UNIQUE / duplicate）
+			//   → RollbackAsync() → 進入 RetryCreateAsync(dto, hashedPassword)
+			// 其他例外 → RollbackAsync() → Result.Fail("新增員工失敗，請稍後再試")
 
-		Task<Result> RetryCreateAsync(UserCreateDto dto)  // private
-			// 重新開啟 Transaction，重新 GenerateAsync()，只重試一次
-			// 再次失敗 → Result.Fail("新增員工失敗，請重試")
+		Task<Result> RetryCreateAsync(UserCreateDto dto, string hashedPassword)  // private
+			// 重新開啟 Transaction，重新呼叫 ExecuteInsertAsync(dto, hashedPassword)，只重試一次
+			// 再次失敗 → RollbackAsync() → Result.Fail("新增員工失敗，請重試")
 
-	[] ViewModel（Models/ViewModels/UserCreateViewModel.cs）
-		UserCreateViewModel
+		Task ExecuteInsertAsync(UserCreateDto dto, string hashedPassword)  // private
+			// 必須在 Transaction 內呼叫（UPDLOCK/HOLDLOCK 才有效）
+			// 1. GetLastEmployeeNumberByYearAsync(DateTime.Now.Year) 取得最後編號
+			// 2. UserNumberGenerator.Generate(lastEmpNo) 產生員工編號
+			// 3. 比對明文密碼 == 員工編號 → MustChangePassword=true，否則=false
+			// 4. 組裝 UserInsertDto
+			// 5. InsertAsync(insertDto) 寫入 Users + UserRoles（同一 Transaction）
+
+	[V] ViewModel（Models/ViewModels/UserCreateViewModel.cs）
+		UserCreateViewModel  // 前端 Modal 綁定用，ConfirmPassword 僅供前端驗證，不傳後端
 			string Name, Account, Password, ConfirmPassword
-			string? Email, Phone
-			DateTime? HireDate
+			string Email, Phone
+			DateOnly HireDate
 			string IsActive   // 下拉：在職 / 請假
 			List<int> RoleIds
 
-	[] UserController（modify）
-		GET  /User/Create → 回傳 UserCreateViewModel（含全部角色清單）
-		POST /User/Create
+	[V] UserController（modify）
+		GET  /Users/NextEmployeeNumber → 呼叫 GetEmployeeNumberPreviewAsync()，回傳 { employeeNumber }
+		POST /Users/Create
+        → ModelState 驗證（格式：必填、長度、Email 格式、角色必選）
+        → 呼叫 UserService.CreateAsync(dto)
+        → 成功 → Ok()
+        → 失敗 → BadRequest({ message })
 
 	[V] 新增員工 Modal（嵌入 User/Index.cshtml）
 		員工編號：唯讀，「系統自動產生，不可修改」
@@ -478,44 +504,44 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 編輯員工功能
+[working] add 編輯員工功能
 	url: GET  /User/Edit/{id}
 	url: PUT  /User/Edit/{id}
 
-	[] DTO（Models/DTOs/UserEditDto.cs）
+	[V] DTO（Models/DTOs/UserEditDto.cs）
 		UserEditDto
 			int Id
 			string EmployeeNumber（唯讀）
 			DateTime CreatedAt（唯讀）
 			string Name, Account
-			string? Password   // 留空 = 不修改
-			string? Email, Phone
-			DateTime? HireDate
+			string Password
+			string Email, Phone
+			DateOnly HireDate
 			bool IsActive
 			List<int> RoleIds
 
-	[] Extension（Models/Extensions/UserDtoExtension.cs）（modify）
+	[V] Extension（Models/Extensions/UserDtoExtension.cs）（modify）
 		UserEditViewModel ToEditViewModel(this UserEditDto dto)
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task<UserEditDto?> GetForEditAsync(int id)
 		Task UpdateAsync(UserEditDto dto)
 		Task UpdateUserRolesAsync(int userId, List<int> roleIds)
 			// 先刪後插（BatchUpdate UserRoles）
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<UserEditDto?> GetForEditAsync(int id)
 		Task<Result> UpdateAsync(int id, UserEditDto dto)
 			// 密碼留空 → 維持原值
 			// 密碼有填入 → PasswordValidator.IsValid → 比對明文密碼 == 員工編號 → 更新 HashedPassword + MustChangePassword
 			// BatchUpdate UserRoles
 
-	[] ViewModel（Models/ViewModels/UserEditViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserEditViewModel.cs）
 		UserEditViewModel
 			// 同 UserCreateViewModel + Id, EmployeeNumber, CreatedAt（唯讀欄位）
 			// Password 說明文字：「留空表示不修改」
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		GET /User/Edit/{id} → 回傳 UserEditViewModel（預填現有資料 + 全部角色清單）
 		PUT /User/Edit/{id}
 
@@ -529,18 +555,18 @@
 		按鈕：「取消」、「儲存變更」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 離職處理
+[V] add 離職處理
 	url: PATCH /User/Resign/{id}
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task ResignAsync(int id)
 		// IsDeleted → 1
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<Result> ResignAsync(int id, int operatorId)
 		// 禁止對自身帳號執行（operatorId == id → 回傳錯誤）
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		PATCH /User/Resign/{id}
 
 	[V] 離職確認 SweetAlert2（嵌入 User/Index.cshtml）
@@ -549,17 +575,17 @@
 		說明：「{姓名}（{員工編號}）的帳號將立即無法登入後台系統，請確認後再執行。」
 		按鈕：「取消」、「確認」
 
-[] add 復職處理
+[V] add 復職處理
 	url: PATCH /User/Reinstate/{id}
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task ReinstateAsync(int id)
 		// IsDeleted → 0、IsActive → 1
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<Result> ReinstateAsync(int id)
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		PATCH /User/Reinstate/{id}
 
 	[V] 復職確認 SweetAlert2（嵌入 User/Index.cshtml）

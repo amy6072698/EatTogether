@@ -148,6 +148,12 @@
         color: #212529 !important;
     }
 
+    /* --- 密碼欄位：停用 Bootstrap is-invalid 驗證圖示（眼睛按鈕已佔右側，避免推擠） --- */
+    #create-password.is-invalid,
+    #edit-password.is-invalid {
+        background-image: none !important;
+    }
+
     /* --- 欄位說明文字 --- */
     .field-hint {
         font-size: 0.875rem;
@@ -178,23 +184,23 @@
         min-width: 0;
     }
 
-    /* --- DataTables 資訊文字 + 分頁按鈕 — 留白 + 置中 --- */
-    #user-table_wrapper .dt_info {
-        margin-top: 1.25rem;
-        padding-top: 0;
-        padding-bottom: 0.5rem;
-        font-size: 1rem; /* min 16px */
-    }
+}
+/* --- DataTables 資訊文字 + 分頁按鈕 — 留白 + 置中 --- */
+#user-table_wrapper .dt_info {
+    margin-top: 1.25rem;
+    padding-top: 0;
+    padding-bottom: 0.5rem;
+    font-size: 1rem; /* min 16px */
+}
 
-    #user-table_wrapper .dt-paging {
-        text-align: center;
-        padding-top: 0.75rem;
-        padding-bottom: 1rem;
-    }
+#user-table_wrapper .dt-paging {
+    text-align: center;
+    padding-top: 0.75rem;
+    padding-bottom: 1rem;
+}
 
-    #user-table_wrapper .dt-paging .pagination {
-        justify-content: flex-end;
-        margin-bottom: 0;
-        font-size: 1rem; /* min 16px */
-    }
+#user-table_wrapper .dt-paging .pagination {
+    justify-content: flex-end;
+    margin-bottom: 0;
+    font-size: 1rem; /* min 16px */
 }
