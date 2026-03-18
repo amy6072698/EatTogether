@@ -86,7 +86,7 @@ namespace EatTogether.Controllers
             ModelState.Remove(nameof(vm.StatusBadgeClass));
             if (!ModelState.IsValid) return View(vm);
 
-            var result = await _couponService.EditAsync(vm.Id, vm.Name, vm.AddLimitCount);
+            var result = await _couponService.EditAsync(vm.Id, vm.Name, vm.AddLimitCount, vm.NewEndDate);
             if (!result.IsSuccess)
             {
                 ModelState.AddModelError("", result.ErrorMessage);

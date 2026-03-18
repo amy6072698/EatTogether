@@ -14,6 +14,7 @@ namespace EatTogether.Models.Repositories
         Task AddLimitCountAsync(int id, int amount);
         Task DisableAsync(int id);
         Task EnableAsync(int id);
+        Task UpdateEndDateAsync(int id, DateTime? newEndDate);
     }
 
     public interface IMemberCouponRepository

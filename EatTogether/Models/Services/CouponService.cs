@@ -152,7 +152,7 @@ namespace EatTogether.Models.Services
 
 
 
-        public async Task<Result> EditAsync(int id, string newName, int? addLimitCount)
+        public async Task<Result> EditAsync(int id, string newName, int? addLimitCount, DateTime? newEndDate)
         {
             var coupon = await _couponRepo.GetByIdAsync(id);
             if (coupon == null) return Result.Fail("找不到此優惠券");
@@ -162,6 +162,15 @@ namespace EatTogether.Models.Services
 
             if (addLimitCount.HasValue && addLimitCount.Value > 0)
                 await _couponRepo.AddLimitCountAsync(id, addLimitCount.Value);
+
+            // 有效期間：有填新結束日才更新（設為當天 23:59:59）
+            if (newEndDate.HasValue)
+            {
+                if (newEndDate.Value.Date < coupon.StartDate.Date)
+                    return Result.Fail("結束日期不能早於開始日期");
+                await _couponRepo.UpdateEndDateAsync(id,
+                    newEndDate.Value.Date.AddDays(1).AddSeconds(-1));
+            }
 
             return Result.Success();
         }
