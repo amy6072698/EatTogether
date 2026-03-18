@@ -118,5 +118,23 @@ namespace EatTogether.Controllers
 			vm.CategorySelectList = await _service.GetCategorySelectListAsync();
 			vm.EventSelectList = await _service.GetEventSelectListAsync();
 		}
+
+
+
+		//[HttpGet]
+		//public async Task<IActionResult> Details(int id)
+		//{
+		//	var dto = await _service.GetByIdAsync(id);
+		//	if (dto == null) return NotFound();
+		//	var vm = dto.ToArticleVm();
+		//	return View(vm);
+		//}
+
+
+
+
+
+
+
 	}
 }

@@ -334,22 +334,24 @@
 
 			
 
-	[working]modify ArticleRepository
+	[V]modify ArticleRepository
 		IArticleRepository interface
 			add IEnumerable<ArticleDto> GetAll()
 
-	[working]modify 	ArticleService
+	[V]modify 	ArticleService
 			List<ArticleDto> GetAllForIndex()
 
-	[working]modify ArticlesController
+	[V]modify ArticlesController
 		add IActionResult index action[Authorize]
 			Index.cshtml
 
 	**文章狀態:已發佈、草稿、已下架
 
-[]add 文章預覽頁面
+	[working]頁面美化
+
+[working]add 文章預覽頁面
 	url: /Articles/Details?articleId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[working]add ViewModel, Dto , 擴充方法
 		ArticleDetailsViewModel class
 			Id, Title, Description, CategoryName , PublishDate , IsPinned
 	

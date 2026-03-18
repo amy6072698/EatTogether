@@ -95,5 +95,53 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
+
+		//modify ArticleMappingExtension class
+		//	文章預覽 dto -> vm
+		//	→ ToViewModel(this ArticleDetailsDto dto)
+		//	// Entity → Dto（Repository 讀取用）
+		//	ArticleDetailsDto ToDto(this Article entity)
+
+		public static ArticleDetailsViewModel ToArticleDetailsVm(this ArticleDetailsDto dto)
+		{
+			return new ArticleDetailsViewModel
+			{
+				Id = dto.Id,
+				CategoryId = dto.CategoryId,
+				EventId = dto.EventId,
+				CategoryName = dto.CategoryName,
+				EventName = dto.EventName,
+				Title = dto.Title,
+				Description = dto.Description,
+				CoverImageUrl = dto.CoverImageUrl,
+				PublishDate = dto.PublishDate,
+				ExpiryDate = dto.ExpiryDate,
+				IsPinned = dto.IsPinned,
+				Status = dto.Status
+
+			};
+		}
+
+
+		public static ArticleDetailsDto ToArticleDetailsDto(this Article entity)
+		{
+			return new ArticleDetailsDto
+			{
+				Id = entity.Id,
+				CategoryId = entity.CategoryId,
+				EventId = entity.EventId,
+				CategoryName = entity.Category?.Name,
+				EventName = entity.Event?.Title,
+				Title = entity.Title,
+				Description = entity.Description,
+				CoverImageUrl = entity.CoverImageUrl,
+				PublishDate = entity.PublishDate,
+				ExpiryDate = entity.ExpiryDate,
+				IsPinned = entity.IsPinned,
+				Status = entity.Status
+			};
+		}
+
+
 	}
 }
