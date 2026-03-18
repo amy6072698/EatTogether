@@ -63,12 +63,34 @@ namespace EatTogether.Controllers
         [HttpPost]
         public async Task<IActionResult> Confirm(CreatePreOrderViewModel vm)
         {
+            // 先取出有數量的主項目，記錄舊 index → 新 index 的對應
+            var parentItems = vm.Items
+                .Select((item, oldIdx) => new { item, oldIdx })
+                .Where(x => x.item.Qty > 0 && !x.item.ParentIndex.HasValue)
+                .ToList();
+
+            var indexMap = parentItems
+                .Select((x, newIdx) => new { x.oldIdx, newIdx })
+                .ToDictionary(x => x.oldIdx, x => x.newIdx);
+
+            // 取出子項目，更新 ParentIndex
+            var childItems = vm.Items
+                .Where(i => i.ParentIndex.HasValue && indexMap.ContainsKey(i.ParentIndex.Value))
+                .Select(i => {
+                    i.ParentIndex = indexMap[i.ParentIndex.Value];
+                    return i;
+                })
+                .ToList();
+
+            var allItems = parentItems.Select(x => x.item).ToList();
+            allItems.AddRange(childItems);
+
             var confirmVm = new ConfirmPreOrderViewModel
             {
                 TableId = vm.TableId,
                 InOrOut = vm.InOrOut,
                 Note = vm.Note,
-                Items = vm.Items.Where(i => i.Qty > 0).ToList()
+                Items = allItems
             };
 
             if (!confirmVm.Items.Any())
@@ -96,13 +118,15 @@ namespace EatTogether.Controllers
                 CouponId = vm.CouponId,
                 DiscountAmount = vm.DiscountAmount,
                 Items = vm.Items
-                    .Where(i => i.Qty > 0)
+                    .Where(i => i.Qty > 0 || i.ParentIndex.HasValue)
                     .Select(i => new PreOrderDetailDto
                     {
                         ProductId = i.ProductId,
                         ProductName = i.ProductName,
                         Qty = i.Qty,
-                        UnitPrice = i.UnitPrice
+                        UnitPrice = i.UnitPrice,
+                        IsSetMeal = i.IsSetMeal,
+                        ParentIndex = i.ParentIndex
                     }).ToList()
             };
 
