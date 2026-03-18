@@ -548,6 +548,164 @@ namespace EatTogether.Models.Services
 
             if (!tableOrders.Any()) return null;
 
+            // 合併所有訂單的明細
+            var allItems = tableOrders
+                .SelectMany(p => p.PreOrderDetails.Select(d => new PaymentDetailItemViewModel
+                {
+                    DetailId = d.Id,
+                    ProductName = d.ProductName,
+                    Qty = d.Qty,
+                    UnitPrice = d.UnitPrice,
+                    SubTotal = d.SubTotal,
+                    Status = d.DoneOrCancel
+                })).ToList();
+
+            var servedItems = tableOrders.SelectMany(p => p.PreOrderDetails.Where(d => d.DoneOrCancel != 2));
+            int originalAmount = servedItems.Sum(d => d.SubTotal);
+            int discountAmount = tableOrders.Sum(p => p.DiscountAmount);
+
+            // 優惠券顯示第一筆有用券的
+            var couponOrder = tableOrders.FirstOrDefault(p => p.Coupon != null);
+
+            return new PaymentCheckoutViewModel
+            {
+                PreOrderIds = tableOrders.Select(p => p.Id).ToList(),
+                PreOrderId = tableOrders.First().Id,
+                OrderNumber = tableOrders.Count == 1
+                                 ? tableOrders.First().OrderNumber
+                                 : $"{tableOrders.First().OrderNumber} 等 {tableOrders.Count} 筆",
+                InOrOut = true,
+                TableName = tableOrders.First().Table?.TableName ?? "",
+                PayMethod = tableOrders.First().PayMethod,
+                OriginalAmount = originalAmount,
+                DiscountAmount = discountAmount,
+                TotalAmount = originalAmount - discountAmount,
+                HasUnserved = tableOrders.SelectMany(p => p.PreOrderDetails).Any(d => d.DoneOrCancel == 0),
+                CouponName = couponOrder?.Coupon?.Name,
+                Items = allItems
+            };
+        }
+
+        public async Task CancelUnservedByTableAsync(int tableId)
+        {
+            var today = DateTime.Today;
+            var orders = await _preOrderRepo.GetByStatusAsync(PreOrderStatus.Pending);
+            var ids = orders
+                .Where(p => p.InOrOut && p.TableId == tableId && p.OrderAt.Date == today)
+                .Select(p => p.Id).ToList();
+
+            foreach (var id in ids)
+                await _preOrderRepo.CancelUnservedDetailsAsync(id);
+        }
+
+        public async Task<int> CheckoutByTableAsync(int tableId, string payMethod)
+        {
+            var today = DateTime.Today;
+            var orders = await _preOrderRepo.GetByStatusAsync(PreOrderStatus.Pending);
+            var list = orders
+                .Where(p => p.InOrOut && p.TableId == tableId && p.OrderAt.Date == today)
+                .ToList();
+
+            int lastOrderId = 0;
+            foreach (var p in list)
+                lastOrderId = await CheckoutAsync(p.Id, payMethod);  // 逐筆結帳
+
+            if (tableId > 0)
+                await _tableRepo.UpdateStatusAsync(tableId, 0);
+
+            return lastOrderId;
+        }
+
+        public async Task<int> SplitCheckoutAsync(List<int> detailIds, string payMethod)
+        {
+            // 找到這些 detail 屬於哪些 PreOrder
+            var allPending = await _preOrderRepo.GetByStatusAsync(PreOrderStatus.Pending);
+            var allDetails = allPending.SelectMany(p => p.PreOrderDetails).ToList();
+            var selected = allDetails.Where(d => detailIds.Contains(d.Id)).ToList();
+
+            if (!selected.Any()) return 0;
+
+            // 以第一筆 PreOrder 為主建立 Order
+            var firstPreOrderId = selected.First().PreOrderId;
+            var preOrder = allPending.First(p => p.Id == firstPreOrderId);
+
+            int originalAmount = selected.Sum(d => d.SubTotal);
+
+            var payment = new Payment
+            {
+                PreOrderId = firstPreOrderId,
+                Method = payMethod,
+                PaidAt = DateTime.Now,
+                DoneOrCancel = 1
+            };
+
+            var order = new Order
+            {
+                PreOrderId = firstPreOrderId,
+                OrderNumber = preOrder.OrderNumber + "-S" + DateTime.Now.ToString("mmss"),
+                MemberId = preOrder.MemberId,
+                InOrOut = preOrder.InOrOut,
+                TableId = preOrder.TableId,
+                UserId = preOrder.UserId,
+                OrderAt = preOrder.OrderAt,
+                OriginalAmount = originalAmount,
+                DiscountAmount = 0,   // 拆單不套用優惠券
+                TotalAmount = originalAmount,
+                Note = preOrder.Note,
+                PayMethod = payMethod,
+                OrderDetails = selected.Select(d => new OrderDetail
+                {
+                    ProductId = d.ProductId,
+                    ProductName = d.ProductName,
+                    Qty = d.Qty,
+                    UnitPrice = d.UnitPrice,
+                    SubTotal = d.SubTotal
+                }).ToList()
+            };
+
+            await _orderRepo.AddWithPaymentAsync(order, payment);
+
+            // 把已結帳的 detail 標記為完成
+            foreach (var d in selected)
+                await _preOrderRepo.UpdateDetailStatusAsync(d.Id, 1);
+
+            // 檢查每筆 PreOrder 是否全部結完
+            foreach (var preOrderId in selected.Select(d => d.PreOrderId).Distinct())
+            {
+                var p = await _preOrderRepo.GetByIdAsync(preOrderId);
+                if (p != null && p.PreOrderDetails.All(d => d.DoneOrCancel == 1))
+                {
+                    await _preOrderRepo.UpdateStatusAsync(preOrderId, PreOrderStatus.Done);
+                }
+            }
+
+            // 如果該桌所有 PreOrder 都結完，桌子改回空桌
+            var tableId = preOrder.TableId;
+            if (tableId.HasValue)
+            {
+                var remaining = allPending
+                    .Where(p => p.TableId == tableId && p.DoneOrCancel == 0)
+                    .SelectMany(p => p.PreOrderDetails)
+                    .Any(d => d.DoneOrCancel == 0);
+
+                if (!remaining)
+                    await _tableRepo.UpdateStatusAsync(tableId.Value, 0);
+            }
+
+            return order.Id;
+        }
+
+        public async Task<PaymentCheckoutViewModel?> GetCheckoutByTableAsync(int tableId)
+        {
+            var today = DateTime.Today;
+            var orders = await _preOrderRepo.GetByStatusAsync(PreOrderStatus.Pending);
+            var tableOrders = orders
+                .Where(p => p.InOrOut && p.TableId == tableId && p.OrderAt.Date == today)
+                .OrderBy(p => p.OrderAt)
+                .ToList();
+
+            if (!tableOrders.Any()) return null;
+
             // 只顯示還沒結帳的餐點（IsBilled = false 且沒有被取消）
             var allItems = tableOrders
                 .SelectMany(p => p.PreOrderDetails
