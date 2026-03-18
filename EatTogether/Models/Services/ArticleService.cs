@@ -1,6 +1,8 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
 using EatTogether.Models.Repositories;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Services
 {
@@ -21,5 +23,33 @@ namespace EatTogether.Models.Services
 			await _repo.CreateAsync(dto);
 
 		}
+
+
+
+		// 取得類別
+		public async Task<IEnumerable<SelectListItem>> GetCategorySelectListAsync()
+		{
+			return await _context.ArticleCategories
+				.Where(x => x.IsEnabled) // 撈啟用的
+				.OrderBy(x => x.SortOrder)
+				.Select(x => new SelectListItem
+				{
+					Value = x.Id.ToString(),
+					Text = x.Name
+				}).ToListAsync();
+		}
+
+		// 取得活動
+		public async Task<IEnumerable<SelectListItem>> GetEventSelectListAsync()
+		{
+			return await _context.Events
+				.Where(x => x.Status == 1 || x.Status == 0) // 取進行中及未開始活動
+				.Select(x => new SelectListItem
+				{
+					Value = x.Id.ToString(),
+					Text = x.Title
+				}).ToListAsync();
+		}
+
 	}
 }

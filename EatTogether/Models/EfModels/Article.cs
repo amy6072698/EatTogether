@@ -19,7 +19,7 @@ public partial class Article
 
     public string CoverImageUrl { get; set; }
 
-    public DateTime PublishDate { get; set; }
+    public DateTime? PublishDate { get; set; }
 
     public DateTime? ExpiryDate { get; set; }
 

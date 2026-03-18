@@ -18,12 +18,12 @@ namespace EatTogether.Models.Extensions
 			return new ArticleCreateDto
 			{
 				Id = vm.Id,
-				CategoryId = vm.CategoryId,
+				CategoryId = vm.CategoryId.GetValueOrDefault(),
 				EventId = vm.EventId,
 				Title = vm.Title,
 				Description	= vm.Description,
 				CoverImageUrl = vm.CoverImageUrl,
-				PublishDate = vm.PublishDate,
+				PublishDate = vm.PublishDate.GetValueOrDefault(),
 				ExpiryDate = vm.ExpiryDate,
 				IsPinned = vm.IsPinned,
 				Status	= vm.Status
@@ -35,6 +35,8 @@ namespace EatTogether.Models.Extensions
 			return new Article
 			{
 				Id = dto.Id,
+				CategoryId = dto.CategoryId,
+				EventId = dto.EventId,
 				Title = dto.Title,
 				Description = dto.Description,
 				CoverImageUrl = dto.CoverImageUrl,
@@ -45,6 +47,49 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
+
+
+		//modify ArticleMappingExtension class
+		//	文章列表 dto -> vm
+		//	→ ToViewModel(this ArticleDto dto)
+		//	// Entity → Dto（Repository 讀取用）
+		//	ArticleDto ToDto(this Article entity)
+
+
+		public static ArticleViewModel ToArticleVm(this ArticleDto dto)
+		{
+			return new ArticleViewModel
+			{
+				Id = dto.Id,
+				CategoryId = dto.CategoryId,
+				EventId = dto.EventId,
+				Title = dto.Title,
+				Description = dto.Description,
+				CoverImageUrl = dto.CoverImageUrl,
+				PublishDate = dto.PublishDate,
+				ExpiryDate = dto.ExpiryDate,
+				IsPinned = dto.IsPinned,
+				Status = dto.Status
+
+			};
+		}
+
+		public static ArticleDto ToArticleDto(this Article entity)
+		{
+			return new ArticleDto
+			{
+				Id = entity.Id,
+				CategoryId = entity.CategoryId,
+				EventId = entity.EventId,
+				Title = entity.Title,
+				Description = entity.Description,
+				CoverImageUrl = entity.CoverImageUrl,
+				PublishDate = entity.PublishDate,
+				ExpiryDate = entity.ExpiryDate,
+				IsPinned = entity.IsPinned,
+				Status = entity.Status
+			};
+		}
 
 	}
 }

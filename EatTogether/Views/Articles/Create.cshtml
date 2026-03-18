@@ -34,14 +34,14 @@
         <li class="breadcrumb-item active">文章新增</li>
     </ol>
 
-    <form asp-action="Create" method="post" enctype="multipart/form-data" id="articleForm">
+    <form asp-action="Create" method="post" enctype="multipart/form-data" id="articleForm" >
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
                 <h5 class="m-0 font-weight-bold text-dark"><i class="bi bi-pencil-square me-2"></i>撰寫文章</h5>
             </div>
 
             <div class="card-body">
-                <div class="row mb-3 align-items-end">
+                <div class="row mb-3 align-items-start">
                     <div class="col-md-4">
                         <label asp-for="CategoryId" class="form-label">類別</label>
                         <select asp-for="CategoryId" asp-items="Model.CategorySelectList" class="form-select">
@@ -56,7 +56,8 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-check form-switch pb-2">
+                        <label class="d-none d-md-block">&nbsp;</label>
+                        <div class="form-check form-switch pt-2">
                             <input class="form-check-input" type="checkbox" role="switch" asp-for="IsPinned">
                             <label class="form-check-label" asp-for="IsPinned">置頂文章</label>
                         </div>
@@ -64,6 +65,7 @@
                 </div>
 
                 <div class="mb-3">
+                    <input type="hidden" id="Status" name="Status" value="0" />
                     <label asp-for="Title" class="form-label">標題</label>
                     <input asp-for="Title" class="form-control" placeholder="請輸入文章標題" />
                     <span asp-validation-for="Title" class="text-danger"></span>
@@ -71,7 +73,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">內文</label>
-                    <input type="hidden" asp-for="Description" id="hiddenDescription" />
+                    <input type="hidden" asp-for="Description" id="hiddenDescription" data-val="false" />
                     <div id="editor" style="height: 400px;">
                         @Html.Raw(Model.Description)
                     </div>
@@ -95,78 +97,123 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="PublishDate" class="form-label">上架時間</label>
-                        <input asp-for="PublishDate" class="form-control" />
+                        <label asp-for="PublishDate" class="form-label">上架日期</label>
+                        <input asp-for="PublishDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="PublishDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="ExpiryDate" class="form-label">下架時間</label>
-                        <input asp-for="ExpiryDate" class="form-control" />
+                        <label asp-for="ExpiryDate" class="form-label">下架日期</label>
+                        <input asp-for="ExpiryDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     </div>
                 </div>
             </div>
 
+
             <div class="card-footer bg-light d-flex justify-content-end gap-2 py-3">
-                <button type="submit" class="btn btn-primary px-5">發佈<i class="bi bi-send-fill ms-1"></i></button>
+
+                <!-- Split Button -->
+                <div class="btn-group">
+                    <button type="button" id="btnPublish" class="btn btn-primary px-4">
+                        發佈 <i class="bi bi-send-fill ms-1"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button type="button" id="btnSaveDraft" class="dropdown-item">
+                                <i class="bi bi-file-earmark me-1"></i>存成草稿
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
                 <a asp-action="Index" class="btn btn-secondary px-4">取消</a>
             </div>
+
         </div>
     </form>
 </div>
 
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // 初始化 Quill
-        var quill = new Quill('#editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['link'],
-                    ['clean']
-                ]
+
+        $(document).ready(function () {
+            $.validator.setDefaults({ ignore: [] });
+
+            // 初始化 Quill
+            var quill = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+
+
+            function syncQuill() {
+                var content = quill.root.innerHTML;
+                if (content === '<p><br></p>' || content === '<p></p>') content = '';
+                $('#hiddenDescription').val(content);
             }
-        });
 
-        // 在表單送出前，將 Quill 內容同步到隱藏欄位
-        $('#articleForm').on('submit', function() {
-            var content = quill.root.innerHTML;
 
-            // 如果只有預設的空內容，清空它以便觸發 [Required] 驗證
-            if (content === '<p><br></p>') {
-                content = '';
+            function handleFormSubmit(statusValue) {
+                $('#Status').val(statusValue);
+                syncQuill();
+
+                // 統一驗證：沒填完就不准送出
+                if ($('#articleForm').valid()) {
+                    $('#articleForm').submit();}              
             }
 
-            $('#hiddenDescription').val(content);
-        });
+            $('#btnPublish').on('click', function () {
+                handleFormSubmit(1);
+            });
 
-        // 新增：圖片預覽函式
-        function previewImage(input) {
-            const preview = $('#imagePreview');
-            const placeholder = $('#previewPlaceholder');
+            $('#btnSaveDraft').on('click', function () {
+                handleFormSubmit(0);
+            });
 
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
 
-                reader.onload = function (e) {
-                    preview.attr('src', e.target.result).show(); // 載入圖片並顯示
-                    placeholder.hide(); // 隱藏佔位區塊
-                };
+            // 新增：圖片預覽函式
+            function previewImage(input) {
+                const preview = $('#imagePreview');
+                const placeholder = $('#previewPlaceholder');
 
-                reader.readAsDataURL(input.files[0]); // 讀取檔案
-            } else {
-                // 如果取消選取，恢復原狀
-                preview.attr('src', '#').hide();
-                placeholder.show();
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        preview.attr('src', e.target.result).show(); // 載入圖片並顯示
+                        placeholder.hide(); // 隱藏佔位區塊
+                    };
+
+                    reader.readAsDataURL(input.files[0]); // 讀取檔案
+                } else {
+                    // 如果取消選取，恢復原狀
+                    preview.attr('src', '#').hide();
+                    placeholder.show();
+                }
             }
-        }
 
+            // 監聽圖片上傳變更
+            $('input[name="CoverImageFile"]').on('change', function() {
+                previewImage(this);
+            });                    
+
+        })
 
     </script>
 }

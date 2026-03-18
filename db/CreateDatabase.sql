@@ -115,7 +115,7 @@ CREATE TABLE [dbo].[Articles](
 	[Title] [nvarchar](200) NOT NULL,
 	[Description] [nvarchar](max) NOT NULL,
 	[CoverImageUrl] [nvarchar](255) NULL,
-	[PublishDate] [datetime2](0) NOT NULL,
+	[PublishDate] [datetime2](0) NULL,
 	[ExpiryDate] [datetime2](0) NULL,
 	[IsPinned] [bit] NOT NULL,
 	[Status] [int] NOT NULL,
