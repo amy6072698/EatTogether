@@ -44,7 +44,6 @@ namespace EatTogether.Controllers
             return RedirectToAction(nameof(Create), new { success = true });
         }
         [HttpGet]
-        [Route("Payments/GetDetailByTable")]
         public async Task<IActionResult> GetDetailByTable(int tableId)
         {
             var vm = await _service.GetCheckoutByTableAsync(tableId);
