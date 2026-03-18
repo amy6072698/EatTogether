@@ -55,10 +55,8 @@ namespace EatTogether.Controllers
 			return View(result);
 		}
 
-		/* --------------------------------------------------------
-           預產員工編號（前端開 Modal 時呼叫）
-        -------------------------------------------------------- */
 		// GET /Users/NextEmployeeNumber
+		// 預產員工編號（前端開 Modal 時呼叫）
 		//[RequirePermission("Staff_Manage")]
 		[HttpGet]
 		public async Task<IActionResult> NextEmployeeNumber()
@@ -67,10 +65,9 @@ namespace EatTogether.Controllers
 			return Ok(new { employeeNumber = empNo });
 		}
 
-		/* --------------------------------------------------------
-           新增員工
-        -------------------------------------------------------- */
+
 		// POST /Users/Create
+		// 新增員工
 		//[RequirePermission("Staff_Manage")]
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
@@ -89,5 +86,63 @@ namespace EatTogether.Controllers
 
 			return BadRequest(new { message = result.ErrorMessage });
 		}
+
+		// GET /Users/Edit/{id}
+		// 前端開編輯 Modal 時呼叫，取得預填資料
+		//[RequirePermission("Staff_Manage")]
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id)
+		{
+			var dto = await _userService.GetForEditAsync(id);
+			if(dto == null)
+			{
+				return NotFound(new { message = "找不到此員工" });
+			}
+
+			return Ok(dto.ToEditVm());
+		}
+
+		// PUT /Users/Edit/{id}
+		// 儲存編輯
+		//[RequirePermission("Staff_Manage")]
+		[HttpPut]
+		public async Task<IActionResult> Edit(int id, [FromBody] UserEditViewModel vm)
+		{
+			if (!ModelState.IsValid)
+			{
+				var errors = ModelState.Values
+					.SelectMany(v => v.Errors)
+					.Select(e => e.ErrorMessage);
+				return BadRequest(new { message = string.Join("、", errors) });
+			}
+
+			var result = await _userService.UpdateAsync(id, vm);
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
+		// PATCH /Users/Resign/{id}
+		//[RequirePermission("Staff_Manage")]
+		[HttpPatch]
+		public async Task<IActionResult> Resign(int id)
+		{
+			var operatorId = int.Parse(User.FindFirstValue("UserId") ?? "0");
+			var result = await _userService.ResignAsync(id, operatorId);
+
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
+		// PATCH /Users/Reinstate/{id}
+		//[RequirePermission("Staff_Manage")]
+		[HttpPatch]
+		public async Task<IActionResult> Reinstate(int id)
+		{
+			var result = await _userService.ReinstateAsync(id);
+
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
 	}
 }

@@ -1,27 +1,32 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.Infra;
 using EatTogether.Models.Repositories;
+using EatTogether.Models.ViewModels;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Services
 {
+
 	public interface IUserService
 	{
 		Task<Result> CreateAsync(UserCreateDto dto);
 		Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto, int currentUserId, bool canManage);
 		Task<string> GetEmployeeNumberPreviewAsync();
+		Task<UserEditDto?> GetForEditAsync(int id);
+		Task<Result> ReinstateAsync(int id);
+		Task<Result> ResignAsync(int id, int operatorId);
+		Task<Result> UpdateAsync(int id, UserEditViewModel vm);
 	}
 
 	public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepo;
-		private readonly IRoleRepository _roleRepo;
 		private readonly UserNumberGenerator _userNumberGenerator;
 
-		public UserService(IUserRepository userRepo, IRoleRepository roleRepo, UserNumberGenerator userNumberGenerator)
+		public UserService(IUserRepository userRepo, UserNumberGenerator userNumberGenerator)
 		{
 			_userRepo = userRepo;
-			_roleRepo = roleRepo;
 			_userNumberGenerator = userNumberGenerator;
 		}
 		public async Task<IEnumerable<UserListDto>> GetAllAsync(UserSearchDto dto, int currentUserId, bool canManage)
@@ -136,6 +141,108 @@ namespace EatTogether.Models.Services
 			};
 
 			await _userRepo.InsertAsync(insertDto);
+		}
+
+
+		public async Task<UserEditDto?> GetForEditAsync(int id)
+		{
+			return await _userRepo.GetForEditAsync(id);
+		}
+
+		public async Task<Result> UpdateAsync(int id, UserEditViewModel vm)
+		{
+			// 確認員工存在
+			var user = await _userRepo.GetForEditAsync(id);
+			if (user == null)
+			{
+				return Result.Fail("找不到員工資料");
+			}
+
+			// 業務驗證：帳號唯一性（排除自己）
+			if (await _userRepo.IsAccountExistsAsync(vm.Account, excludeId: id))
+			{
+				return Result.Fail("此帳號已存在，請使用其他帳號");
+			}
+
+
+			// 業務驗證：Email 唯一性（排除自己）
+			if (await _userRepo.IsEmailExistsAsync(vm.Email, excludeId: id))
+			{
+				return Result.Fail("此 Email 已存在，請使用其他 Email");
+			}
+
+			string? hashedPassword = null;
+			bool? mustChangePassword = null;
+
+			// 密碼有填才處理
+			if (!string.IsNullOrWhiteSpace(vm.Password))
+			{
+				if (!PasswordValidator.IsValid(vm.Password))
+				{
+					return Result.Fail("密碼至少 6 碼，且需包含英文與數字");
+				}
+
+				hashedPassword = HashUtility.HashPassword(vm.Password);
+				mustChangePassword = vm.Password == user.EmployeeNumber;  // 明文比對
+			}
+
+			var updateDto = new UserUpdateDto
+			{
+				Id = id,
+				Name = vm.Name,
+				Account = vm.Account,
+				HashedPassword = hashedPassword,
+				Email = vm.Email,
+				Phone = vm.Phone,
+				HireDate = vm.HireDate,
+				IsActive = vm.IsActive,
+				MustChangePassword = mustChangePassword,
+				RoleIds = vm.RoleIds
+			};
+
+			using var transaction = await _userRepo.BeginTransactionAsync();
+			try
+			{
+				await _userRepo.UpdateAsync(updateDto);
+				await _userRepo.UpdateUserRolesAsync(id, vm.RoleIds);
+				await transaction.CommitAsync();
+				return Result.Success();
+			}
+			catch
+			{
+				await transaction.RollbackAsync();
+				return Result.Fail("更新員工失敗，請稍後再試");
+			}
+		}
+
+		public async Task<Result> ResignAsync(int id, int operatorId)
+		{
+			// 禁止對自身帳號執行離職
+			if (id == operatorId)
+			{
+				return Result.Fail("無法對自身帳號執行離職處理");
+			}
+
+			var user = await _userRepo.GetForEditAsync(id);
+			if (user == null)
+			{
+				return Result.Fail("找不到員工資料");
+			}
+
+			await _userRepo.ResignAsync(id);
+			return Result.Success();
+		}
+
+		public async Task<Result> ReinstateAsync(int id)
+		{
+			var user = await _userRepo.GetForEditAsync(id);
+			if (user == null)
+			{
+				return Result.Fail("找不到員工資料");
+			}
+
+			await _userRepo.ReinstateAsync(id);
+			return Result.Success();
 		}
 	}
 }

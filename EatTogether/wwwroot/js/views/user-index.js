@@ -207,24 +207,53 @@ function validatePassword(password) {
 function showFieldError(inputEl, message) {
     if (!inputEl) return;
     inputEl.classList.add('is-invalid');
-    let errorEl = inputEl.closest('.input-with-check, .position-relative, div')?.querySelector('.invalid-feedback');
-    if (!errorEl || errorEl.closest('.input-with-check')) {
+
+    // 優先找外層 col div 預先放好的 invalid-feedback（避免 flex 排版問題）
+    const colEl = inputEl.closest('.col-md-6, .col-md-4, .col-md-3, .col-md-2, .col-12');
+    let errorEl = colEl?.querySelector('.invalid-feedback');
+
+    // fallback：找 parentElement 內的 invalid-feedback
+    if (!errorEl) {
         errorEl = inputEl.parentElement.querySelector('.invalid-feedback');
     }
+
+    // 最後手段：動態建立（無預先放置時）
     if (!errorEl) {
         errorEl = document.createElement('div');
         errorEl.className = 'invalid-feedback';
         inputEl.parentElement.appendChild(errorEl);
     }
+
     errorEl.textContent = message;
+    errorEl.style.display = 'block';
+
+    //let errorEl = inputEl.closest('.input-with-check, .position-relative, div')?.querySelector('.invalid-feedback');
+    //if (!errorEl || errorEl.closest('.input-with-check')) {
+    //    errorEl = inputEl.parentElement.querySelector('.invalid-feedback');
+    //}
+    //if (!errorEl) {
+    //    errorEl = document.createElement('div');
+    //    errorEl.className = 'invalid-feedback';
+    //    inputEl.parentElement.appendChild(errorEl);
+    //}
+    //errorEl.textContent = message;
 }
 
 function clearAllFieldErrors(formEl) {
     if (!formEl) return;
     formEl.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-    formEl.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    formEl.querySelectorAll('.invalid-feedback').forEach(el => {
+        el.textContent = '';
+        el.style.display = '';
+    });
     const roleErr = formEl.querySelector('#role-error, #edit-role-error');
     if (roleErr) roleErr.textContent = '';
+
+    //if (!formEl) return;
+    //formEl.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    //formEl.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    //const roleErr = formEl.querySelector('#role-error, #edit-role-error');
+    //if (roleErr) roleErr.textContent = '';
 }
 
 /* ============================================================
@@ -355,50 +384,56 @@ function initEditModal() {
         const btn = e.target.closest('.btn-edit-user');
         if (!btn) return;
 
+        const userId = btn.dataset.id;
+
         clearAllFieldErrors(document.querySelector('#form-edit-user'));
 
-        // TODO（後端連線後）：改為 apiFetch GET `/Users/Edit/${userId}`
-        const row = btn.closest('tr');
-        const data = {
-            id:         btn.dataset.id,
-            userNumber: row?.dataset.empNo     ?? '',
-            name:       row?.dataset.name      ?? '',
-            isActive:   row?.dataset.isActive  ?? '1',
-            account:    row?.dataset.account   ?? '',
-            email:      row?.dataset.email     ?? '',
-            phone:      row?.dataset.phone     ?? '',
-            hireDate:   row?.dataset.hireDate  ?? '',
-            createdAt:  row?.dataset.createdAt ?? '',
-            roleIds:    (row?.dataset.roleIds  ?? '').split(',').map(Number).filter(Boolean)
-        };
+        // 呼叫後端取得預填資料 GET /Users/Edit/${userId}
+        try {
+            const res = await apiFetch(`/Users/Edit/${userId}`);
 
-        document.querySelector('#edit-user-id').value      = data.id;
-        document.querySelector('#edit-user-number').value  = data.userNumber;
-        document.querySelector('#edit-name').value         = data.name;
-        document.querySelector('#edit-status').value       = data.isActive;
-        document.querySelector('#edit-account').value      = data.account;
-        document.querySelector('#edit-password').value     = '';
-        document.querySelector('#edit-email').value        = data.email;
-        document.querySelector('#edit-phone').value        = data.phone;
-        document.querySelector('#edit-hire-date').value    = data.hireDate;
-        document.querySelector('#edit-created-at').value   = data.createdAt;
+            if (!res) return;
 
-        // 角色預填
-        document.querySelectorAll('#modal-edit-user .role-checkbox').forEach(cb => {
-            cb.checked = data.roleIds.includes(parseInt(cb.value));
-        });
+            if (!res.ok) {
+                Swal.fire({ icon: 'error', title: '載入失敗', text: '請稍後再試', confirmButtonColor: '#1A0D08' });
+                return;
+            }
 
-        // 重設同員工編號勾選框與 readOnly
-        ['#edit-account-same-empno', '#edit-password-same-empno'].forEach(sel => {
-            const cb = document.querySelector(sel);
-            if (cb) cb.checked = false;
-        });
-        const acctField = document.querySelector('#edit-account');
-        const pwdField  = document.querySelector('#edit-password');
-        if (acctField) acctField.readOnly = false;
-        if (pwdField)  pwdField.readOnly  = false;
+            const data = await res.json();
 
-        bootstrap.Modal.getOrCreateInstance(modal).show();
+            document.querySelector('#edit-user-id').value = data.id;
+            document.querySelector('#edit-user-number').value = data.employeeNumber;
+            document.querySelector('#edit-name').value = data.name;
+            document.querySelector('#edit-status').value = data.isActive ? '1' : '0';
+            document.querySelector('#edit-account').value = data.account;
+            document.querySelector('#edit-password').value = '';
+            document.querySelector('#edit-email').value = data.email;
+            document.querySelector('#edit-phone').value = data.phone;
+            document.querySelector('#edit-hire-date').value = data.hireDate;
+            document.querySelector('#edit-created-at').value = data.createdAt;
+
+            // 角色預填
+            document.querySelectorAll('#modal-edit-user .role-checkbox').forEach(cb => {
+                cb.checked = data.roleIds.includes(parseInt(cb.value));
+            });
+
+            // 重設同員工編號勾選框與 readOnly
+            ['#edit-account-same-empno', '#edit-password-same-empno'].forEach(sel => {
+                const cb = document.querySelector(sel);
+                if (cb) cb.checked = false;
+            });
+            const acctField = document.querySelector('#edit-account');
+            const pwdField = document.querySelector('#edit-password');
+            if (acctField) acctField.readOnly = false;
+            if (pwdField) pwdField.readOnly = false;
+
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        }
+        catch {
+            Swal.fire({ icon: 'error', title: '系統錯誤', text: '請稍後再試', confirmButtonColor: '#1A0D08' });
+        }
+
+        
     });
 
     initSameEmpNoCheckboxes('edit');
@@ -412,7 +447,8 @@ function initEditModal() {
 
         const userId   = document.querySelector('#edit-user-id')?.value;
         const name     = document.querySelector('#edit-name');
-        const status   = document.querySelector('#edit-status');
+        const status = document.querySelector('#edit-status');
+        const account = document.querySelector('#edit-account');
         const pwd      = document.querySelector('#edit-password');
         const email    = document.querySelector('#edit-email');
         const phone    = document.querySelector('#edit-phone');
@@ -422,15 +458,16 @@ function initEditModal() {
         let hasError = false;
 
         if (!name?.value.trim()) { showFieldError(name, '請輸入姓名'); hasError = true; }
+        if (!account?.value.trim()) { showFieldError(account, '請輸入帳號'); hasError = true; }
+        if (!email?.value.trim()) { showFieldError(email, '請輸入 Email'); hasError = true; }
+        if (!phone?.value.trim()) { showFieldError(phone, '請輸入手機號碼'); hasError = true; }
+        if (!hireDate?.value.trim()) { showFieldError(hireDate, '請選擇到職日期'); hasError = true; }
 
+        // 密碼有填才驗證複雜度
         if (pwd?.value) {
             const pwdError = validatePassword(pwd.value);
             if (pwdError) { showFieldError(pwd, pwdError); hasError = true; }
         }
-
-        if (!email?.value.trim()) { showFieldError(email, '請輸入 Email'); hasError = true; }
-        if (!phone?.value.trim()) { showFieldError(phone, '請輸入手機號碼'); hasError = true; }
-        if (!hireDate?.value.trim()) { showFieldError(hireDate, '請選擇到職日期'); hasError = true; }
 
         if (checkedRoles.length === 0) {
             let errEl = form.querySelector('#edit-role-error');
@@ -450,6 +487,7 @@ function initEditModal() {
         const payload = {
             name:     name.value.trim(),
             isActive: status?.value === '1',
+            account: account.value.trim(),
             password: pwd?.value || null,
             email:    email?.value.trim() || null,
             phone:    phone?.value.trim() || null,
@@ -461,7 +499,11 @@ function initEditModal() {
         submitBtn.textContent = '儲存中...';
 
         try {
-            const res = await apiFetch(`/Users/Edit/${userId}`, { method: 'PUT', body: JSON.stringify(payload) });
+            const res = await apiFetch(`/Users/Edit/${userId}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+
             if (!res) return;
 
             if (res.ok) {
