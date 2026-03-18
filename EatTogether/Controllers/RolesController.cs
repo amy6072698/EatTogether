@@ -17,6 +17,7 @@ namespace EatTogether.Controllers
 		}
 
 		//GET /Roles/Index
+		// 角色列表頁
 		[HttpGet]
 		public async Task<IActionResult> Index()
 		{
@@ -28,6 +29,15 @@ namespace EatTogether.Controllers
 			};
 
 			return View(vm);
+		}
+
+		// GET /Role/Overview
+		// 權限總覽 Modal（AJAX，回傳 JSON）
+		[HttpGet]
+		public async Task<IActionResult> Overview()
+		{
+			var dto = await _roleService.GetOverviewAsync();
+			return Ok(dto);
 		}
 	}
 }

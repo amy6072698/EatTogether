@@ -6,6 +6,7 @@ namespace EatTogether.Models.Services
 	public interface IRoleService
 	{
 		Task<IEnumerable<RoleListDto>> GetAllAsync();
+		Task<RoleOverviewDto> GetOverviewAsync();
 	}
 
 	public class RoleService : IRoleService
@@ -28,6 +29,11 @@ namespace EatTogether.Models.Services
 		public async Task<IEnumerable<RoleListDto>> GetAllAsync()
 		{
 			return await _roleRepo.GetAllAsync();
+		}
+
+		public async Task<RoleOverviewDto> GetOverviewAsync()
+		{
+			return await _roleRepo.GetOverviewAsync();
 		}
 	}
 }

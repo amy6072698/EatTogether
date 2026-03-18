@@ -599,7 +599,7 @@
 =========
 [RequirePermission("Staff_Manage")] 套用於所有 Role Actions
 
-[working] add 角色列表功能
+[V] add 角色列表功能
 	url: GET /Role/Index
 
 	[V] DTO（Models/DTOs/RoleListDto.cs）
@@ -651,22 +651,22 @@
 		「+ 新增角色」按鈕
 		表格欄位：角色名稱 / 角色描述 / 已擁有的權限（綠色標籤）/ 員工數 / 操作
 
-[] add 權限總覽功能
+[working] add 權限總覽功能
 	url: GET /Role/Overview
 
-	[] DTO（Models/DTOs/RoleOverviewDto.cs）
+	[V] DTO（Models/DTOs/RoleOverviewDto.cs）
 		RoleOverviewDto
 			List<string> RoleNames
 			List<string> FunctionDisplayNames
 			bool[,] Matrix   // Matrix[functionIndex, roleIndex]
 
-	[] RoleRepository（modify）
+	[V] RoleRepository（modify）
 		Task<RoleOverviewDto> GetOverviewAsync()
 
-	[] RoleService（modify）
+	[V] RoleService（modify）
 		Task<RoleOverviewDto> GetOverviewAsync()
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET /Role/Overview（JSON，供 Modal AJAX 呼叫）
 
 	[V] 權限總覽 Modal（嵌入 Role/Index.cshtml）
