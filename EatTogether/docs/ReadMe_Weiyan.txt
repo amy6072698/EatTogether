@@ -349,37 +349,10 @@
 
 	[working]頁面美化
 
-[working]add 文章預覽頁面
-	url: /Articles/Details?articleId=00
-	[working]add ViewModel, Dto , 擴充方法
-		ArticleDetailsViewModel class
-			Id, Title, Description, CategoryName , PublishDate , IsPinned
-	
-		ArticleDetailsDto class
-			Id, Title, Description, CategoryName ,PublishDate , IsPinned
 
-		modify ArticleMappingExtension class			
-			文章預覽 dto -> vm
-			→ ToViewModel(this ArticleDetailsDto dto)
-			// Entity → Dto（Repository 讀取用）
-			ArticleDetailsDto ToDto(this Article entity)
-
-
-	[]modify ArticleRepository
-		IArticleRepository interface
-			add   ArticleDetailsDto GetById(int id)
-
-	[]modify 	ArticleService
-			add ArticleDetailsDto GetById(int id)
-
-	[]modify ArticlesController
-		add IActionResult Details action[Authorize]
-			Details.cshtml
-				add EditArticle button(Redirct to Edit頁面)
-
-[]add 文章編輯頁面
+[working]add 文章編輯頁面
 	url: /Articles/Edit?articleId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleEditViewModel class
 			Id, CategoryName, EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 			IEnumerable<SelectListItem> 用於選取文章分類及活動;需要注入對應 Service 填充(ICategoryService.GetSelectList()+
@@ -400,15 +373,15 @@ IEventService.GetSelectList())
 		
 
 
-	[]modify ArticleRepository
+	[V]modify ArticleRepository
 		IArticleRepository interface
 			add void Edit(ArticleEditDto dto)
 			add ArticleEditDto GetEditById(int id)
 
-	[]modify 	ArticleService
+	[V]modify 	ArticleService
 			void Edit(ArticleEditDto dto)
 
-	[]modify ArticlesController
+	[working]modify ArticlesController
 		add IActionResult Edit action[Authorize]
 			Edit.cshtml
 		HttpGet Edit(int id)[Authorize]

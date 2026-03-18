@@ -2,7 +2,7 @@
 
 namespace EatTogether.Models.DTOs
 {
-	public class ArticleDetailsDto
+	public class ArticleEditDto
 	{
 		public int Id { get; set; }
 

@@ -58,5 +58,18 @@ namespace EatTogether.Models.Services
 			
 		}
 
+		// 取得資料
+		public async Task<ArticleEditDto> GetByIdAsync(int id)
+		{
+			var result = await _repo.GetEditByIdAsync(id);
+			if (result == null)
+			{
+				throw new Exception("找不到此文章");
+
+			}
+			return result;
+		}
+
+
 	}
 }

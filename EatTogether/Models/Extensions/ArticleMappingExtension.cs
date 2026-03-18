@@ -1,6 +1,7 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.EfModels;
 using EatTogether.Models.ViewModels;
+using Humanizer;
 
 namespace EatTogether.Models.Extensions
 {
@@ -102,9 +103,18 @@ namespace EatTogether.Models.Extensions
 		//	// Entity → Dto（Repository 讀取用）
 		//	ArticleDetailsDto ToDto(this Article entity)
 
-		public static ArticleDetailsViewModel ToArticleDetailsVm(this ArticleDetailsDto dto)
+		//編輯文章 vm<-> dto
+ 		//	→ ToDto(this ArticleEditViewModel vm)
+		//	→ ToViewModel(this ArticleEditDto dto)
+		//	// Dto → Entity（Repository 寫入用）
+		//	→Article ToEntity(this ArticleEditDto dto)
+
+		//	// Entity → Dto（Repository 讀取用）
+		//	ArticleDto ToDto(this Article entity)
+
+		public static ArticleEditViewModel ToArticleEditVm(this ArticleEditDto dto)
 		{
-			return new ArticleDetailsViewModel
+			return new ArticleEditViewModel
 			{
 				Id = dto.Id,
 				CategoryId = dto.CategoryId,
@@ -122,10 +132,47 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
-
-		public static ArticleDetailsDto ToArticleDetailsDto(this Article entity)
+		public static ArticleEditDto ToEditDto(this ArticleEditViewModel vm)
 		{
-			return new ArticleDetailsDto
+			return new ArticleEditDto
+			{
+				Id = vm.Id,
+				CategoryId = vm.CategoryId.GetValueOrDefault(),
+				EventId = vm.EventId,
+				CategoryName = vm.CategoryName,
+				EventName = vm.EventName,
+				Title = vm.Title,
+				Description = vm.Description,
+				CoverImageUrl = vm.CoverImageUrl,
+				PublishDate = vm.PublishDate.GetValueOrDefault(),
+				ExpiryDate = vm.ExpiryDate,
+				IsPinned = vm.IsPinned,
+				Status = vm.Status
+			};
+		}
+
+
+		public static Article ToEntity(this ArticleEditDto dto)
+		{
+			return new Article
+			{
+				Id = dto.Id,
+				CategoryId = dto.CategoryId.GetValueOrDefault(),
+				EventId = dto.EventId,
+				Title = dto.Title,
+				Description = dto.Description,
+				CoverImageUrl = dto.CoverImageUrl,
+				PublishDate = dto.PublishDate,
+				ExpiryDate = dto.ExpiryDate,
+				IsPinned = dto.IsPinned,
+				Status = dto.Status
+			};
+		}
+
+
+		public static ArticleEditDto ToEditDto(this Article entity)
+		{
+			return new ArticleEditDto
 			{
 				Id = entity.Id,
 				CategoryId = entity.CategoryId,

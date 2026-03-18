@@ -42,5 +42,11 @@ namespace EatTogether.Models.ViewModels
 		public bool IsPinned { get; set; }
 
 		public int Status { get; set; }
+
+		[ValidateNever]
+		public IEnumerable<SelectListItem> CategorySelectList { get; set; }
+
+		[ValidateNever]
+		public IEnumerable<SelectListItem> EventSelectList { get; set; }
 	}
 }

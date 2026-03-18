@@ -48,5 +48,48 @@ namespace EatTogether.Models.Repositories
 			return data;
 		}
 
+		public async Task<ArticleEditDto> GetEditByIdAsync(int id)
+		{
+			var entity = await _context.Articles.FindAsync(id);
+
+			if (entity == null) return null;
+
+			return new ArticleEditDto
+			{
+				Id = id,
+				CategoryId = entity.CategoryId,
+				EventId = entity.EventId,
+				Title = entity.Title,
+				Description = entity.Description,
+				CoverImageUrl = entity.CoverImageUrl,
+				PublishDate = entity.PublishDate,
+				ExpiryDate = entity.ExpiryDate,
+				IsPinned = entity.IsPinned,
+				Status = entity.Status,
+				CategoryName = entity.Category.Name,
+				EventName = entity.Event.Title
+			};
+
+		}
+
+		public async Task EditAsync(ArticleEditDto dto)
+		{
+			var entity = await _context.Articles.FindAsync(dto.Id);
+			if (entity == null)
+			{
+				return;
+			}
+
+			entity.Id = dto.Id;
+			entity.CategoryId = dto.CategoryId.GetValueOrDefault();
+			entity.EventId = dto.EventId;
+			entity.Title = dto.Title;
+			entity.Description = dto.Description;
+			entity.CoverImageUrl = dto.CoverImageUrl;
+			entity.PublishDate = dto.PublishDate;
+
+
+			await _context.SaveChangesAsync();
+		}
 	}
 }

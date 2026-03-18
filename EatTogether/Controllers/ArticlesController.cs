@@ -121,14 +121,14 @@ namespace EatTogether.Controllers
 
 
 
-		//[HttpGet]
-		//public async Task<IActionResult> Details(int id)
-		//{
-		//	var dto = await _service.GetByIdAsync(id);
-		//	if (dto == null) return NotFound();
-		//	var vm = dto.ToArticleVm();
-		//	return View(vm);
-		//}
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id)
+		{
+			var dto = await _service.GetByIdAsync(id);
+			if (dto == null) return NotFound();
+			var vm = dto.ToArticleEditVm();
+			return View(vm);
+		}
 
 
 

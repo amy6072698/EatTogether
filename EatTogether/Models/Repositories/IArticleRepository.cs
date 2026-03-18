@@ -5,5 +5,7 @@ namespace EatTogether.Models.Repositories
 	public interface IArticleRepository {
 		Task CreateAsync(ArticleCreateDto dto);
 		Task<List<ArticleDto>> GetAllAsync();
+		Task<ArticleEditDto> GetEditByIdAsync(int id);
+
 	}
 }

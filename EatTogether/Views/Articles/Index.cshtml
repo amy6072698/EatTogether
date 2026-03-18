@@ -95,8 +95,8 @@
                                 orderable: false, //這一欄不需要排序功能
                                 render: function(data) {
                                     return `
-                                  <button type="button" class="btn-details btn btn-outline-dark btn-sm px-3" data-id="${data}">
-                                            <i class="bi bi-pencil-square me-1"></i> 查看
+                                  <button type="button" class="btn-edit btn btn-outline-dark btn-sm px-3" data-id="${data}">
+                                            <i class="bi bi-pencil-square me-1"></i> 編輯
                                         </button>
                                     `;
                                 }
@@ -119,9 +119,9 @@
                     });
 
                     // 查看按鈕（用事件委派，因為是動態產生的）
-                    $('#ArticleTable').on('click', '.btn-details', function() {
+                    $('#ArticleTable').on('click', '.btn-edit', function() {
                         var id = $(this).data('id');
-                        window.location.href = `/Articles/Details/${id}`;
+                        window.location.href = `/Articles/Edit/${id}`;
                     });
 
 

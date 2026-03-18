@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
 {
-	public class ArticleDetailsViewModel
+	public class ArticleEditViewModel
 	{
 		public int Id { get; set; }
 
