@@ -486,6 +486,16 @@
         .empty-right p {
             font-size: 0.95rem;
         }
+
+    .detail-table tr.status-billed td {
+        opacity: 0.45;
+        color: #27ae60;
+    }
+
+    .badge-billed {
+        background: #d1f5e0;
+        color: #1a6b3a;
+    }
 </style>
 
 <div class="layout">
@@ -672,14 +682,14 @@
 @if (ViewBag.ShowSuccess == true) @* TempData["Success"] != null *@
 {
     <div id="toast" style="
-                position:fixed; inset:0;
-                background:rgba(0,0,0,0.35);
-                display:flex; align-items:center; justify-content:center;
-                z-index:9999;">
+                    position:fixed; inset:0;
+                    background:rgba(0,0,0,0.35);
+                    display:flex; align-items:center; justify-content:center;
+                    z-index:9999;">
         <div style="
-                    background:#fff; border-radius:20px;
-                    padding:40px 60px; text-align:center;
-                    box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                        background:#fff; border-radius:20px;
+                        padding:40px 60px; text-align:center;
+                        box-shadow:0 8px 32px rgba(0,0,0,0.2);">
             <div style="font-size:3rem; margin-bottom:12px;">✅</div>
             <div style="font-size:1.4rem; font-weight:700; color:#1a1a1a;">結帳成功！</div>
         </div>
@@ -740,11 +750,23 @@
 
         const tbody = document.getElementById('detailBody');
         tbody.innerHTML = '';
-        data.items.forEach(item => {
+
+            // 排序：未出餐 → 已出餐 → 已結帳 → 已取消
+        const sortOrder = item => {
+            if (item.status === 2) return 3;       // 已取消排最後
+            if (item.isBilled === true)     return 2;       // 已結帳次之
+            if (item.status === 0) return 0;       // 未出餐最前
+            return 1;                              // 已出餐可結帳
+        };
+        const sortedItems = [...data.items].sort((a, b) => sortOrder(a) - sortOrder(b));
+
+        sortedItems.forEach(item => {
             const isCancelled = item.status === 2;
             const isUnserved  = item.status === 0;
+            const isBilled    = item.isBilled === true;
             const tr = document.createElement('tr');
             if (isCancelled) tr.classList.add('status-cancel');
+            if (isBilled) tr.classList.add('status-billed');
 
             let badge = '';
             if (isUnserved)  badge = `<span class="status-badge badge-unserved">未出餐</span>`;
@@ -752,7 +774,7 @@
 
             tr.innerHTML = `
                       <td class="split-check-col" style="display:none;">
-                      ${(!isCancelled && !isUnserved)
+                      ${(!isCancelled && !isUnserved && !isBilled)
                       ? `<input type="checkbox" class="detail-check"
                       data-detail-id="${item.detailId}"
                       data-subtotal="${item.subTotal}"
@@ -760,11 +782,20 @@
                       : ''}
                       </td>
                       <td>${item.productName}${badge}</td>
-                      <td>${isCancelled ? '-' : item.qty}</td>
+                      <td>${item.qty}</td>
                       <td>NT$ ${item.unitPrice}</td>
-                      <td>${isCancelled ? '-' : 'NT$ ' + item.subTotal}</td>
+                      <td>NT$ ${item.subTotal}</td>
             `;
             tbody.appendChild(tr);
+            const form = document.getElementById('checkoutForm');
+            if (currentTableId) {
+                form.action = '/Payments/CheckoutByTable';
+                document.getElementById('checkoutTableId').value = currentTableId;
+            } else {
+                form.action = '/Payments/Checkout';
+                document.getElementById('checkoutTableId').name  = 'preOrderId';
+                document.getElementById('checkoutTableId').value = data.preOrderId;
+            }
         });
 
         document.getElementById('amtOriginal').textContent = data.originalAmount;
@@ -832,6 +863,7 @@
         document.querySelectorAll('.table-btn, .takeout-item').forEach(b =>
             b.classList.remove('active-selected'));
         currentPreOrderId = null;
+        currentTableId    = null;
     }
 
     function selectPayMethod(method) {
@@ -865,8 +897,8 @@
 
             if (defaultTableId > 0) {
         const tables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                                                Model.Tables.Select(t => new { t.TableId, t.TableName, t.PreOrderId, t.HasOrder })
-                                ));
+                                                                                                Model.Tables.Select(t => new { t.TableId, t.TableName, t.PreOrderId, t.HasOrder })
+                                                                ));
             const target = tables.find(t => t.TableId === defaultTableId);
     if (target) {
         const anyEl = document.getElementById('tbtn-' + target.PreOrderId)
@@ -957,45 +989,39 @@
             })
         });
 
-        const result = await res.json();
-        if (result.success) {
-            // 1. 關閉拆單模式 UI
-            splitMode = true;
-            toggleSplitMode();
+    const result = await res.json();
+    if (result.success) {
+        splitMode = true;
+        toggleSplitMode();
 
-            if (result.remaining) {
-                // 2. 獲取新的 PreOrderId (這是重點！)
-                const oldId = currentPreOrderId;
-                const newId = result.remaining.preOrderId;
-
-                // 3. 更新左側按鈕的 ID 與 onclick 事件，防止「點不進去」
-                const targetBtn = document.getElementById('tbtn-' + oldId);
-                if (targetBtn) {
-                    targetBtn.id = 'tbtn-' + newId; // 更新 DOM ID
-                    targetBtn.setAttribute('onclick', `loadDetail(${newId}, this)`); // 更新點擊事件
-
-                    // 更新顯示金額
-                    const amtSpan = targetBtn.querySelector('.table-amount, .takeout-amount');
-                    if (amtSpan) {
-                        amtSpan.textContent = `$${result.remaining.totalAmount}`;
-                    }
-                }
-
-                // 4. 更新全域變數，確保下一次操作指向正確的 PreOrder
-                currentPreOrderId = newId;
-
-                // 5. 重新渲染右側明細
-                renderDetail(result.remaining);
-
-                alert('部分結帳成功，剩餘餐點已更新。');
-            } else {
-                // 全部結完才關閉並重整
-                closeDetail();
-                location.reload();
+        if (!result.isFullyPaid && result.remaining) {
+            // 還有剩餘，直接更新右側明細
+            renderDetail(result.remaining);
+            // 更新左側金額顯示
+            const targetBtn = document.querySelector(`[data-table-id="${currentTableId}"]`);
+            if (targetBtn) {
+                const amtSpan = targetBtn.querySelector('.table-amount');
+                if (amtSpan) amtSpan.textContent = `$${result.remaining.totalAmount}`;
             }
         } else {
-            alert('拆單失敗：' + (result.message || '未知錯誤'));
+            // 全部結完，顯示完成訊息後 reload
+            const tbody = document.getElementById('detailBody');
+            tbody.innerHTML = `
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:#27ae60;font-size:1.1rem;font-weight:700;">
+                    ✅ 此桌已全部結帳完成
+                </td></tr>`;
+            document.getElementById('amtOriginal').textContent = '-';
+            document.getElementById('amtDiscount').textContent = '-';
+            document.getElementById('amtTotal').textContent = '-';
+            document.getElementById('checkoutBtn').classList.remove('show');
+            document.getElementById('unservedWarning').style.display = 'none';
+            document.getElementById('couponTag').style.display = 'none';
+            // 1.5 秒後 reload 更新左側桌子狀態
+            setTimeout(() => location.reload(), 1500);
         }
-    
+    } else {
+        alert('拆單失敗：' + (result.message || '未知錯誤'));
+    }
+
     }
 </script>

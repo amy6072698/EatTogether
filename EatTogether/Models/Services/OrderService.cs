@@ -3,7 +3,6 @@ using EatTogether.Models.EfModels;
 using EatTogether.Models.Repositories;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Services
 {
@@ -204,7 +203,7 @@ namespace EatTogether.Models.Services
                     }).ToList()
                 }).ToList();
         }
-        
+
         public async Task UpdatePreOrderDetailStatusAsync(int detailId, int status)
         {
             await _preOrderRepo.UpdateDetailStatusAsync(detailId, status);
@@ -427,8 +426,21 @@ namespace EatTogether.Models.Services
             await _orderRepo.AddWithPaymentAsync(order, payment);
             await _preOrderRepo.UpdateStatusAsync(preOrderId, PreOrderStatus.Done);
 
+            foreach (var d in preOrder.PreOrderDetails.Where(d => d.DoneOrCancel == 1))
+                await _preOrderRepo.UpdateDetailBilledAsync(d.Id);
+
+            // SplitCheckoutAsync 最後判斷是否關桌
             if (preOrder.TableId.HasValue)
-                await _tableRepo.UpdateStatusAsync(preOrder.TableId.Value, 0);  // 0=空桌
+            {
+                var freshPending = await _preOrderRepo.GetByStatusAsync(PreOrderStatus.Pending);
+                var hasRemaining = freshPending
+                    .Where(p => p.TableId == preOrder.TableId && p.DoneOrCancel == 0)
+                    .SelectMany(p => p.PreOrderDetails)
+                    .Any(d => !d.IsBilled && d.DoneOrCancel != 2);  // ← 改這行
+
+                if (!hasRemaining)
+                    await _tableRepo.UpdateStatusAsync(preOrder.TableId.Value, 0);
+            }
 
             return order.Id;
         }
@@ -492,20 +504,30 @@ namespace EatTogether.Models.Services
 
             if (!tableOrders.Any()) return null;
 
-            // 合併所有訂單的明細
+            // 只顯示還沒結帳的餐點（IsBilled = false 且沒有被取消）
             var allItems = tableOrders
-                .SelectMany(p => p.PreOrderDetails.Select(d => new PaymentDetailItemViewModel
+                .SelectMany(p => p.PreOrderDetails
+                .Select(d => new PaymentDetailItemViewModel
                 {
                     DetailId = d.Id,
                     ProductName = d.ProductName,
                     Qty = d.Qty,
                     UnitPrice = d.UnitPrice,
                     SubTotal = d.SubTotal,
-                    Status = d.DoneOrCancel
-                })).ToList();
+                    Status = d.DoneOrCancel,
+                    IsBilled = d.IsBilled
+                }))
+                .ToList();
+
+            // 沒有任何未結餐點就回 null
+            if (!allItems.Any()) return null;
+
+            // 判斷是否還有可結帳的餐點
+            var billableItems = allItems.Where(d => !d.IsBilled && d.Status != 2).ToList();
+            if (!billableItems.Any()) return null;  // 全部結完或取消才回 null
 
             var servedItems = tableOrders.SelectMany(p => p.PreOrderDetails.Where(d => d.DoneOrCancel != 2));
-            int originalAmount = servedItems.Sum(d => d.SubTotal);
+            int originalAmount = billableItems.Sum(d => d.SubTotal);
             int discountAmount = tableOrders.Sum(p => p.DiscountAmount);
 
             // 優惠券顯示第一筆有用券的
@@ -524,7 +546,7 @@ namespace EatTogether.Models.Services
                 OriginalAmount = originalAmount,
                 DiscountAmount = discountAmount,
                 TotalAmount = originalAmount - discountAmount,
-                HasUnserved = tableOrders.SelectMany(p => p.PreOrderDetails).Any(d => d.DoneOrCancel == 0),
+                HasUnserved = allItems.Any(d => d.Status == 0 && !d.IsBilled),
                 CouponName = couponOrder?.Coupon?.Name,
                 Items = allItems
             };
@@ -553,9 +575,6 @@ namespace EatTogether.Models.Services
             int lastOrderId = 0;
             foreach (var p in list)
                 lastOrderId = await CheckoutAsync(p.Id, payMethod);  // 逐筆結帳
-
-            if (tableId > 0)
-                await _tableRepo.UpdateStatusAsync(tableId, 0);
 
             return lastOrderId;
         }
@@ -609,31 +628,25 @@ namespace EatTogether.Models.Services
 
             await _orderRepo.AddWithPaymentAsync(order, payment);
 
-            // 把已結帳的 detail 標記為完成
             foreach (var d in selected)
-                await _preOrderRepo.UpdateDetailStatusAsync(d.Id, 1);
+                await _preOrderRepo.UpdateDetailBilledAsync(d.Id);
 
-            // 檢查每筆 PreOrder 是否全部結完
+            // 檢查每筆 PreOrder 是否所有非取消餐點都已結帳
             foreach (var preOrderId in selected.Select(d => d.PreOrderId).Distinct())
             {
-                var p = await _preOrderRepo.GetByIdAsync(preOrderId);
-                if (p != null && p.PreOrderDetails.All(d => d.DoneOrCancel == 1))
-                {
+                var allBilled = await _preOrderRepo.AllNonCancelledDetailsBilledAsync(preOrderId);
+                if (allBilled)
                     await _preOrderRepo.UpdateStatusAsync(preOrderId, PreOrderStatus.Done);
-                }
             }
 
             // 如果該桌所有 PreOrder 都結完，桌子改回空桌
-            var tableId = preOrder.TableId;
-            if (tableId.HasValue)
+            if (preOrder.TableId.HasValue)
             {
-                var remaining = allPending
-                    .Where(p => p.TableId == tableId && p.DoneOrCancel == 0)
-                    .SelectMany(p => p.PreOrderDetails)
-                    .Any(d => d.DoneOrCancel == 0);
+                var hasRemaining = await _preOrderRepo
+                    .HasUnbilledDetailsForTableAsync(preOrder.TableId.Value);
 
-                if (!remaining)
-                    await _tableRepo.UpdateStatusAsync(tableId.Value, 0);
+                if (!hasRemaining)
+                    await _tableRepo.UpdateStatusAsync(preOrder.TableId.Value, 0);
             }
 
             return order.Id;

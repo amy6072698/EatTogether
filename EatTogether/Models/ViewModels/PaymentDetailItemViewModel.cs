@@ -8,5 +8,6 @@
         public int UnitPrice { get; set; }
         public int SubTotal { get; set; }
         public int Status { get; set; }  // 0:未完成 1:完成 2:取消
+        public bool IsBilled { get; set; }
     }
 }

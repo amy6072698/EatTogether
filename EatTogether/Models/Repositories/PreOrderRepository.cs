@@ -21,6 +21,9 @@ namespace EatTogether.Models.Repositories
         Task CancelUnservedDetailsAsync(int preOrderId);
         Task<PreOrder?> GetByIdAsync(int id);
         Task CancelEntireOrderAsync(int preOrderId);
+        Task UpdateDetailBilledAsync(int detailId);
+        Task<bool> HasUnbilledDetailsForTableAsync(int tableId);
+        Task<bool> AllNonCancelledDetailsBilledAsync(int preOrderId);
     }
 
     public class PreOrderRepository : IPreOrderRepository
@@ -97,7 +100,7 @@ namespace EatTogether.Models.Repositories
                      .Include(p => p.Coupon)
                      .Include(p => p.Payments)
                      .FirstOrDefaultAsync(p => p.Id == id);
-        
+
         public async Task CancelEntireOrderAsync(int preOrderId)
         {
             var order = await _context.PreOrders
@@ -114,6 +117,29 @@ namespace EatTogether.Models.Repositories
             }
 
             await _context.SaveChangesAsync();
+        }
+        public async Task UpdateDetailBilledAsync(int detailId)
+        {
+            var detail = await _context.PreOrderDetails.FindAsync(detailId);
+            if (detail is null) return;
+            detail.IsBilled = true;
+            await _context.SaveChangesAsync();
+        }
+        public async Task<bool> HasUnbilledDetailsForTableAsync(int tableId)
+        {
+            return await _context.PreOrderDetails
+                .AnyAsync(d => d.PreOrder.TableId == tableId
+                            && !d.IsBilled
+                            && d.DoneOrCancel != 2);
+        }
+
+        public async Task<bool> AllNonCancelledDetailsBilledAsync(int preOrderId)
+        {
+            var details = await _context.PreOrderDetails
+                .Where(d => d.PreOrderId == preOrderId && d.DoneOrCancel != 2)
+                .ToListAsync();
+
+            return details.Any() && details.All(d => d.IsBilled);
         }
     }
 }
