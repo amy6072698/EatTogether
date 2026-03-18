@@ -63,11 +63,14 @@ namespace EatTogether.Models.Repositories
         }
 
         // 12
-        public async Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId)
+        public async Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int productId)
         {
+            var product = await _context.Products.FindAsync(productId);
+            if (product?.SetMealId == null) return new List<SetMealItemGroupDto>();
+
             var items = await _context.SetMealItems
                 .Include(s => s.Dish)
-                .Where(s => s.SetMealId == setMealId)
+                .Where(s => s.SetMealId == product.SetMealId)
                 .OrderBy(s => s.DisplayOrder)
                 .ToListAsync();
 
