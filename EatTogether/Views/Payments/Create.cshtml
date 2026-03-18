@@ -327,7 +327,9 @@
         }
 
         .detail-table tr.status-cancel td {
-            opacity: 0.4;
+            background: #fdf2f2;
+            color: #c0392b;
+            opacity: 0.65;
             text-decoration: line-through;
         }
 
@@ -498,6 +500,39 @@
     .badge-billed {
         background: #d1f5e0;
         color: #1a6b3a;
+    }
+
+    /* ── 套餐 / 子項目行 ── */
+    .detail-table tr.is-setmeal-row td {
+        background: #fff4e6;
+        font-weight: 700;
+    }
+
+    .detail-table tr.is-setmeal-row td:first-child {
+        border-left: 4px solid #e67e22;
+    }
+
+    .detail-table tr.child-item-row td {
+        background: #fffbf5;
+        color: #999;
+        font-size: 0.88rem;
+        border-bottom: 1px solid #fdebd0;
+    }
+
+    .detail-table tr.child-item-row td:first-child {
+        border-left: 4px solid #f0c080;
+    }
+
+    .detail-table tr.child-item-row.status-cancel td {
+        background: #fdf5f5;
+        color: #bbb;
+        text-decoration: line-through;
+        border-left-color: #f5c6cb;
+    }
+
+    .badge-setmeal {
+        background: #e67e22;
+        color: #fff;
     }
 
     /* ── Custom Confirm Modal ── */
@@ -752,7 +787,7 @@
                     <div class="right-title" id="rightTitle">-</div>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <div class="right-subtitle" id="rightSubtitle">-</div>
-                        <button type="button" onclick="openEditOrderModal()"
+                        <button type="button" id="editTableBtn" onclick="openEditOrderModal()"
                                 style="padding:3px 10px;border:1px solid #1a77c9;border-radius:6px;
                                        background:#fff;color:#1a77c9;font-family:inherit;
                                        font-weight:600;font-size:0.75rem;cursor:pointer;
@@ -957,12 +992,10 @@
             data.inOrOut ? `🪑 ${data.tableName || ''}` : `🥡 外帶`;
         document.getElementById('rightSubtitle').textContent = data.orderNumber || '-';
 
-        // 4. 判斷是否「整單都沒有已出餐餐點」
-        // 邏輯：檢查 items 內是否「存在」任何一項既不是 status=0(未出餐) 且不是 status=2(已取消) 且未結帳的項目
-        // 簡單來說：只要有一個 status 為 1 (或其他代表已出餐的值)，hasServedItems 就會是 true
-        const hasServedItems = data.items && data.items.some(item =>
-            item.status !== 0 && item.status !== 2 && item.isBilled !== true
-        );
+        // 4. 判斷是否「整單都沒有已出餐餐點」（排除子項目，以父項目/套餐標題為單位）
+        const hasServedItems = data.items && data.items
+            .filter(i => !i.parentDetailId)
+            .some(item => item.status !== 0 && item.status !== 2 && item.isBilled !== true);
 
         const warningArea = document.getElementById('unservedWarning');
         const warningText = warningArea.querySelector('p');
@@ -993,41 +1026,69 @@
             if (cancelOrderBtn) cancelOrderBtn.style.display = '';
         }
 
+        // 5b. 依據餐點完成狀態控制 整單取消/更換桌位/拆單結帳 的顯示
+        const topLevelItems = data.items ? data.items.filter(i => !i.parentDetailId) : [];
+        const allCompleted = topLevelItems.length > 0 &&
+            topLevelItems.every(item => item.status === 1 || item.status === 2);
+
+        const editTableBtn = document.getElementById('editTableBtn');
+        if (allCompleted) {
+            // 全部完成(完成或取消) → 隱藏整單取消和更換桌位
+            if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
+            if (editTableBtn) editTableBtn.style.display = 'none';
+        } else {
+            // 尚有未完成餐點 → 整單取消和更換桌位都要顯示
+            if (cancelOrderBtn) cancelOrderBtn.style.display = '';
+            if (editTableBtn) editTableBtn.style.display = '';
+        }
+
+        const splitModeBtn = document.getElementById('splitModeBtn');
+        if (splitModeBtn) {
+            // 有待處理餐點時隱藏拆單結帳
+            splitModeBtn.style.display = data.hasUnserved ? 'none' : '';
+        }
+
         // 6. 渲染餐點明細表格
         const tbody = document.getElementById('detailBody');
         tbody.innerHTML = '';
 
-        // 排序邏輯：未出餐(0) -> 已出餐(1) -> 已結帳(2) -> 已取消(3)
+        // 排序邏輯（只對父項目排序）：未出餐(0) -> 已出餐(1) -> 已結帳(2) -> 已取消(3)
         const sortOrder = item => {
-            if (item.status === 2) return 3;     // 已取消
-            if (item.isBilled === true) return 2; // 已結帳
-            if (item.status === 0) return 0;     // 未出餐
-            return 1;                            // 已出餐
+            if (item.status === 2) return 3;
+            if (item.isBilled === true) return 2;
+            if (item.status === 0) return 0;
+            return 1;
         };
 
-        const sortedItems = [...data.items].sort((a, b) => sortOrder(a) - sortOrder(b));
+        // 分離父項目（一般餐點 + 套餐標題）與子項目
+        const parentItems = data.items.filter(i => !i.parentDetailId);
+        const sortedParents = [...parentItems].sort((a, b) => sortOrder(a) - sortOrder(b));
 
-        sortedItems.forEach(item => {
+        sortedParents.forEach(item => {
             const isCancelled = item.status === 2;
             const isUnserved  = item.status === 0;
             const isBilled    = item.isBilled === true;
+            const isSetMeal   = item.isSetMeal === true;
 
             const tr = document.createElement('tr');
             if (isCancelled) tr.classList.add('status-cancel');
-            if (isBilled) tr.classList.add('status-billed');
+            if (isBilled)    tr.classList.add('status-billed');
+            if (isSetMeal)   tr.classList.add('is-setmeal-row');
 
             let badge = '';
-            if (isUnserved)  badge = `<span class="status-badge badge-unserved">未出餐</span>`;
-            if (isCancelled) badge = `<span class="status-badge badge-cancel">已取消</span>`;
+            if (isSetMeal)   badge += `<span class="status-badge badge-setmeal">套餐</span>`;
+            if (isUnserved)  badge += `<span class="status-badge badge-unserved">未出餐</span>`;
+            if (isCancelled) badge += `<span class="status-badge badge-cancel">已取消</span>`;
 
+            // 拆單 checkbox：套餐標題可勾選（代表整份套餐），子項目不顯示
+            const showCheck = !isCancelled && !isUnserved && !isBilled;
             tr.innerHTML = `
                 <td class="split-check-col" style="display:none;">
-                    ${(!isCancelled && !isUnserved && !isBilled)
-                    ? `<input type="checkbox" class="detail-check"
+                    ${showCheck ? `<input type="checkbox" class="detail-check"
                         data-detail-id="${item.detailId}"
                         data-subtotal="${item.subTotal}"
-                        onchange="updateSplitTotal()">`
-                    : ''}
+                        data-is-setmeal="${isSetMeal}"
+                        onchange="updateSplitTotal()">` : ''}
                 </td>
                 <td>${item.productName}${badge}</td>
                 <td>${item.qty}</td>
@@ -1035,6 +1096,30 @@
                 <td>NT$ ${item.subTotal.toLocaleString()}</td>
             `;
             tbody.appendChild(tr);
+
+            // 若為套餐，在其下方顯示子項目（縮排）
+            if (isSetMeal) {
+                const children = data.items.filter(c => c.parentDetailId === item.detailId);
+                children.forEach(child => {
+                    const childCancelled = child.status === 2;
+                    const childTr = document.createElement('tr');
+                    childTr.classList.add('child-item-row');
+                    if (childCancelled) childTr.classList.add('status-cancel');
+                    // 儲存 parentDetailId 供拆單使用
+                    childTr.dataset.parentId = item.detailId;
+                    childTr.dataset.detailId = child.detailId;
+                    childTr.innerHTML = `
+                        <td class="split-check-col" style="display:none;"></td>
+                        <td style="padding-left:28px;">
+                            <span style="color:#e67e22;margin-right:4px;">└</span>${child.productName}
+                        </td>
+                        <td>${child.qty}</td>
+                        <td style="color:#ccc;">—</td>
+                        <td style="color:#ccc;">—</td>
+                    `;
+                    tbody.appendChild(childTr);
+                });
+            }
         });
 
         // 7. 更新金額資訊
@@ -1150,12 +1235,47 @@
 
             document.getElementById('editOrderModal').classList.remove('show');
 
+            // 先取舊桌資訊（renderDetail 之前讀取）
+            const orderBtn = document.getElementById('tbtn-' + currentPreOrderId);
+            const oldTableId = editOriginalTableId;
+            const oldTableName = orderBtn?.querySelector('.table-name')?.textContent || '';
+
             // 更新右側 header 顯示
             currentTableId = tableId;
             renderDetail(data);
 
-            // 更新左側桌位格子（reload 最簡單）
-            setTimeout(() => window.location.href = '/Payments/Create', 300);
+            // 更新左側桌位格子
+            const wasDineIn = !!oldTableId;
+            const nowDineIn = !!tableId;
+
+            if (wasDineIn && nowDineIn && tableId !== oldTableId) {
+                // 內用換桌：將訂單按鈕移到新桌位，舊桌位還原為空桌
+                orderBtn.dataset.tableId = tableId;
+                const nameSpan = orderBtn.querySelector('.table-name');
+                if (nameSpan) nameSpan.textContent = data.tableName || '';
+
+                const newTableDiv = document.querySelector(`[data-tableid="${tableId}"]`);
+                if (newTableDiv) {
+                    const orderBtnNext  = orderBtn.nextSibling;
+                    const newTableDivNext = newTableDiv.nextSibling;
+                    const grid = orderBtn.parentNode;
+
+                    if (newTableDivNext) grid.insertBefore(orderBtn, newTableDivNext);
+                    else grid.appendChild(orderBtn);
+
+                    newTableDiv.dataset.tableid = oldTableId;
+                    newTableDiv.setAttribute('onclick', `selectTable(${oldTableId})`);
+                    const oldNameSpan = newTableDiv.querySelector('.table-name');
+                    if (oldNameSpan) oldNameSpan.textContent = oldTableName;
+
+                    if (orderBtnNext) grid.insertBefore(newTableDiv, orderBtnNext);
+                    else grid.appendChild(newTableDiv);
+                }
+            } else if (wasDineIn !== nowDineIn) {
+                // 內用↔外帶切換：DOM 結構差異大，整頁重載
+                window.location.href = '/Payments/Create';
+            }
+            // 同桌位不換：不需更新左側
         } catch {
             showAlert('修改失敗，請重試。', '❌ 錯誤');
         }
@@ -1421,8 +1541,15 @@
     }
 
         async function doSplitCheckout() {
-        const detailIds = [...document.querySelectorAll('.detail-check:checked')]
-            .map(c => parseInt(c.dataset.detailId));
+        const checked = [...document.querySelectorAll('.detail-check:checked')];
+        const detailIds = [...checked.map(c => parseInt(c.dataset.detailId))];
+
+        // 若勾選了套餐標題，自動把其子項目的 detailId 一併帶入
+        checked.filter(c => c.dataset.isSetMeal === 'true').forEach(c => {
+            const parentId = parseInt(c.dataset.detailId);
+            document.querySelectorAll(`#detailBody tr.child-item-row[data-parent-id="${parentId}"]`)
+                    .forEach(row => detailIds.push(parseInt(row.dataset.detailId)));
+        });
 
         if (!detailIds.length) {
             showAlert('請先勾選要結帳的餐點');
