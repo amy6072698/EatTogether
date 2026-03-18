@@ -469,10 +469,6 @@ function initEditModal() {
             if (pwdError) { showFieldError(pwd, pwdError); hasError = true; }
         }
 
-        if (!email?.value.trim()) { showFieldError(email, '請輸入 Email'); hasError = true; }
-        if (!phone?.value.trim()) { showFieldError(phone, '請輸入手機號碼'); hasError = true; }
-        if (!hireDate?.value.trim()) { showFieldError(hireDate, '請選擇到職日期'); hasError = true; }
-
         if (checkedRoles.length === 0) {
             let errEl = form.querySelector('#edit-role-error');
             if (!errEl) {
