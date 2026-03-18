@@ -16,6 +16,11 @@ namespace EatTogether.Models.ViewModels
 		[Display(Name = "關聯活動")]
 		public int? EventId { get; set; }
 
+		public string? CategoryName { get; set; }  
+
+		public string? EventName { get; set; }   
+
+
 		[Display(Name = "標題")]
 		public string Title { get; set; }
 
@@ -37,5 +42,5 @@ namespace EatTogether.Models.ViewModels
 		public bool IsPinned { get; set; }
 
 		public int Status { get; set; }
-
+	}
 }

@@ -11,6 +11,10 @@ namespace EatTogether.Models.DTOs
 
 		public int? EventId { get; set; }
 
+		public string? CategoryName { get; set; }
+
+		public string? EventName { get; set; }
+
 		public string Title { get; set; }
 
 		public string Description { get; set; }

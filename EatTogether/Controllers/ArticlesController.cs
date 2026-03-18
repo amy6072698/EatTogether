@@ -18,9 +18,19 @@ namespace EatTogether.Controllers
 			_webHostEnvironment = webHostEnvironment;
 		}
 
-		public IActionResult Index()
+		// GET: Articles/Index
+		[HttpGet]
+		public async Task<IActionResult> Index()
 		{
-			return View();
+			var data = await _service.GetAllForIndexAsync();
+			var viewModels = data.Select(dto => dto.ToArticleVm());
+
+			// 判斷是否為 Ajax 請求 (或是檢查 Accept Header)
+			if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+			{
+				return Json(viewModels); //回傳 JSON 格式
+			}
+			return View(viewModels); 
 		}
 
 

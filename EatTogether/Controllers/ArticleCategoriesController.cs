@@ -88,23 +88,6 @@ namespace EatTogether.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id)
 		{
-			//// 非 AJAX 請求直接導回列表
-			//if (Request.Headers["X-Requested-With"] != "XMLHttpRequest")
-			//	return RedirectToAction(nameof(Index));
-
-			//var dto = await _service.GetEditByIdAsync(id);
-
-			//if (dto == null)
-			//{
-			//	return NotFound();
-			//}
-
-			//var vm = dto.ToEditVm();	
-
-			//if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-			//	return PartialView("_EditPartial", vm);
-
-			//return View(vm);
 
 			var dto = await _service.GetEditByIdAsync(id);
 			if (dto == null) return NotFound();

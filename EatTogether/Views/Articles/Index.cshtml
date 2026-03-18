@@ -1,0 +1,145 @@
+﻿@model IEnumerable<EatTogether.Models.ViewModels.ArticleViewModel>
+@{
+    ViewData["Title"] = "文章列表";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>文章列表</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item active">文章列表</li>
+    </ol>
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0 font-weight-bold text-dark">
+                <i class="bi bi-table me-2"></i>文章列表
+            </h5>
+            <button type="button" id="btnCreate" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> 撰寫新文章
+            </button>
+        </div>
+        <div class="card-body w-100">
+            <table id="ArticleTable" class="table w-100">
+                <thead>
+                    <tr>
+                        <th>標題</th>
+                        <th>文章分類</th>
+                        <th>相關活動</th>
+                        <th>置頂</th>
+                        <th>上架日期</th>
+                        <th>狀態</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+            $(document).ready(function() {
+                    $('#ArticleTable').DataTable({
+                        ajax: {
+                            type: "GET",
+                            url: `/Articles/Index`,
+                            dataSrc: ""
+                        },
+                        dom: '<"d-flex justify-content-between"f>t<"d-flex justify-content-between mt-3"ip>',
+                        columns: [
+                            { data: "title", width: "35%" },
+                            { data: "categoryName", width: "10%"},
+                            { data: "eventName", width: "20%" },
+                            {
+                                data: "isPinned",
+                                width: "8%",
+                                className: "text-center", // 讓圖示居中
+                                render: function(data) {
+                                    // 啟用：黑底方框 + 打勾
+                                    if (data) {
+                                        return '<span class="p-1 px-2 rounded text-dark fs-4" title="啟用">' +'<i class="fa-solid fa-square-check"></i></span>';
+                                    }
+                                    // 停用：灰底方框 (無打勾)
+                                    else {
+                                        return '<span class="p-1 px-2 rounded text-secondary fs-4" title="停用">' +'<i class="fa-solid fa-square"></i></span>';
+                                    }
+                                }
+                            },
+                            { data: "publishDate", width: "12%",
+                                 render: function(data) {
+                                 if (!data) return '';
+                                 return data.substring(0, 10).replace(/-/g, '/');  // "2026/05/01"
+                             }
+                            },
+                            {
+                                data: "status",
+                                width: "8%",
+                                render: function(data) {
+                                    return data === 1
+                                        ? '<span class="badge bg-success">已發布</span>'
+                                        : '<span class="badge bg-secondary">草稿</span>';
+                                }
+                            },
+                            {
+                                data: "id",
+                                width: "7%",
+                                className: "text-center",
+                                orderable: false, //這一欄不需要排序功能
+                                render: function(data) {
+                                    return `
+                                  <button type="button" class="btn-details btn btn-outline-dark btn-sm px-3" data-id="${data}">
+                                            <i class="bi bi-pencil-square me-1"></i> 查看
+                                        </button>
+                                    `;
+                                }
+                            }
+                        ],
+                        fixedHeader:{
+                            header:true
+                        },
+                        paging: true,
+                        pageLength: 10,
+                        language: {
+                            url: '//cdn.datatables.net/plug-ins/1.13.1/i18n/zh-HANT.json',
+                        }
+                    })
+
+
+                    // 撰寫新文章按鈕
+                    $('#btnCreate').on('click', function() {
+                        window.location.href = '/Articles/Create';
+                    });
+
+                    // 查看按鈕（用事件委派，因為是動態產生的）
+                    $('#ArticleTable').on('click', '.btn-details', function() {
+                        var id = $(this).data('id');
+                        window.location.href = `/Articles/Details/${id}`;
+                    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+           })
+
+
+
+    </script>
+    
+}

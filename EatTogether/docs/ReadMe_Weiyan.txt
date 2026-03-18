@@ -319,7 +319,7 @@
 
 [working]add 文章列表頁面
 	url: /Articles/Index
-	[working]add ViewModel, Dto , 擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleViewModel class
 			Id, Title, CategoryName,  EventTitle, IsPinned, Status
 	
@@ -334,14 +334,14 @@
 
 			
 
-	[]modify ArticleRepository
+	[working]modify ArticleRepository
 		IArticleRepository interface
 			add IEnumerable<ArticleDto> GetAll()
 
-	[]modify 	ArticleService
+	[working]modify 	ArticleService
 			List<ArticleDto> GetAllForIndex()
 
-	[]modify ArticlesController
+	[working]modify ArticlesController
 		add IActionResult index action[Authorize]
 			Index.cshtml
 

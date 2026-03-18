@@ -51,5 +51,12 @@ namespace EatTogether.Models.Services
 				}).ToListAsync();
 		}
 
+		// 取得首頁列表
+		public async Task<List<ArticleDto>> GetAllForIndexAsync()
+		{
+			return await _repo.GetAllAsync();
+			
+		}
+
 	}
 }
