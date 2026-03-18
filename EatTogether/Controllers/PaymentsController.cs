@@ -86,5 +86,25 @@ namespace EatTogether.Controllers
                 isFullyPaid = (remaining == null || remaining.Items.Count == 0)
             });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrderTable(int preOrderId, int? tableId, bool inOrOut)
+        {
+            await _service.UpdateOrderTableAsync(preOrderId, tableId, inOrOut);
+            var vm = await _service.GetCheckoutDetailAsync(preOrderId);
+            return Json(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AvailableTables()
+        {
+            var vm = await _service.GetPaymentIndexAsync();
+            var tables = vm.Tables
+                .Where(t => !t.HasOrder && !t.IsOccupied)
+                .Select(t => new { t.TableId, t.TableName })
+                .ToList();
+            return Json(tables);
+        }
     }
 }

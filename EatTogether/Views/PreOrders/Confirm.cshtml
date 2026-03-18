@@ -375,27 +375,48 @@
             <div class="section-title">餐點明細</div>
             @for (int i = 0; i < Model.Items.Count; i++)
             {
-                <div class="item-row" id="row-@i">
+                bool isChild = Model.Items[i].ParentIndex.HasValue;
+                bool isSetMeal = Model.Items[i].IsSetMeal;
+                <div class="item-row" id="row-@i"
+                     style="@(isChild ? "padding-left:24px;background:#fafafa;border-left:3px solid #e67e22;margin-left:8px;border-radius:0 8px 8px 0;" : "")">
                     <input type="hidden" name="Items[@i].ProductId" value="@Model.Items[i].ProductId" />
                     <input type="hidden" name="Items[@i].ProductName" value="@Model.Items[i].ProductName" />
                     <input type="hidden" name="Items[@i].UnitPrice" value="@Model.Items[i].UnitPrice" />
                     <input type="hidden" id="qty-hidden-@i" name="Items[@i].Qty" value="@Model.Items[i].Qty" />
+                    <input type="hidden" name="Items[@i].IsSetMeal" value="@isSetMeal.ToString().ToLower()" />
+                    <input type="hidden" name="Items[@i].ParentIndex" value="@(Model.Items[i].ParentIndex?.ToString() ?? "")" />
 
                     <div>
-                        <div class="item-name">@Model.Items[i].ProductName</div>
-                        <div class="item-unit">NT$ @Model.Items[i].UnitPrice / 份</div>
+                        <div class="item-name" style="@(isChild ? "font-size:0.88rem;color:#666;" : "")">
+                            @(isChild ? "　" : "")@Model.Items[i].ProductName
+                            @if (isSetMeal)
+                            {
+                                <span style="font-size:0.72rem;background:#e67e22;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">套餐</span>
+                            }
+                        </div>
+                        @if (!isChild)
+                        {
+                            <div class="item-unit">NT$ @Model.Items[i].UnitPrice / 份</div>
+                        }
                     </div>
 
-                    <div style="display:flex;align-items:center;gap:16px">
-                        <div class="qty-wrap">
-                            <button type="button" class="qty-btn minus" onclick="changeQty(@i, -1)">−</button>
-                            <div class="qty-display" id="qty-display-@i">@Model.Items[i].Qty</div>
-                            <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
+                    @if (!isChild)
+                    {
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="qty-wrap">
+                                <button type="button" class="qty-btn minus" onclick="changeQty(@i, -1)">−</button>
+                                <div class="qty-display" id="qty-display-@i">@Model.Items[i].Qty</div>
+                                <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
+                            </div>
+                            <div class="item-price" id="subtotal-@i">
+                                NT$ @(Model.Items[i].Qty * Model.Items[i].UnitPrice)
+                            </div>
                         </div>
-                        <div class="item-price" id="subtotal-@i">
-                            NT$ @(Model.Items[i].Qty * Model.Items[i].UnitPrice)
-                        </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <div style="font-size:0.82rem;color:#aaa;">× @Model.Items[i].Qty</div>
+                    }
                 </div>
             }
         </div>

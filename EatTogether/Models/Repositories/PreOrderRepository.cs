@@ -10,6 +10,9 @@ namespace EatTogether.Models.Repositories
         Task<List<PreOrder>> GetByStatusAsync(int doneOrCancel); // string → int
         Task AddAsync(PreOrder preOrder);
         Task<int> CountTodayAsync(DateTime date);
+        Task<List<PreOrder>> GetActiveByTableIdAsync(int tableId);
+        Task CancelAllByTableIdAsync(int tableId);
+        Task SaveChangesAsync();
 
         // List
         Task UpdateDetailStatusAsync(int detailId, int status);
@@ -21,6 +24,10 @@ namespace EatTogether.Models.Repositories
         Task CancelUnservedDetailsAsync(int preOrderId);
         Task<PreOrder?> GetByIdAsync(int id);
         Task CancelEntireOrderAsync(int preOrderId);
+        Task UpdateDetailBilledAsync(int detailId);
+        Task<bool> HasUnbilledDetailsForTableAsync(int tableId);
+        Task<bool> AllNonCancelledDetailsBilledAsync(int preOrderId);
+        Task UpdateTableAsync(int preOrderId, int? tableId, bool inOrOut);
     }
 
     public class PreOrderRepository : IPreOrderRepository
@@ -28,7 +35,7 @@ namespace EatTogether.Models.Repositories
         private readonly EatTogetherDBContext _context;
         public PreOrderRepository(EatTogetherDBContext db) => _context = db;
 
-        // Create
+        // Create -----------------------------------------------------------------------------------------
         public async Task<List<PreOrder>> GetByStatusAsync(int doneOrCancel) =>
             await _context.PreOrders
                      .Include(p => p.PreOrderDetails)
@@ -47,7 +54,29 @@ namespace EatTogether.Models.Repositories
                 .CountAsync();
         }
 
-        // List
+        public async Task<List<PreOrder>> GetActiveByTableIdAsync(int tableId) =>
+            await _context.PreOrders
+                .Include(p => p.PreOrderDetails)
+                .Where(p => p.TableId == tableId && p.DoneOrCancel == 0)
+                .ToListAsync();
+
+        public async Task CancelAllByTableIdAsync(int tableId)
+        {
+            var orders = await GetActiveByTableIdAsync(tableId);
+            foreach (var order in orders)
+            {
+                order.DoneOrCancel = 2;
+                order.CancelledAt = DateTime.Now;
+                order.Note = string.IsNullOrEmpty(order.Note) ? "取消" : order.Note + "／取消";
+                foreach (var detail in order.PreOrderDetails)
+                    detail.DoneOrCancel = 2;
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+
+        // List -----------------------------------------------------------------------------------------
         public async Task UpdateDetailStatusAsync(int detailId, int status)
         {
             var detail = await _context.PreOrderDetails.FindAsync(detailId);
@@ -77,7 +106,7 @@ namespace EatTogether.Models.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Payment
+        // Payment -----------------------------------------------------------------------------------------
         public async Task CancelUnservedDetailsAsync(int preOrderId)
         {
             var details = await _context.PreOrderDetails
@@ -97,7 +126,7 @@ namespace EatTogether.Models.Repositories
                      .Include(p => p.Coupon)
                      .Include(p => p.Payments)
                      .FirstOrDefaultAsync(p => p.Id == id);
-        
+
         public async Task CancelEntireOrderAsync(int preOrderId)
         {
             var order = await _context.PreOrders
@@ -107,12 +136,46 @@ namespace EatTogether.Models.Repositories
             if (order == null) return;
 
             order.DoneOrCancel = 2; // Cancelled
+            order.CancelledAt = DateTime.Now;
+            order.Note = string.IsNullOrEmpty(order.Note) ? "取消" : order.Note + "／取消";
 
             foreach (var detail in order.PreOrderDetails)
             {
                 detail.DoneOrCancel = 2; // Cancelled
             }
 
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateDetailBilledAsync(int detailId)
+        {
+            var detail = await _context.PreOrderDetails.FindAsync(detailId);
+            if (detail is null) return;
+            detail.IsBilled = true;
+            await _context.SaveChangesAsync();
+        }
+        public async Task<bool> HasUnbilledDetailsForTableAsync(int tableId)
+        {
+            return await _context.PreOrderDetails
+                .AnyAsync(d => d.PreOrder.TableId == tableId
+                            && !d.IsBilled
+                            && d.DoneOrCancel != 2);
+        }
+
+        public async Task<bool> AllNonCancelledDetailsBilledAsync(int preOrderId)
+        {
+            var details = await _context.PreOrderDetails
+                .Where(d => d.PreOrderId == preOrderId && d.DoneOrCancel != 2)
+                .ToListAsync();
+
+            return details.Any() && details.All(d => d.IsBilled);
+        }
+
+        public async Task UpdateTableAsync(int preOrderId, int? tableId, bool inOrOut)
+        {
+            var order = await _context.PreOrders.FindAsync(preOrderId);
+            if (order == null) return;
+            order.TableId = tableId;
+            order.InOrOut = inOrOut;
             await _context.SaveChangesAsync();
         }
     }
