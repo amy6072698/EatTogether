@@ -64,6 +64,10 @@ namespace EatTogether.Models.ViewModels
         [System.ComponentModel.DataAnnotations.Display(Name = "增加限量張數")]
         public int? AddLimitCount { get; set; }
 
+        // 修改有效期間
+        [Display(Name = "新結束日期")]
+        public DateTime? NewEndDate { get; set; }
+
         public bool IsExpired => EndDate.HasValue && EndDate.Value < DateTime.Now;
         public bool IsLimitHit => LimitCount.HasValue && ReceivedCount >= LimitCount.Value;
     }

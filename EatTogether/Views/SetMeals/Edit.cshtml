@@ -110,10 +110,10 @@
                     <div class="col-lg-4 border-start border-light-subtle">
                         <div class="ps-lg-4 text-center">
                             <label class="form-label fw-bold text-secondary d-block text-start mb-3">套餐圖片</label>
-                            
-                            <div id="imageArea" class="position-relative border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center" 
+
+                            <div id="imageArea" class="position-relative border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center"
                                  style="aspect-ratio: 4/3; cursor: pointer;" onclick="document.getElementById('imageInput').click()">
-                                
+
                                 <div id="placeholderContent" class="text-center" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none")">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                                     <p class="text-secondary mb-1">點擊變更圖片</p>
@@ -121,7 +121,7 @@
                                 </div>
 
                                 <img id="previewImg" src="@(Model.ImageUrl ?? "")" class="img-fluid" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none;" : "display:block;") width:100%; height:100%; object-fit: cover;" />
-                                
+
                                 <div id="editBadge" class="position-absolute bottom-0 end-0 p-3">
                                     <span class="badge bg-dark bg-opacity-75 p-2 rounded-circle shadow-sm">
                                         <i class="fas fa-pencil-alt"></i>
@@ -131,7 +131,7 @@
 
                             <input type="file" id="imageInput" class="form-control d-none" accept="image/*"
                                    onchange="handleFileSelect(this)" />
-                            
+
                             <div class="mt-4 p-3 bg-light rounded-3 border-0 small text-start text-muted">
                                 <div class="mb-1">建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
                                 @if (Model.UpdatedAt.HasValue)
@@ -163,7 +163,8 @@
         <div class="card-body p-4">
             <div id="itemAlertBox"></div>
             <div class="row justify-content-center">
-                <div class="col-lg-10"> <!-- Adjust col-lg-x and offset-lg-x as needed -->
+                <div class="col-lg-10">
+                    <!-- Adjust col-lg-x and offset-lg-x as needed -->
                     <div id="category-slots-container">
                         @foreach (var categoryVm in Model.CategoriesWithDishes)
                         {
@@ -233,28 +234,31 @@
 
 <!-- Save Confirmation Modal -->
 <div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="saveConfirmModalLabel">確認儲存套餐餐點設定</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>您即將儲存以下套餐餐點設定：</p>
-        <div id="saveConfirmSummary" class="alert alert-light border small" style="max-height: 300px; overflow-y: auto;"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-primary" id="confirmSaveItemsBtn">確認儲存</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveConfirmModalLabel">確認儲存套餐餐點設定</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您即將儲存以下套餐餐點設定：</p>
+                <div id="saveConfirmSummary" class="alert alert-light border small" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmSaveItemsBtn">確認儲存</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <style>
-        #imageArea:hover { border-color: var(--bs-primary) !important; background-color: #f0f7ff !important; }
+        #imageArea:hover {
+            border-color: var(--bs-primary) !important;
+            background-color: #f0f7ff !important;
+        }
     </style>
 }
 
@@ -278,7 +282,7 @@
         }
 
         // Old dual-list box functions removed
-        
+
         // Helper function to toggle optional fields for a category
         function toggleCategoryOptionalFields(categoryId) {
             const categorySlot = document.querySelector(`.category-slot[data-category-id="${categoryId}"]`);
@@ -342,7 +346,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             // New UI Initialization
             const categoriesWithDishes = @Html.Raw(Json.Serialize(Model.CategoriesWithDishes));
-            
+
             categoriesWithDishes.forEach(categoryVm => {
                 const categorySlot = document.querySelector(`.category-slot[data-category-id="${categoryVm.categoryId}"]`);
                 const dishSelectionRowsContainer = categorySlot.querySelector('.dish-selection-rows');
@@ -365,7 +369,7 @@
                     const categorySlot = document.querySelector(`.category-slot[data-category-id="${categoryId}"]`);
                     const dishSelectionRowsContainer = categorySlot.querySelector('.dish-selection-rows');
                     const categorySelectOptions = getCategorySelectOptions(categoryId, categoriesWithDishes);
-                    
+
                     const rowHtml = renderDishSelectionRow(categoryId, categorySelectOptions);
                     dishSelectionRowsContainer.insertAdjacentHTML('beforeend', rowHtml);
                 });
@@ -434,7 +438,7 @@
                     const dishId = parseInt(dishIdSelect.value);
                     const quantity = parseInt(quantityInput.value);
                     const displayOrder = parseInt(displayOrderInput.value);
-                    
+
                     const selectedOption = dishIdSelect.options[dishIdSelect.selectedIndex];
                     const dishName = selectedOption.text.split('(')[0].trim(); // Extract just the name
                     const dishPrice = selectedOption.dataset.price || 0;
@@ -477,7 +481,7 @@
             if (!isValid) {
                 return; // Stop if any validation failed
             }
-            
+
             if (allItemsToSave.length === 0) {
                 summaryHtml = '<p>您沒有選擇任何餐點，套餐內容將被清空。</p>';
             }
@@ -509,7 +513,7 @@
                 }
             };
         }
-        
+
         function showAlert(boxId, type, message) {
             const alertBox = document.getElementById(boxId);
             alertBox.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">

@@ -31,7 +31,7 @@ namespace EatTogether.Models.Repositories
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
 				IsActive = true,
-				CreatedAt = DateTime.UtcNow
+				CreatedAt = DateTime.Now
 			};
 			_context.Dishes.Add(dish);
 			await _context.SaveChangesAsync();
@@ -60,8 +60,9 @@ namespace EatTogether.Models.Repositories
 				   EndDate = d.EndDate,
 				   CreatedAt = d.CreatedAt,
 				   UpdatedAt = d.UpdatedAt,
-				   DisplayOrder = 0 // 資料庫無此欄位，回傳預設值
+				   DisplayOrder = 0 // 資料庫無此欄位
 			   })
+               .OrderByDescending(d => d.CreatedAt)
 			   .ToListAsync();
 		}
 
@@ -91,6 +92,7 @@ namespace EatTogether.Models.Repositories
 				   UpdatedAt = d.UpdatedAt,
 				   DisplayOrder = 0 // 資料庫無此欄位
 			   })
+               .OrderByDescending(d => d.CreatedAt)
 			   .ToListAsync();
 		}
 

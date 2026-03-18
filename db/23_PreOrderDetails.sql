@@ -15784,3 +15784,18 @@ UPDATE PreOrders
 SET CancelledAt = DATEADD(MINUTE, 30, OrderAt)
 WHERE DoneOrCancel = 2
   AND CancelledAt IS NULL;
+
+--------------------------------------------------------------------------
+  -- 先全部歸零
+UPDATE [dbo].[PreOrderDetails]
+SET [IsBilled] = 0;
+GO
+
+-- 餐點 DoneOrCancel=1 且主單 DoneOrCancel=1 → 已結帳
+UPDATE pd
+SET pd.[IsBilled] = 1
+FROM [dbo].[PreOrderDetails] pd
+INNER JOIN [dbo].[PreOrders] po ON pd.[PreOrderId] = po.[Id]
+WHERE pd.[DoneOrCancel] = 1
+  AND po.[DoneOrCancel] = 1;
+GO

@@ -707,37 +707,52 @@
 
         ['create', 'edit'].forEach(panel => {
             const area = document.getElementById(`${panel}_imageArea`);
+            if (!area) return;
             area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('border-primary'); });
             area.addEventListener('dragleave', () => area.classList.remove('border-primary'));
             area.addEventListener('drop', e => {
                 e.preventDefault();
                 area.classList.remove('border-primary');
-                if (e.dataTransfer.files[0]) openCropper(e.dataTransfer.files[0], panel);
+                if (e.dataTransfer.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = evt => openCropperWithUrl(evt.target.result, panel);
+                    reader.readAsDataURL(e.dataTransfer.files[0]);
+                }
             });
         });
+        
+        function editOrUploadCategoryImage() {
+            const previewImg = document.getElementById("edit_previewImg");
+            if (previewImg.src && !previewImg.classList.contains('d-none')) {
+                openCropperWithUrl(previewImg.src, 'edit');
+            } else {
+                document.getElementById('edit_imageInput').click();
+            }
+        }
+        
+        document.getElementById('edit_imageArea').onclick = editOrUploadCategoryImage;
+
 
         function handleFileSelect(input, panel) {
             if (!input.files || !input.files[0]) return;
-            openCropper(input.files[0], panel);
+            const reader = new FileReader();
+            reader.onload = e => openCropperWithUrl(e.target.result, panel);
+            reader.readAsDataURL(input.files[0]);
             input.value = "";
         }
 
-        function openCropper(file, panel) {
+        function openCropperWithUrl(url, panel) {
             activePanelId = panel;
-            const reader  = new FileReader();
-            reader.onload = e => {
-                const img = document.getElementById("cropperImage");
-                img.src   = e.target.result;
-                const cropModal = new bootstrap.Modal(document.getElementById("cropperModal"));
-                cropModal.show();
-                document.getElementById("cropperModal").addEventListener("shown.bs.modal", () => {
-                    if (cropper) cropper.destroy();
-                    cropper = new Cropper(img, { aspectRatio: 4/3, viewMode: 1, autoCropArea: 1 });
-                }, { once: true });
-            };
-            reader.readAsDataURL(file);
+            const img = document.getElementById("cropperImage");
+            img.src = url;
+            const cropModal = new bootstrap.Modal(document.getElementById("cropperModal"));
+            cropModal.show();
+            document.getElementById("cropperModal").addEventListener("shown.bs.modal", () => {
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(img, { aspectRatio: 4/3, viewMode: 1, autoCropArea: 1 });
+            }, { once: true });
         }
-
+        
         function confirmCrop() {
             if (!cropper) return;
             const base64 = cropper.getCroppedCanvas({ width: 800, height: 600 }).toDataURL("image/jpeg", 0.9);
@@ -755,12 +770,17 @@
             clearBtn.style.display = "";
 
             bootstrap.Modal.getInstance(document.getElementById("cropperModal")).hide();
-            cropper.destroy();
-            cropper = null;
+            if (cropper) { cropper.destroy(); cropper = null; }
         }
 
         function cancelCrop() {
-            bootstrap.Modal.getInstance(document.getElementById("cropperModal")).hide();
+            const cropModalEl = document.getElementById("cropperModal");
+            if (cropModalEl) {
+                const modalInstance = bootstrap.Modal.getInstance(cropModalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
             if (cropper) { cropper.destroy(); cropper = null; }
         }
 
@@ -823,7 +843,7 @@
             const editBadge   = document.getElementById("edit_editBadge");
             const clearBtn    = document.getElementById("edit_clearBtn");
 
-            if (imageUrl) {
+            if (imageUrl && imageUrl.trim() !== '') {
                 previewImg.src = imageUrl;
                 previewImg.classList.remove("d-none");
                 placeholder.classList.add("d-none");

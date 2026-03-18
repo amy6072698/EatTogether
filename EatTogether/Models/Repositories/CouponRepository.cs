@@ -98,6 +98,14 @@ namespace EatTogether.Models.Repositories
             coupon.IsDisabled = false;
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateEndDateAsync(int id, DateTime? newEndDate)
+        {
+            var coupon = await _context.Coupons.FindAsync(id);
+            if (coupon == null) return;
+            coupon.EndDate = newEndDate;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public class MemberCouponRepository : IMemberCouponRepository

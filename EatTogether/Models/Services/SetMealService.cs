@@ -34,6 +34,10 @@ namespace EatTogether.Models.Services
 		public async Task UpdateAsync(Setmealdto dto)
 		{
 			await _repo.UpdateAsync(dto);
+			if (dto.Items != null)
+			{
+				await _repo.UpdateItemsAsync(dto.Id, dto.Items);
+			}
 		}
 
 		public async Task DisableAsync(int id)

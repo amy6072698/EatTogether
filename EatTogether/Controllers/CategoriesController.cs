@@ -23,11 +23,41 @@ namespace EatTogether.Controllers
 		public async Task<IActionResult> Index()
 		{
 			var dtos = await _categoryService.GetAllAsync();
-			var vms = dtos.Select(d => d.ToViewModel()).ToList();
-			
+			var vms = dtos.Select(d =>
+			{
+				var vm = d.ToViewModel();
+				if (string.IsNullOrEmpty(vm.ImageUrl))
+				{
+					string safeName = vm.CategoryName;
+					foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+					{
+						safeName = safeName.Replace(c, '_');
+					}
+
+					var baseImagesFolderPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories");
+
+					string jpgFileName = $"{safeName}.jpg";
+					string jpgPath = System.IO.Path.Combine(baseImagesFolderPath, jpgFileName);
+					if (System.IO.File.Exists(jpgPath))
+					{
+						vm.ImageUrl = "/images/categories/" + jpgFileName;
+					}
+					else
+					{
+						string pngFileName = $"{safeName}.png";
+						string pngPath = System.IO.Path.Combine(baseImagesFolderPath, pngFileName);
+						if (System.IO.File.Exists(pngPath))
+						{
+							vm.ImageUrl = "/images/categories/" + pngFileName;
+						}
+					}
+				}
+				return vm;
+			}).ToList();
+
 			// 準備下拉選單給 Modal 使用
 			ViewBag.ParentCategoryOptions = await GetParentCategoryOptionsAsync();
-			
+
 			return View(vms);
 		}
 
@@ -43,6 +73,10 @@ namespace EatTogether.Controllers
 				);
 				return BadRequest(errors);
 			}
+
+            // New logic to set DisplayOrder
+            var allCategories = await _categoryService.GetAllAsync();
+            vm.DisplayOrder = allCategories.Any() ? allCategories.Min(c => c.DisplayOrder) - 1 : 1;
 
 			await _categoryService.CreateAsync(vm.ToDto());
 			return Ok(new { message = "新增成功" });
@@ -137,34 +171,28 @@ namespace EatTogether.Controllers
 			return Ok(new { imageUrl });
 		}
 
-		// ── 私有存檔方法（與 SetMealsController 邏輯相同）──
+		// ── 私有存檔方法（根據使用者要求修改）──
 		private async Task<string> SaveCategoryImageAsync(string base64Data, string fileNamePrefix)
 		{
 			if (string.IsNullOrEmpty(base64Data)) return null;
-
 			var base64 = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
 			var bytes = Convert.FromBase64String(base64);
-
-			// 以分類名稱命名檔案
 			string fileName = $"{fileNamePrefix}.jpg";
 			foreach (char c in Path.GetInvalidFileNameChars())
 				fileName = fileName.Replace(c, '_');
-
 			var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "categories");
 			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
-			var savePath = Path.Combine(folderPath, fileName);
-			await System.IO.File.WriteAllBytesAsync(savePath, bytes);
+			// 刪除同名的舊檔（.png / .jpeg）
+			var baseName = Path.GetFileNameWithoutExtension(fileName);
+			foreach (var ext in new[] { ".png", ".jpeg" })
+			{
+				var oldFile = Path.Combine(folderPath, baseName + ext);
+				if (System.IO.File.Exists(oldFile)) System.IO.File.Delete(oldFile);
+			}
 
+			await System.IO.File.WriteAllBytesAsync(Path.Combine(folderPath, fileName), bytes);
 			return "/images/categories/" + fileName;
 		}
-		//[HttpPost]
-		//public async Task<IActionResult> UpdateOrder([FromBody] UpdateOrderRequest request)
-		//{
-		//	if (request?.OrderedIds == null || !request.OrderedIds.Any())
-		//		return BadRequest();
-		//	await _categoryService.UpdateOrderAsync(request.OrderedIds);
-		//	return Ok();
-		//}
 	}
 }

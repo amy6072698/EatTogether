@@ -23,6 +23,8 @@ public partial class PreOrderDetail
 
     public int DoneOrCancel { get; set; }
 
+    public bool IsBilled { get; set; }
+
     public virtual PreOrder PreOrder { get; set; }
 
     public virtual Product Product { get; set; }
