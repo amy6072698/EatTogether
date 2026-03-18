@@ -448,6 +448,10 @@ public partial class EatTogetherDBContext : DbContext
                 .HasMaxLength(50);
             entity.Property(e => e.Qty).HasDefaultValue(1);
 
+            entity.HasOne(d => d.ParentDetail).WithMany(p => p.InverseParentDetail)
+                .HasForeignKey(d => d.ParentDetailId)
+                .HasConstraintName("FK_PreOrderDetails_Parent");
+
             entity.HasOne(d => d.PreOrder).WithMany(p => p.PreOrderDetails)
                 .HasForeignKey(d => d.PreOrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

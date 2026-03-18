@@ -6,5 +6,8 @@ namespace EatTogether.Models.Repositories
     {
         Task<IEnumerable<ProductDto>> GetAllAsync();
         Task<ProductDto?> GetByIdAsync(int id);
+
+        // 12
+        Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId);
     }
 }

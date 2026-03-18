@@ -6,5 +6,7 @@
         public string ProductName { get; set; }
         public int Qty { get; set; }
         public decimal UnitPrice { get; set; }
+        public bool IsSetMeal { get; set; }
+        public int? ParentIndex { get; set; }
     }
 }

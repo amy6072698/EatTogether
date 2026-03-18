@@ -4,6 +4,10 @@
     ViewData["Title"] = "待處理訂單";
     var expanded = Model.Take(3).ToList();
     var listed = Model.Skip(3).ToList();
+    // TODO: 登入系統完成後，改成從 Session 或 ClaimsPrincipal 讀取
+    // 有「訂單管理（含結帳）FunctionId=4」權限：店長、副店長、收銀員
+    // 內場廚師、工讀生、外場服務生不可整單取消
+    bool canCancelOrder = true; // 暫時以店長身份模擬
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -22,8 +26,8 @@
     }
 
     /* ════════════════════════════════
-               整體佈局：全螢幕，不留白
-            ════════════════════════════════ */
+                   整體佈局：全螢幕，不留白
+                ════════════════════════════════ */
     .board {
         display: flex;
         flex-direction: column;
@@ -66,8 +70,8 @@
     }
 
     /* ════════════════════════════════
-               右側：前3筆展開卡片
-            ════════════════════════════════ */
+                   右側：前3筆展開卡片
+                ════════════════════════════════ */
     .expanded-area {
         display: flex;
         flex-direction: row-reverse; /* 第1筆最右，第3筆最左 */
@@ -385,8 +389,8 @@
         }
 
     /* ════════════════════════════════
-               左側：其餘訂單 List（可捲動）
-            ════════════════════════════════ */
+                   左側：其餘訂單 List（可捲動）
+                ════════════════════════════════ */
     .list-area {
         flex: 1;
         overflow-y: auto;
@@ -589,7 +593,10 @@
                         }
                     </div>
                     <div class="card-cancel-bar">
-                        <button class="btn-cancel-order" onclick="cancelOrder(event, @order.PreOrderId)">✕ 整單取消</button>
+                        @if (canCancelOrder)
+                        {
+                            <button class="btn-cancel-order" onclick="cancelOrder(event, @order.PreOrderId)">✕ 整單取消</button>
+                        }
                     </div>
                 </div>
             }

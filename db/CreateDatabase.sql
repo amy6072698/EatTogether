@@ -413,10 +413,14 @@ CREATE TABLE [dbo].[PreOrderDetails](
 	[SubTotal] [int] NOT NULL,
 	[DoneOrCancel] [int] NOT NULL,
 	[IsBilled] [bit] NOT NULL DEFAULT 0,
+	[IsSetMeal] [bit] NOT NULL DEFAULT 0,
+    [ParentDetailId] [int] NULL,
  CONSTRAINT [PK_PreOrderDetails] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+CONSTRAINT [FK_PreOrderDetails_Parent]
+        FOREIGN KEY ([ParentDetailId]) REFERENCES [dbo].[PreOrderDetails]([Id])
 ) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[PreOrders]    Script Date: 2026/3/11 下午 10:31:03 ******/

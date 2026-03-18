@@ -13,6 +13,8 @@ namespace EatTogether.Models.Services
         Task<List<SelectListItem>> GetTableOptionsAsync(int? includeTableId = null);
         Task<List<CreatePreOrderItemViewModel>> GetMenuItemsAsync();
         Task<CouponValidateDto> ValidateCouponAsync(string code, int originalAmount);
+        Task CancelAllByTableAsync(int tableId);
+        Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId);
 
         // PreOrdersList
         Task<List<PreOrderListItemViewModel>> GetPendingPreOrdersAsync();
@@ -32,6 +34,7 @@ namespace EatTogether.Models.Services
         Task CancelUnservedByTableAsync(int tableId);
         Task<int> CheckoutByTableAsync(int tableId, string payMethod);
         Task<int> SplitCheckoutAsync(List<int> detailIds, string payMethod);
+        Task UpdateOrderTableAsync(int preOrderId, int? newTableId, bool inOrOut);
     }
     public class OrderService : IOrderService
     {
@@ -59,8 +62,22 @@ namespace EatTogether.Models.Services
         public async Task<string> CreatePreOrderAsync(CreatePreOrderDto dto)
         {
             var orderNumber = await GenerateOrderNumberAsync();
-            var originalAmount = dto.Items.Sum(i => i.Qty * i.UnitPrice);
+            var originalAmount = dto.Items
+                .Where(i => !i.ParentIndex.HasValue) // 只算主項目金額（套餐標題 + 單品），子項目不計
+                .Sum(i => i.Qty * i.UnitPrice);
             var discountAmount = dto.DiscountAmount;
+
+            // 第一階段：建立 detail 列表
+            var details = dto.Items.Select(i => new PreOrderDetail
+            {
+                ProductId = i.ProductId,
+                ProductName = i.ProductName,
+                Qty = i.Qty,
+                UnitPrice = (int)i.UnitPrice,
+                SubTotal = i.ParentIndex.HasValue ? 0 : (int)(i.Qty * i.UnitPrice),
+                IsSetMeal = i.IsSetMeal,
+                DoneOrCancel = 0
+            }).ToList();
 
             var preOrder = new PreOrder
             {
@@ -75,17 +92,25 @@ namespace EatTogether.Models.Services
                 Note = dto.Note,
                 PayMethod = dto.PayMethod,
                 DoneOrCancel = PreOrderStatus.Pending,
-                PreOrderDetails = dto.Items.Select(i => new PreOrderDetail
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.ProductName,
-                    Qty = i.Qty,
-                    UnitPrice = (int)i.UnitPrice,
-                    SubTotal = (int)(i.Qty * i.UnitPrice)
-                }).ToList()
+                PreOrderDetails = details
             };
 
-            await _preOrderRepo.AddAsync(preOrder);
+            await _preOrderRepo.AddAsync(preOrder); // 這裡 SaveChanges，details 的 Id 有值了
+
+            // 第二階段：設定子項目的 ParentDetailId
+            bool hasChildren = false;
+            for (int i = 0; i < dto.Items.Count; i++)
+            {
+                if (dto.Items[i].ParentIndex.HasValue)
+                {
+                    details[i].ParentDetailId = details[dto.Items[i].ParentIndex.Value].Id;
+                    hasChildren = true;
+                }
+            }
+
+            if (hasChildren)
+                await _preOrderRepo.SaveChangesAsync();
+
             return orderNumber;
         }
 
@@ -136,7 +161,8 @@ namespace EatTogether.Models.Services
                     ProductId = p.Id,
                     ProductName = name,
                     UnitPrice = (int)(price ?? 0),
-                    Qty = 0
+                    Qty = 0,
+                    IsSetMeal = p.ProductType == "SetMeal"
                 });
             }
             return result;
@@ -173,6 +199,15 @@ namespace EatTogether.Models.Services
                     : $"✅ 打 {(100 - coupon.DiscountValue) / 10.0:0.#} 折已套用！"
             };
         }
+
+        public async Task CancelAllByTableAsync(int tableId)
+        {
+            await _preOrderRepo.CancelAllByTableIdAsync(tableId);
+            await _tableRepo.UpdateStatusAsync(tableId, 0);
+        }
+
+        public async Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId) => 
+            await _productRepo.GetSetMealItemsAsync(setMealId);
 
         // ── PreOrdersList ──────────────────────────────────────────────────
         public async Task<List<PreOrderListItemViewModel>> GetPendingPreOrdersAsync()
@@ -650,6 +685,22 @@ namespace EatTogether.Models.Services
             }
 
             return order.Id;
+        }
+
+        public async Task UpdateOrderTableAsync(int preOrderId, int? newTableId, bool inOrOut)
+        {
+            var order = await _preOrderRepo.GetByIdAsync(preOrderId);
+            if (order == null) return;
+
+            // 原本是內用 → 把舊桌位改回空桌
+            if (order.TableId.HasValue)
+                await _tableRepo.UpdateStatusAsync(order.TableId.Value, 0);
+
+            // 新桌位是內用 → 把新桌位改為用餐中
+            if (newTableId.HasValue)
+                await _tableRepo.UpdateStatusAsync(newTableId.Value, 1);
+
+            await _preOrderRepo.UpdateTableAsync(preOrderId, newTableId, inOrOut);
         }
     }
 }

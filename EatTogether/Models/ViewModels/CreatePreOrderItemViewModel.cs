@@ -11,5 +11,7 @@ namespace EatTogether.Models.ViewModels
         public int Qty { get; set; }
 
         public int UnitPrice { get; set; }
+        public bool IsSetMeal { get; set; }
+        public int? ParentIndex { get; set; }
     }
 }

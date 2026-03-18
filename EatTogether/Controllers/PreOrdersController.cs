@@ -176,5 +176,20 @@ namespace EatTogether.Controllers
             var result = await _service.ValidateCouponAsync(code, originalAmount);
             return Json(result);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAllByTable(int tableId)
+        {
+            await _service.CancelAllByTableAsync(tableId);
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSetMealItems(int setMealId)
+        {
+            var groups = await _service.GetSetMealItemsAsync(setMealId);
+            return Json(groups);
+        }
     }
 }

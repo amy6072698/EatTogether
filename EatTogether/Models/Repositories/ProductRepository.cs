@@ -61,5 +61,35 @@ namespace EatTogether.Models.Repositories
                 })
                 .FirstOrDefaultAsync();
         }
+
+        // 12
+        public async Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId)
+        {
+            var items = await _context.SetMealItems
+                .Include(s => s.Dish)
+                .Where(s => s.SetMealId == setMealId)
+                .OrderBy(s => s.DisplayOrder)
+                .ToListAsync();
+
+            // 固定項目（IsOptional=0）放 GroupNo=0
+            var result = items
+                .GroupBy(s => s.IsOptional ? s.OptionGroupNo ?? 0 : -1)
+                .OrderBy(g => g.Key)
+                .Select(g => new SetMealItemGroupDto
+                {
+                    GroupNo = g.Key,
+                    PickLimit = g.First().PickLimit ?? g.Count(),
+                    IsOptional = g.First().IsOptional,
+                    Options = g.Select(s => new SetMealItemOptionDto
+                    {
+                        DishId = s.DishId,
+                        DishName = s.Dish.DishName,
+                        Qty = s.Quantity
+                    }).ToList()
+                })
+                .ToList();
+
+            return result;
+        }
     }
 }

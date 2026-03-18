@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "結帳";
-    var takeOrders = Model.TakeoutOrders;  // ← 宣告在這裡
+    var takeOrders = Model.TakeoutOrders;
+    // TODO: 登入系統完成後，改成從 Session 或 ClaimsPrincipal 讀取
+    // 有「訂單管理（含結帳）FunctionId=4」權限：店長、副店長、收銀員
+    bool canCancelOrder = true; // 暫時以店長身份模擬
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -496,7 +499,181 @@
         background: #d1f5e0;
         color: #1a6b3a;
     }
+
+    /* ── Custom Confirm Modal ── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 20px;
+        padding: 36px 32px 28px;
+        width: 320px;
+        max-width: 90vw;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+        font-family: 'Noto Sans TC', sans-serif;
+        text-align: center;
+        animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    @@keyframes modalIn {
+        from {
+            transform: scale(0.85);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .modal-warning-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 18px;
+    }
+
+    .modal-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .modal-body {
+        font-size: 0.88rem;
+        color: #777;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .modal-btn-cancel {
+        flex: 1;
+        padding: 11px 0;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        color: #555;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+        .modal-btn-cancel:hover {
+            border-color: #aaa;
+            background: #f8f8f8;
+        }
+
+    .modal-btn-confirm {
+        flex: 1;
+        padding: 11px 0;
+        border: none;
+        border-radius: 10px;
+        background: #c0392b;
+        color: #fff;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .modal-btn-confirm:hover {
+            background: #a93226;
+        }
 </style>
+
+<!-- Edit Order Modal (換桌／內外帶) -->
+<div class="modal-overlay" id="editOrderModal">
+    <div class="modal-box" style="width:380px;">
+        <div class="modal-title">✏️ 修改訂單資訊</div>
+        <div style="margin-bottom:20px;">
+            <div style="font-size:0.8rem;font-weight:700;color:#bbb;letter-spacing:0.06em;margin-bottom:8px;">用餐方式</div>
+            <div style="display:flex;gap:8px;">
+                <button id="editBtnDine" onclick="setEditMode(true)"
+                        style="flex:1;padding:9px;border:2px solid #2c3e50;border-radius:8px;
+                               background:#eaf0fb;color:#2c3e50;font-family:inherit;
+                               font-weight:700;font-size:0.88rem;cursor:pointer;">
+                    🪑 內用
+                </button>
+                <button id="editBtnTakeout" onclick="setEditMode(false)"
+                        style="flex:1;padding:9px;border:2px solid #ddd;border-radius:8px;
+                               background:#fff;color:#888;font-family:inherit;
+                               font-weight:700;font-size:0.88rem;cursor:pointer;">
+                    🥡 外帶
+                </button>
+            </div>
+        </div>
+        <div id="editTableSection" style="margin-bottom:20px;">
+            <div style="font-size:0.8rem;font-weight:700;color:#bbb;letter-spacing:0.06em;margin-bottom:8px;">桌位</div>
+            <select id="editTableSelect"
+                    style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;
+                           font-family:inherit;font-size:0.92rem;outline:none;
+                           background:#fff;cursor:pointer;">
+                <option value="">載入中...</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="document.getElementById('editOrderModal').classList.remove('show')">取消</button>
+            <button class="modal-btn-confirm" onclick="submitEditOrder()">確認修改</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="customConfirmModal">
+    <div class="modal-box">
+        <svg class="modal-warning-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 4L52 48H4L28 4Z" fill="#f39c12" stroke="#e67e22" stroke-width="2" stroke-linejoin="round" />
+            <rect x="26" y="20" width="4" height="14" rx="2" fill="#fff" />
+            <rect x="26" y="37" width="4" height="4" rx="2" fill="#fff" />
+        </svg>
+        <div class="modal-title" id="modalTitle">確認操作</div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" id="modalCancelBtn">返回</button>
+            <button class="modal-btn-confirm" id="modalConfirmBtn">確認</button>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Modal (單一確定) -->
+<div class="modal-overlay" id="customAlertModal">
+    <div class="modal-box">
+        <svg class="modal-warning-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 4L52 48H4L28 4Z" fill="#f39c12" stroke="#e67e22" stroke-width="2" stroke-linejoin="round" />
+            <rect x="26" y="20" width="4" height="14" rx="2" fill="#fff" />
+            <rect x="26" y="37" width="4" height="4" rx="2" fill="#fff" />
+        </svg>
+        <div class="modal-title" id="alertTitle">提示</div>
+        <div class="modal-body" id="alertBody"></div>
+        <div class="modal-actions">
+            <button class="modal-btn-confirm" style="flex:unset; padding:11px 40px;"
+                    onclick="document.getElementById('customAlertModal').classList.remove('show')">
+                確定
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="layout">
 
@@ -573,21 +750,44 @@
             <div class="right-header">
                 <div>
                     <div class="right-title" id="rightTitle">-</div>
-                    <div class="right-subtitle" id="rightSubtitle">-</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="right-subtitle" id="rightSubtitle">-</div>
+                        <button type="button" onclick="openEditOrderModal()"
+                                style="padding:3px 10px;border:1px solid #1a77c9;border-radius:6px;
+                                       background:#fff;color:#1a77c9;font-family:inherit;
+                                       font-weight:600;font-size:0.75rem;cursor:pointer;
+                                       transition:all 0.15s;"
+                                onmouseover="this.style.background='#eaf0fb'"
+                                onmouseout="this.style.background='#fff'">
+                            ✏️ 更換桌位
+                        </button>
+                    </div>
                 </div>
-                <button type="button" id="splitModeBtn"
-                        style="padding:7px 16px;border:2px solid #1a77c9;border-radius:8px;
-                   background:#fff;color:#1a77c9;font-family:inherit;
-                   font-weight:700;font-size:0.85rem;cursor:pointer;"
-                        onclick="toggleSplitMode()">
-                    拆單結帳
-                </button>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    @if (canCancelOrder)
+                    {
+                        <button type="button" id="cancelOrderBtn"
+                                style="padding:7px 16px;border:2px solid #c0392b;border-radius:8px;
+                                           background:#fff;color:#c0392b;font-family:inherit;
+                                           font-weight:700;font-size:0.85rem;cursor:pointer;display:none;"
+                                onclick="cancelEntireOrder()">
+                            ✕ 整單取消
+                        </button>
+                    }
+                    <button type="button" id="splitModeBtn"
+                            style="padding:7px 16px;border:2px solid #1a77c9;border-radius:8px;
+                       background:#fff;color:#1a77c9;font-family:inherit;
+                       font-weight:700;font-size:0.85rem;cursor:pointer;"
+                            onclick="toggleSplitMode()">
+                        拆單結帳
+                    </button>
+                </div>
             </div>
 
             <div class="unserved-warning" id="unservedWarning">
                 <p>⚠️ 有餐點尚未出餐完成，確定要結帳嗎？</p>
                 <div class="warning-btns">
-                    <button class="btn-yes" onclick="confirmCancelUnserved()">是，取消未出餐並結帳</button>
+                    <button class="btn-yes" id="confirmCancelBtn" onclick="confirmCancelUnserved()">是，取消未出餐並結帳</button>
                     <button class="btn-no" onclick="closeDetail()">否，關閉</button>
                 </div>
             </div>
@@ -682,14 +882,14 @@
 @if (ViewBag.ShowSuccess == true) @* TempData["Success"] != null *@
 {
     <div id="toast" style="
-                    position:fixed; inset:0;
-                    background:rgba(0,0,0,0.35);
-                    display:flex; align-items:center; justify-content:center;
-                    z-index:9999;">
+                            position:fixed; inset:0;
+                            background:rgba(0,0,0,0.35);
+                            display:flex; align-items:center; justify-content:center;
+                            z-index:9999;">
         <div style="
-                        background:#fff; border-radius:20px;
-                        padding:40px 60px; text-align:center;
-                        box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                                background:#fff; border-radius:20px;
+                                padding:40px 60px; text-align:center;
+                                box-shadow:0 8px 32px rgba(0,0,0,0.2);">
             <div style="font-size:3rem; margin-bottom:12px;">✅</div>
             <div style="font-size:1.4rem; font-weight:700; color:#1a1a1a;">結帳成功！</div>
         </div>
@@ -740,30 +940,78 @@
         renderDetail(data);
     }
 
-    function renderDetail(data) {
-        document.getElementById('emptyRight').style.display      = 'none';
+        function renderDetail(data) {
+        // 1. 基礎防錯檢查：確保後端回傳的是有效物件
+        if (!data || typeof data !== 'object') {
+            console.error("後端未回傳有效的訂單資料", data);
+            showAlert("資料讀取異常，請重新整理頁面。", '❌ 錯誤');
+            return;
+        }
+
+        // 2. 切換右側顯示狀態（隱藏空狀態，顯示結帳內容）
+        document.getElementById('emptyRight').style.display = 'none';
         document.getElementById('checkoutContent').style.display = 'flex';
 
+        // 3. 設定標題與副標題 (桌號/外帶、訂單編號)
         document.getElementById('rightTitle').textContent =
-            data.inOrOut ? `🪑 ${data.tableName}` : `🥡 外帶`;
-        document.getElementById('rightSubtitle').textContent = data.orderNumber;
+            data.inOrOut ? `🪑 ${data.tableName || ''}` : `🥡 外帶`;
+        document.getElementById('rightSubtitle').textContent = data.orderNumber || '-';
 
+        // 4. 判斷是否「整單都沒有已出餐餐點」
+        // 邏輯：檢查 items 內是否「存在」任何一項既不是 status=0(未出餐) 且不是 status=2(已取消) 且未結帳的項目
+        // 簡單來說：只要有一個 status 為 1 (或其他代表已出餐的值)，hasServedItems 就會是 true
+        const hasServedItems = data.items && data.items.some(item =>
+            item.status !== 0 && item.status !== 2 && item.isBilled !== true
+        );
+
+        const warningArea = document.getElementById('unservedWarning');
+        const warningText = warningArea.querySelector('p');
+        const confirmBtn = warningArea.querySelector('.btn-yes');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+
+        // 5. 處理「未出餐警告區塊」與「結帳按鈕」的顯示邏輯
+        if (data.hasUnserved) {
+            warningArea.style.display = 'block';
+            checkoutBtn.classList.remove('show'); // 有未出餐時，隱藏正式結帳鈕
+
+            if (!hasServedItems) {
+                // 情況 A：整單都沒有已出餐的餐點 → 隱藏 header 整單取消（unservedWarning 已有）
+                warningText.textContent = "⚠️ 此訂單所有餐點皆尚未出餐，確定要整單取消嗎？";
+                confirmBtn.textContent = "是，整單取消";
+                if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
+            } else {
+                // 情況 B：部分已出餐，部分未出餐 → 顯示 header 整單取消
+                warningText.textContent = "⚠️ 有餐點尚未出餐完成，確定要結帳嗎？";
+                confirmBtn.textContent = "是，取消未出餐並結帳";
+                if (cancelOrderBtn) cancelOrderBtn.style.display = '';
+            }
+        } else {
+            warningArea.style.display = 'none';
+            checkoutBtn.classList.add('show'); // 全部出餐完畢，顯示正式結帳鈕
+            // 全部出餐完畢仍可整單取消（例如客人反悔）
+            if (cancelOrderBtn) cancelOrderBtn.style.display = '';
+        }
+
+        // 6. 渲染餐點明細表格
         const tbody = document.getElementById('detailBody');
         tbody.innerHTML = '';
 
-            // 排序：未出餐 → 已出餐 → 已結帳 → 已取消
+        // 排序邏輯：未出餐(0) -> 已出餐(1) -> 已結帳(2) -> 已取消(3)
         const sortOrder = item => {
-            if (item.status === 2) return 3;       // 已取消排最後
-            if (item.isBilled === true)     return 2;       // 已結帳次之
-            if (item.status === 0) return 0;       // 未出餐最前
-            return 1;                              // 已出餐可結帳
+            if (item.status === 2) return 3;     // 已取消
+            if (item.isBilled === true) return 2; // 已結帳
+            if (item.status === 0) return 0;     // 未出餐
+            return 1;                            // 已出餐
         };
+
         const sortedItems = [...data.items].sort((a, b) => sortOrder(a) - sortOrder(b));
 
         sortedItems.forEach(item => {
             const isCancelled = item.status === 2;
             const isUnserved  = item.status === 0;
             const isBilled    = item.isBilled === true;
+
             const tr = document.createElement('tr');
             if (isCancelled) tr.classList.add('status-cancel');
             if (isBilled) tr.classList.add('status-billed');
@@ -773,35 +1021,28 @@
             if (isCancelled) badge = `<span class="status-badge badge-cancel">已取消</span>`;
 
             tr.innerHTML = `
-                      <td class="split-check-col" style="display:none;">
-                      ${(!isCancelled && !isUnserved && !isBilled)
-                      ? `<input type="checkbox" class="detail-check"
-                      data-detail-id="${item.detailId}"
-                      data-subtotal="${item.subTotal}"
-                      onchange="updateSplitTotal()">`
-                      : ''}
-                      </td>
-                      <td>${item.productName}${badge}</td>
-                      <td>${item.qty}</td>
-                      <td>NT$ ${item.unitPrice}</td>
-                      <td>NT$ ${item.subTotal}</td>
+                <td class="split-check-col" style="display:none;">
+                    ${(!isCancelled && !isUnserved && !isBilled)
+                    ? `<input type="checkbox" class="detail-check"
+                        data-detail-id="${item.detailId}"
+                        data-subtotal="${item.subTotal}"
+                        onchange="updateSplitTotal()">`
+                    : ''}
+                </td>
+                <td>${item.productName}${badge}</td>
+                <td>${item.qty}</td>
+                <td>NT$ ${item.unitPrice.toLocaleString()}</td>
+                <td>NT$ ${item.subTotal.toLocaleString()}</td>
             `;
             tbody.appendChild(tr);
-            const form = document.getElementById('checkoutForm');
-            if (currentTableId) {
-                form.action = '/Payments/CheckoutByTable';
-                document.getElementById('checkoutTableId').value = currentTableId;
-            } else {
-                form.action = '/Payments/Checkout';
-                document.getElementById('checkoutTableId').name  = 'preOrderId';
-                document.getElementById('checkoutTableId').value = data.preOrderId;
-            }
         });
 
-        document.getElementById('amtOriginal').textContent = data.originalAmount;
-        document.getElementById('amtDiscount').textContent = data.discountAmount;
-        document.getElementById('amtTotal').textContent    = data.totalAmount;
+        // 7. 更新金額資訊
+        document.getElementById('amtOriginal').textContent = data.originalAmount.toLocaleString();
+        document.getElementById('amtDiscount').textContent = data.discountAmount.toLocaleString();
+        document.getElementById('amtTotal').textContent    = data.totalAmount.toLocaleString();
 
+        // 8. 優惠券標籤顯示
         const couponTag  = document.getElementById('couponTag');
         const couponName = document.getElementById('couponTagName');
         if (data.couponName) {
@@ -811,6 +1052,7 @@
             couponTag.style.display = 'none';
         }
 
+        // 9. 更新全域變數與付款狀態
         currentTotal     = data.totalAmount;
         currentPayMethod = data.payMethod;
 
@@ -818,41 +1060,251 @@
         document.getElementById('cashInput').value = '';
         document.getElementById('changeDisplay').textContent = '-';
 
-        const warning = document.getElementById('unservedWarning');
-        const btn     = document.getElementById('checkoutBtn');
-        if (data.hasUnserved) {
-            warning.style.display = 'block';
-            btn.classList.remove('show');
-        } else {
-            warning.style.display = 'none';
-            btn.classList.add('show');
-        }
-
+        // 10. 設定 Hidden Input 給 Form 使用
+        const checkoutTableIdInput = document.getElementById('checkoutTableId');
         if (currentTableId) {
-            document.getElementById('checkoutTableId').value = currentTableId;
+            document.getElementById('checkoutForm').action = '/Payments/CheckoutByTable';
+            checkoutTableIdInput.name = 'tableId';
+            checkoutTableIdInput.value = currentTableId;
         } else {
-            document.getElementById('checkoutTableId').value = data.preOrderId;
+            document.getElementById('checkoutForm').action = '/Payments/Checkout';
+            checkoutTableIdInput.name = 'preOrderId';
+            checkoutTableIdInput.value = data.preOrderId;
         }
     }
 
-    async function confirmCancelUnserved() {
-        const url    = currentTableId
-            ? '/Payments/CancelUnservedByTable'
-            : '/Payments/CancelUnserved';
-        const body   = currentTableId
-            ? `tableId=${currentTableId}`
-            : `preOrderId=${currentPreOrderId}`;
+    // ── 修改訂單桌位／內外帶 ──
+    let editIsInOrOut = true;
+    let editOriginalTableId = null;
 
-        const res  = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-            },
-            body
+    async function openEditOrderModal() {
+        // 初始化目前狀態
+        editIsInOrOut      = !!currentTableId; // 有 tableId 就是內用
+        editOriginalTableId = currentTableId;
+        setEditMode(editIsInOrOut);
+
+        // 載入空桌清單
+        const select = document.getElementById('editTableSelect');
+        select.innerHTML = '<option value="">載入中...</option>';
+        try {
+            const res  = await fetch('/Payments/AvailableTables');
+            const data = await res.json();
+
+            select.innerHTML = '';
+            // 若目前是內用，先加回目前桌位（保持不換）
+            if (currentTableId) {
+                const currentTableName = document.getElementById('rightTitle').textContent.replace('🪑 ', '');
+                select.innerHTML += `<option value="${currentTableId}">${currentTableName}（目前）</option>`;
+            }
+            if (data.length === 0 && !currentTableId) {
+                select.innerHTML = '<option value="">目前沒有空桌</option>';
+            } else {
+                data.forEach(t => {
+                    select.innerHTML += `<option value="${t.tableId}">${t.tableName}</option>`;
+                });
+            }
+        } catch {
+            select.innerHTML = '<option value="">載入失敗，請重試</option>';
+        }
+
+        document.getElementById('editOrderModal').classList.add('show');
+    }
+
+    function setEditMode(isDine) {
+        editIsInOrOut = isDine;
+        const dineBtn    = document.getElementById('editBtnDine');
+        const takeoutBtn = document.getElementById('editBtnTakeout');
+        const tableSection = document.getElementById('editTableSection');
+
+        dineBtn.style.border    = isDine ? '2px solid #2c3e50' : '2px solid #ddd';
+        dineBtn.style.background = isDine ? '#eaf0fb' : '#fff';
+        dineBtn.style.color      = isDine ? '#2c3e50' : '#888';
+        takeoutBtn.style.border    = !isDine ? '2px solid #7f8c8d' : '2px solid #ddd';
+        takeoutBtn.style.background = !isDine ? '#f0f0f0' : '#fff';
+        takeoutBtn.style.color      = !isDine ? '#555' : '#888';
+        tableSection.style.display  = isDine ? '' : 'none';
+    }
+
+    async function submitEditOrder() {
+        const tableId = editIsInOrOut
+            ? parseInt(document.getElementById('editTableSelect').value) || null
+            : null;
+
+        if (editIsInOrOut && !tableId) {
+            showAlert('請選擇桌位', '⚠️ 提示');
+            return;
+        }
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const res = await fetch('/Payments/UpdateOrderTable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `preOrderId=${currentPreOrderId}&tableId=${tableId ?? ''}&inOrOut=${editIsInOrOut}`
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+
+            document.getElementById('editOrderModal').classList.remove('show');
+
+            // 更新右側 header 顯示
+            currentTableId = tableId;
+            renderDetail(data);
+
+            // 更新左側桌位格子（reload 最簡單）
+            setTimeout(() => window.location.href = '/Payments/Create', 300);
+        } catch {
+            showAlert('修改失敗，請重試。', '❌ 錯誤');
+        }
+    }
+
+    // ── 自訂 alert 對話框 ──
+    function showAlert(message, title = '提示') {
+        document.getElementById('alertTitle').textContent = title;
+        document.getElementById('alertBody').textContent  = message;
+        const overlay = document.getElementById('customAlertModal');
+        overlay.classList.add('show');
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.remove('show');
+        }, { once: true });
+    }
+
+    // ── 自訂 confirm 對話框 ──
+    function showConfirm(message, onConfirm, title = '確認操作', confirmLabel = '確認', cancelLabel = '返回') {
+        document.getElementById('modalTitle').textContent = title;
+        const bodyEl = document.getElementById('modalBody');
+        bodyEl.textContent  = message;
+        bodyEl.style.display = message ? '' : 'none';
+        const overlay     = document.getElementById('customConfirmModal');
+        const confirmBtn  = document.getElementById('modalConfirmBtn');
+        const cancelBtn   = document.getElementById('modalCancelBtn');
+        overlay.classList.add('show');
+        // 移除舊的 listener
+        const newConfirm = confirmBtn.cloneNode(true);
+        const newCancel  = cancelBtn.cloneNode(true);
+        newConfirm.textContent = confirmLabel;
+        newCancel.textContent  = cancelLabel;
+        confirmBtn.replaceWith(newConfirm);
+        cancelBtn.replaceWith(newCancel);
+        newConfirm.addEventListener('click', () => {
+            overlay.classList.remove('show');
+            onConfirm();
         });
-        const data = await res.json();
-        renderDetail(data);
+        newCancel.addEventListener('click', () => overlay.classList.remove('show'));
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.remove('show');
+        }, { once: true });
+    }
+
+    async function confirmCancelUnserved() {
+        const confirmBtn = document.querySelector('.btn-yes');
+        const actionText = confirmBtn.textContent;
+
+        const isFullCancel = actionText === '是，整單取消';
+        const title   = isFullCancel ? '確定要整單取消嗎？' : '確定要取消未出餐並結帳嗎？';
+        const message = isFullCancel ? '所有餐點都會取消，此操作無法復原。' : '未出餐的餐點將會取消，已完成的餐點會正常結帳。';
+        const label   = isFullCancel ? '整單取消' : '確認';
+
+        showConfirm(message, () => _doCancelUnserved(actionText), title, label, '返回');
+    }
+
+    async function _doCancelUnserved(actionText) {
+        const isFullCancel = actionText === "是，整單取消";
+
+        // 整單取消：內用 → CancelAllByTable（取消整桌所有訂單）；外帶 → CancelOrder（取消單筆）
+        // 取消未出餐並結帳 → /Payments/CancelUnservedByTable 或 /Payments/CancelUnserved
+        const url  = isFullCancel
+            ? (currentTableId ? '/PreOrders/CancelAllByTable' : '/PreOrders/CancelOrder')
+            : (currentTableId ? '/Payments/CancelUnservedByTable' : '/Payments/CancelUnserved');
+        const body = isFullCancel
+            ? (currentTableId ? `tableId=${currentTableId}` : `preOrderId=${currentPreOrderId}`)
+            : (currentTableId ? `tableId=${currentTableId}` : `preOrderId=${currentPreOrderId}`);
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body
+            });
+
+            if (!res.ok) throw new Error("伺服器回應錯誤");
+
+            const data = await res.json();
+
+            if (isFullCancel) {
+                const tbody = document.getElementById('detailBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:40px; color:#27ae60; font-size:1.1rem; font-weight:700; background-color:#f4fdf7;">
+                            ✅ 訂單已整單取消成功
+                        </td>
+                    </tr>`;
+                document.getElementById('amtOriginal').textContent = '-';
+                document.getElementById('amtDiscount').textContent = '-';
+                document.getElementById('amtTotal').textContent = '-';
+                document.getElementById('unservedWarning').style.display = 'none';
+                document.getElementById('checkoutBtn').classList.remove('show');
+                document.getElementById('couponTag').style.display = 'none';
+                setTimeout(() => window.location.href = "/Payments/Create", 1500);
+            } else {
+                // 取消未出餐並結帳，正常重新渲染明細
+                renderDetail(data);
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert("執行失敗，請檢查網路連線。", '❌ 錯誤');
+        }
+    }
+
+    function cancelEntireOrder() {
+        showConfirm(
+            '所有餐點（包含已完成）都會取消，此操作無法復原。',
+            async () => {
+                try {
+                    // 內用：取消整桌所有訂單；外帶：取消單筆
+                    const url  = currentTableId ? '/PreOrders/CancelAllByTable' : '/PreOrders/CancelOrder';
+                    const body = currentTableId ? `tableId=${currentTableId}` : `preOrderId=${currentPreOrderId}`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body
+                    });
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    if (!data.success) throw new Error();
+
+                    const tbody = document.getElementById('detailBody');
+                    tbody.innerHTML = `
+                        <tr><td colspan="5" style="text-align:center;padding:40px;color:#27ae60;
+                            font-size:1.1rem;font-weight:700;background:#f4fdf7;">
+                            ✅ 訂單已整單取消成功
+                        </td></tr>`;
+                    document.getElementById('amtOriginal').textContent = '-';
+                    document.getElementById('amtDiscount').textContent = '-';
+                    document.getElementById('amtTotal').textContent    = '-';
+                    document.getElementById('unservedWarning').style.display = 'none';
+                    document.getElementById('checkoutBtn').classList.remove('show');
+                    document.getElementById('couponTag').style.display = 'none';
+                    const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+                    if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
+                    setTimeout(() => window.location.href = "/Payments/Create", 1500);
+                } catch {
+                    showAlert('執行失敗，請檢查網路連線。', '❌ 錯誤');
+                }
+            },
+            '確定要整單取消嗎？',
+            '整單取消',
+            '返回'
+        );
     }
 
     function closeDetail() {
@@ -860,6 +1312,8 @@
         document.getElementById('emptyRight').style.display      = 'flex';
         document.getElementById('emptyRightIcon').textContent    = '👈';
         document.getElementById('emptyRightText').textContent    = '請選擇訂單';
+        const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+        if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
         document.querySelectorAll('.table-btn, .takeout-item').forEach(b =>
             b.classList.remove('active-selected'));
         currentPreOrderId = null;
@@ -897,8 +1351,8 @@
 
             if (defaultTableId > 0) {
         const tables = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                                                                                                Model.Tables.Select(t => new { t.TableId, t.TableName, t.PreOrderId, t.HasOrder })
-                                                                ));
+                                                                                                                                                                                                                                                                                                                                                                                                Model.Tables.Select(t => new { t.TableId, t.TableName, t.PreOrderId, t.HasOrder })
+                                                                                                                                                                                                                                                                ));
             const target = tables.find(t => t.TableId === defaultTableId);
     if (target) {
         const anyEl = document.getElementById('tbtn-' + target.PreOrderId)
@@ -971,7 +1425,7 @@
             .map(c => parseInt(c.dataset.detailId));
 
         if (!detailIds.length) {
-            alert('請先勾選要結帳的餐點');
+            showAlert('請先勾選要結帳的餐點');
             return;
         }
 
@@ -1017,10 +1471,10 @@
             document.getElementById('unservedWarning').style.display = 'none';
             document.getElementById('couponTag').style.display = 'none';
             // 1.5 秒後 reload 更新左側桌子狀態
-            setTimeout(() => location.reload(), 1500);
+            setTimeout(() => window.location.href = "/Payments/Create", 1500);
         }
     } else {
-        alert('拆單失敗：' + (result.message || '未知錯誤'));
+        showAlert('拆單失敗：' + (result.message || '未知錯誤'), '❌ 錯誤');
     }
 
     }

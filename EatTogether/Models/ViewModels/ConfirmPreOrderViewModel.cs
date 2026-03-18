@@ -10,7 +10,9 @@
         public string? CouponCode { get; set; }
         public int DiscountAmount { get; set; }
         public List<CreatePreOrderItemViewModel> Items { get; set; } = new();
-        public int OriginalAmount => Items.Sum(i => i.Qty * i.UnitPrice);
+        public int OriginalAmount => Items
+                                      .Where(i => !i.ParentIndex.HasValue)
+                                      .Sum(i => i.Qty * i.UnitPrice);
         public int TotalAmount => OriginalAmount - DiscountAmount;
     }
 }

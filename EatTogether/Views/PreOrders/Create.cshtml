@@ -225,6 +225,175 @@
         margin-bottom: 20px;
         font-size: 0.9rem;
     }
+
+    /* ── 套餐標記 ── */
+    .menu-card.is-setmeal .menu-name::after {
+        content: '套餐';
+        font-size: 0.7rem;
+        background: #e67e22;
+        color: #fff;
+        padding: 1px 6px;
+        border-radius: 6px;
+        margin-left: 6px;
+        font-weight: 600;
+        vertical-align: middle;
+    }
+
+    /* ── 套餐 Modal ── */
+    .setmeal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .setmeal-overlay.show {
+            display: flex;
+        }
+
+    .setmeal-box {
+        background: #fff;
+        border-radius: 20px;
+        padding: 28px;
+        width: 480px;
+        max-width: 92vw;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+        font-family: 'Noto Sans TC', sans-serif;
+        animation: smIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    @@keyframes smIn {
+        from {
+            transform: scale(0.88);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .setmeal-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+    }
+
+    .setmeal-price {
+        font-size: 0.88rem;
+        color: #c0392b;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .setmeal-group {
+        margin-bottom: 18px;
+    }
+
+    .setmeal-group-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #888;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .setmeal-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        border: 2px solid #eee;
+        margin-bottom: 7px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-size: 0.92rem;
+    }
+
+        .setmeal-option:hover {
+            border-color: #e67e22;
+            background: #fef9f0;
+        }
+
+        .setmeal-option.selected {
+            border-color: #e67e22;
+            background: #fef9f0;
+        }
+
+        .setmeal-option input[type=checkbox],
+        .setmeal-option input[type=radio] {
+            accent-color: #e67e22;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+    .setmeal-fixed-item {
+        padding: 7px 12px;
+        border-radius: 8px;
+        background: #f8f8f8;
+        font-size: 0.88rem;
+        color: #555;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .setmeal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .setmeal-btn-cancel {
+        flex: 1;
+        padding: 11px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        color: #555;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+    }
+
+    .setmeal-btn-confirm {
+        flex: 1;
+        padding: 11px;
+        border: none;
+        border-radius: 10px;
+        background: #e67e22;
+        color: #fff;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .setmeal-btn-confirm:hover {
+            background: #d35400;
+        }
+
+    .setmeal-error {
+        color: #c0392b;
+        font-size: 0.82rem;
+        margin-top: 4px;
+        display: none;
+    }
 </style>
 
 <div class="order-wrap">
@@ -271,19 +440,22 @@
         <div class="menu-grid">
             @for (int i = 0; i < Model.Items.Count; i++)
             {
-                <div class="menu-card" id="card-@i">
+                bool isSetMeal = Model.Items[i].IsSetMeal;
+                <div class="menu-card @(isSetMeal ? "is-setmeal" : "")" id="card-@i">
                     <input type="hidden" name="Items[@i].ProductId" value="@Model.Items[i].ProductId" />
                     <input type="hidden" name="Items[@i].ProductName" value="@Model.Items[i].ProductName" />
                     <input type="hidden" name="Items[@i].UnitPrice" value="@Model.Items[i].UnitPrice" />
+                    <input type="hidden" name="Items[@i].IsSetMeal" value="@isSetMeal.ToString().ToLower()" />
+                    <input type="hidden" name="Items[@i].ParentIndex" value="" />
 
                     <div class="menu-name">@Model.Items[i].ProductName</div>
                     <div class="menu-price">NT$ @Model.Items[i].UnitPrice</div>
                     <div class="qty-wrap">
-                        <button type="button" class="qty-btn" onclick="changeQty(@i, -1)">−</button>
+                        <button type="button" class="qty-btn" onclick="@(isSetMeal ? $"changeSetMealQty({i}, -1)" : $"changeQty({i}, -1)")">−</button>
                         <input type="number" class="qty-input" id="qty-@i"
-                               name="Items[@i].Qty" value="0" min="0"
+                               name="Items[@i].Qty" value="0" min="0" readonly
                                onchange="updateCard(@i)" />
-                        <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
+                        <button type="button" class="qty-btn" onclick="@(isSetMeal ? $"openSetMealModal({i}, {Model.Items[i].ProductId}, '{Model.Items[i].ProductName}', {Model.Items[i].UnitPrice})" : $"changeQty({i}, 1)")">＋</button>
                     </div>
                 </div>
             }
@@ -296,10 +468,176 @@
         </div>
 
         <button type="submit" class="btn-next">下一步 →</button>
+
+        <!-- 套餐子項目動態 hidden inputs 放這裡 -->
+        <div id="extraItemsContainer"></div>
     </form>
 </div>
 
+<!-- 套餐選項 Modal -->
+<div class="setmeal-overlay" id="setmealModal">
+    <div class="setmeal-box">
+        <div class="setmeal-title" id="smTitle">套餐名稱</div>
+        <div class="setmeal-price" id="smPrice">NT$ 0</div>
+        <div id="smGroups"></div>
+        <div class="setmeal-error" id="smError">⚠️ 請完成所有必選項目</div>
+        <div class="setmeal-actions">
+            <button class="setmeal-btn-cancel" onclick="closeSetMealModal()">取消</button>
+            <button class="setmeal-btn-confirm" onclick="confirmSetMeal()">加入訂單</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // ── 套餐 Modal 狀態 ──
+    let smCurrentIdx = -1;    // 目前操作的套餐卡片 index
+    let smProductId  = 0;
+    let smGroups     = [];    // 從後端拿到的選項組
+    let totalItems   = @Model.Items.Count; // 目前 Items 總數（包含動態加入的子項目）
+
+    // ── 套餐：開啟 Modal ──
+    async function openSetMealModal(idx, productId, name, price) {
+        smCurrentIdx = idx;
+        smProductId  = productId;
+        document.getElementById('smTitle').textContent = name;
+        document.getElementById('smPrice').textContent = `NT$ ${price}`;
+        document.getElementById('smError').style.display = 'none';
+
+        // 取得套餐選項
+        const res  = await fetch(`/PreOrders/GetSetMealItems?setMealId=${productId}`);
+        smGroups   = await res.json();
+
+        // 渲染選項組
+        const container = document.getElementById('smGroups');
+        container.innerHTML = '';
+        smGroups.forEach((group, gi) => {
+            const div = document.createElement('div');
+            div.className = 'setmeal-group';
+
+            if (!group.isOptional) {
+                // 固定項目
+                div.innerHTML = `<div class="setmeal-group-title">固定附餐</div>` +
+                    group.options.map(o => `
+                        <div class="setmeal-fixed-item">
+                            <span>✓</span><span>${o.dishName} × ${o.qty}</span>
+                        </div>`).join('');
+            } else {
+                const inputType = group.pickLimit === 1 ? 'radio' : 'checkbox';
+                div.innerHTML = `
+                    <div class="setmeal-group-title">請選擇 ${group.pickLimit} 項</div>` +
+                    group.options.map((o, oi) => `
+                        <label class="setmeal-option" id="smopt-${gi}-${oi}">
+                            <input type="${inputType}" name="smg-${gi}"
+                                   value="${o.dishName}" data-gi="${gi}" data-oi="${oi}"
+                                   onchange="onSmOptionChange(${gi}, ${oi}, ${group.pickLimit}, '${inputType}')">
+                            <span>${o.dishName}</span>
+                        </label>`).join('');
+            }
+            container.appendChild(div);
+        });
+
+        document.getElementById('setmealModal').classList.add('show');
+    }
+
+    function onSmOptionChange(gi, oi, pickLimit, inputType) {
+        const group = smGroups[gi];
+        if (inputType === 'checkbox') {
+            // 超過 pickLimit 時取消最早的
+            const checked = document.querySelectorAll(`input[name="smg-${gi}"]:checked`);
+            if (checked.length > pickLimit) {
+                checked[0].checked = false;
+                document.getElementById(`smopt-${gi}-${[...document.querySelectorAll(`input[name="smg-${gi}"]`)].indexOf(checked[0])}`).classList.remove('selected');
+            }
+        }
+        // 更新選中樣式
+        document.querySelectorAll(`input[name="smg-${gi}"]`).forEach((inp, i) => {
+            document.getElementById(`smopt-${gi}-${i}`).classList.toggle('selected', inp.checked);
+        });
+    }
+
+    function closeSetMealModal() {
+        document.getElementById('setmealModal').classList.remove('show');
+        smCurrentIdx = -1;
+    }
+
+    function confirmSetMeal() {
+        // 驗證所有必選組都選滿
+        let valid = true;
+        smGroups.forEach((group, gi) => {
+            if (!group.isOptional) return;
+            const checked = document.querySelectorAll(`input[name="smg-${gi}"]:checked`).length;
+            if (checked < group.pickLimit) valid = false;
+        });
+
+        if (!valid) {
+            document.getElementById('smError').style.display = 'block';
+            return;
+        }
+
+        // 套餐標題 qty +1
+        const qtyInput = document.getElementById(`qty-${smCurrentIdx}`);
+        const newQty   = parseInt(qtyInput.value || 0) + 1;
+        qtyInput.value = newQty;
+        updateCard(smCurrentIdx);
+
+        // 收集選中的子項目，動態加入 hidden inputs
+        const container = document.getElementById('extraItemsContainer');
+        const parentIndex = smCurrentIdx;
+
+        smGroups.forEach((group, gi) => {
+            if (!group.isOptional) {
+                // 固定項目
+                group.options.forEach(o => {
+                    addSubItem(container, o.dishName, o.qty, 0, parentIndex);
+                });
+            } else {
+                document.querySelectorAll(`input[name="smg-${gi}"]:checked`).forEach(inp => {
+                    addSubItem(container, inp.value, 1, 0, parentIndex);
+                });
+            }
+        });
+
+        closeSetMealModal();
+    }
+
+    function addSubItem(container, name, qty, price, parentIndex) {
+        const idx = totalItems++;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+            <input type="hidden" name="Items[${idx}].ProductId" value="0">
+            <input type="hidden" name="Items[${idx}].ProductName" value="${name}">
+            <input type="hidden" name="Items[${idx}].UnitPrice" value="${price}">
+            <input type="hidden" name="Items[${idx}].Qty" value="${qty}">
+            <input type="hidden" name="Items[${idx}].IsSetMeal" value="false">
+            <input type="hidden" name="Items[${idx}].ParentIndex" value="${parentIndex}">
+        `;
+        container.appendChild(wrap);
+    }
+
+    // 套餐減少數量（移除最後一組子項目）
+    function changeSetMealQty(idx, delta) {
+        if (delta > 0) {
+            // 加一份要開 Modal 選
+            return;
+        }
+        const input = document.getElementById(`qty-${idx}`);
+        const cur   = parseInt(input.value || 0);
+        if (cur <= 0) return;
+        input.value = cur - 1;
+        updateCard(idx);
+
+        // 移除最後一組對應子項目
+        const container = document.getElementById('extraItemsContainer');
+        const children  = container.querySelectorAll(`input[name$="].ParentIndex"][value="${idx}"]`);
+        if (children.length === 0) return;
+        // 找最後一組（同一 idx 的最後幾個）
+        const lastParentInput = children[children.length - 1];
+        const lastIdx = lastParentInput.name.match(/Items\[(\d+)\]/)[1];
+        // 找同組的所有 inputs（同 Items[N] 開頭）
+        container.querySelectorAll(`input[name^="Items[${lastIdx}]"]`).forEach(el => el.parentElement.remove());
+        totalItems--;
+    }
+
     document.getElementById('orderForm').addEventListener('submit', function (e) {
         const isIn = document.getElementById('inOrOutInput').value === 'true';
         const tableVal = document.getElementById('tableSelect').value;
@@ -348,25 +686,13 @@
         document.getElementById('card-' + idx).classList.toggle('selected', qty > 0);
     }
 
-    // 頁面載入時恢復已選狀態（從 Confirm 返回時）
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
         @for (int i = 0; i < Model.Items.Count; i++)
         {
                 if (Model.Items[i].Qty > 0)
                 {
                         @:document.getElementById('card-@i').classList.add('selected');
                 }
-        }
-    });
-
-        // 頁面載入時恢復已選狀態（從 Confirm 返回時）
-    document.addEventListener('DOMContentLoaded', () => {
-        @for (int i = 0; i < Model.Items.Count; i++)
-        {
-                    if (Model.Items[i].Qty > 0)
-                    {
-                                @:document.getElementById('card-@i').classList.add('selected');
-                    }
         }
     });
 </script>

@@ -25,6 +25,14 @@ public partial class PreOrderDetail
 
     public bool IsBilled { get; set; }
 
+    public bool IsSetMeal { get; set; }
+
+    public int? ParentDetailId { get; set; }
+
+    public virtual ICollection<PreOrderDetail> InverseParentDetail { get; set; } = new List<PreOrderDetail>();
+
+    public virtual PreOrderDetail ParentDetail { get; set; }
+
     public virtual PreOrder PreOrder { get; set; }
 
     public virtual Product Product { get; set; }
