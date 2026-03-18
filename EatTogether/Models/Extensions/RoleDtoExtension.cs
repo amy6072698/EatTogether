@@ -25,5 +25,19 @@ namespace EatTogether.Models.Extensions
 			};
 		}
 
+		/// <summary>
+		/// 組裝新增角色 ViewModel（帶入所有 Functions 與所有在職員工）
+		/// </summary>
+		public static RoleCreateViewModel ToCreateVm(
+			IEnumerable<FunctionDto> allFunctions,
+			IEnumerable<UserForRoleDto> allUsers)
+		{
+			return new RoleCreateViewModel
+			{
+				AllFunctions = allFunctions,
+				AllUsers = allUsers
+			};
+		}
+
 	}
 }

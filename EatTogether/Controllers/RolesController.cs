@@ -1,4 +1,5 @@
-﻿using EatTogether.Models.Extensions;
+﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Extensions;
 using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
@@ -39,5 +40,38 @@ namespace EatTogether.Controllers
 			var dto = await _roleService.GetOverviewAsync();
 			return Ok(dto);
 		}
+
+		// GET /Role/Create
+		// 新增角色 Modal 所需資料（AJAX，回傳 JSON）
+		[HttpGet]
+		public async Task<IActionResult> Create()
+		{
+			var data = await _roleService.GetCreateFormDataAsync();
+			return Ok(new
+			{
+				allFunctions = data.AllFunctions,
+				allUsers = data.AllUsers
+			});
+		}
+
+		// POST /Role/Create
+		// 新增角色
+		[HttpPost]
+		public async Task<IActionResult> Create([FromBody] RoleCreateDto dto)
+		{
+			if (!ModelState.IsValid)
+			{
+				var error = ModelState.Values
+					.SelectMany(v => v.Errors)
+					.Select(e => e.ErrorMessage)
+					.FirstOrDefault();
+				return BadRequest(new { message = error });
+			}
+
+			var result = await _roleService.CreateAsync(dto);
+			if (result.IsSuccess) return Ok();
+			return BadRequest(new { message = result.ErrorMessage });
+		}
+
 	}
 }

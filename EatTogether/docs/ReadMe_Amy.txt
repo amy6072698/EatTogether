@@ -637,7 +637,7 @@
 			bool CanDelete   // 預設 6 個角色 = false
 
 	[V] Extension（Models/Extensions/RoleDtoExtension.cs）
-		RoleRowViewModel ToRowViewModel(this RoleListDto dto)
+		RoleRowViewModel ToRowVm(this RoleListDto dto)
 
 	[V] RolesController（Controllers/RolesController.cs）
 		GET /Roles/Index
@@ -673,27 +673,36 @@
 		標題：「權限總覽」
 		13 項 × 所有角色矩陣（✓ / —），唯讀
 
-[] add 新增角色功能
+[working] add 新增角色功能
 	url: POST /Role/Create
 
-	[] DTO（Models/DTOs/RoleCreateDto.cs）
+	[V] DTO（Models/DTOs/RoleCreateDto.cs）
 		RoleCreateDto
 			string RoleName
 			string? Description
 			List<int> FunctionIds   // 排除 IsOwnerOnly=1 的項目
 			List<int> UserIds
 
-	[] RoleRepository（modify）
-		Task CreateAsync(RoleCreateDto dto)
-		Task SetRoleFunctionsAsync(int roleId, List<int> functionIds)
-		Task SetUsersByRoleIdAsync(int roleId, List<int> userIds)
+	[V] DTO（Models/DTOs/RoleCreateDto.cs）
+		UserForRoleDto
+			int Id
+			string Name
+			string EmployeeNumber
+			string Account
+			bool IsActive
 
-	[] RoleService（modify）
-		Task<Result> CreateAsync(RoleCreateDto dto)
+	[V] RoleRepository（modify）
+		Task CreateAsync(RoleCreateDto dto);
+		Task<IEnumerable<UserForRoleDto>> GetActiveUsersAsync();
+		Task<bool> IsNameDuplicateAsync(string roleName, int? excludeId = null);
+
+	[V] RoleService（modify）
+		Task<Result> CreateAsync(RoleCreateDto dto);
+		Task<RoleCreateViewModel_Data> GetCreateFormDataAsync();
 			// BatchInsert RoleFunctions（排除 IsOwnerOnly=1）
 			// BatchInsert UserRoles
 
-	[] ViewModel（Models/ViewModels/RoleCreateViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleCreateViewModel.cs）
 		RoleCreateViewModel
 			string RoleName
 			string? Description
@@ -702,10 +711,10 @@
 			List<Function> AllFunctions    // 供 Checkbox 卡片渲染
 			List<UserListDto> AllUsers     // 供員工指派清單渲染
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
-		RoleCreateViewModel ToCreateViewModel(IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
+		RoleCreateViewModel ToCreateVm(IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET  /Role/Create → 回傳 RoleCreateViewModel（含全部 Functions + 全部在職員工）
 		POST /Role/Create
 
