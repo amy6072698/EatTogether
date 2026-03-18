@@ -115,7 +115,6 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.ImageUrl).HasMaxLength(300);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdatedAt).HasPrecision(0);
 
@@ -148,7 +147,6 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.DishName)
                 .IsRequired()
                 .HasMaxLength(100);
-            entity.Property(e => e.ImageUrl).HasMaxLength(300);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsTakeOut).HasDefaultValue(true);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
@@ -546,7 +544,6 @@ public partial class EatTogetherDBContext : DbContext
                 .HasMaxLength(20);
             entity.Property(e => e.DiscountValue).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.DisplayOrder).HasDefaultValue(1);
-            entity.Property(e => e.ImageUrl).HasMaxLength(255);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.SetMealName)
                 .IsRequired()
