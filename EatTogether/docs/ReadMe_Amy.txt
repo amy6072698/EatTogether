@@ -418,7 +418,7 @@
 		狀態標籤：在職（綠）/ 請假（橘）/ 離職（灰）
 		操作欄：在職/請假 → 🔵編輯 + 🔴離職；離職 → 🔵編輯 + 🟢復職
 
-[working] add 新增員工功能
+[V] add 新增員工功能
 	url: POST /User/Create
 
 	[V] DTO（Models/DTOs/UserInsertDto.cs）
@@ -504,11 +504,11 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 編輯員工功能
+[working] add 編輯員工功能
 	url: GET  /User/Edit/{id}
 	url: PUT  /User/Edit/{id}
 
-	[] DTO（Models/DTOs/UserEditDto.cs）
+	[V] DTO（Models/DTOs/UserEditDto.cs）
 		UserEditDto
 			int Id
 			string EmployeeNumber（唯讀）
@@ -520,28 +520,28 @@
 			bool IsActive
 			List<int> RoleIds
 
-	[] Extension（Models/Extensions/UserDtoExtension.cs）（modify）
+	[V] Extension（Models/Extensions/UserDtoExtension.cs）（modify）
 		UserEditViewModel ToEditViewModel(this UserEditDto dto)
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task<UserEditDto?> GetForEditAsync(int id)
 		Task UpdateAsync(UserEditDto dto)
 		Task UpdateUserRolesAsync(int userId, List<int> roleIds)
 			// 先刪後插（BatchUpdate UserRoles）
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<UserEditDto?> GetForEditAsync(int id)
 		Task<Result> UpdateAsync(int id, UserEditDto dto)
 			// 密碼留空 → 維持原值
 			// 密碼有填入 → PasswordValidator.IsValid → 比對明文密碼 == 員工編號 → 更新 HashedPassword + MustChangePassword
 			// BatchUpdate UserRoles
 
-	[] ViewModel（Models/ViewModels/UserEditViewModel.cs）
+	[V] ViewModel（Models/ViewModels/UserEditViewModel.cs）
 		UserEditViewModel
 			// 同 UserCreateViewModel + Id, EmployeeNumber, CreatedAt（唯讀欄位）
 			// Password 說明文字：「留空表示不修改」
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		GET /User/Edit/{id} → 回傳 UserEditViewModel（預填現有資料 + 全部角色清單）
 		PUT /User/Edit/{id}
 
@@ -555,18 +555,18 @@
 		按鈕：「取消」、「儲存變更」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 離職處理
+[V] add 離職處理
 	url: PATCH /User/Resign/{id}
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task ResignAsync(int id)
 		// IsDeleted → 1
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<Result> ResignAsync(int id, int operatorId)
 		// 禁止對自身帳號執行（operatorId == id → 回傳錯誤）
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		PATCH /User/Resign/{id}
 
 	[V] 離職確認 SweetAlert2（嵌入 User/Index.cshtml）
@@ -575,17 +575,17 @@
 		說明：「{姓名}（{員工編號}）的帳號將立即無法登入後台系統，請確認後再執行。」
 		按鈕：「取消」、「確認」
 
-[] add 復職處理
+[V] add 復職處理
 	url: PATCH /User/Reinstate/{id}
 
-	[] UserRepository（modify）
+	[V] UserRepository（modify）
 		Task ReinstateAsync(int id)
 		// IsDeleted → 0、IsActive → 1
 
-	[] UserService（modify）
+	[V] UserService（modify）
 		Task<Result> ReinstateAsync(int id)
 
-	[] UserController（modify）
+	[V] UserController（modify）
 		PATCH /User/Reinstate/{id}
 
 	[V] 復職確認 SweetAlert2（嵌入 User/Index.cshtml）

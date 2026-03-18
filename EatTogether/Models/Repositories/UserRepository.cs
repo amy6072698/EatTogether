@@ -13,12 +13,17 @@ namespace EatTogether.Models.Repositories
 		Task<UserDto?> GetByAccountAsync(string account);
 		Task<UserDto?> GetByEmailAsync(string email);
 		Task<UserDto?> GetByIdAsync(int userId);
+		Task<UserEditDto?> GetForEditAsync(int id);
 		Task<string> GetLastEmployeeNumberByYearAsync(int year);
 		Task InsertAsync(UserInsertDto dto);
 		Task<bool> IsAccountExistsAsync(string account, int? excludeId = null);
 		Task<bool> IsEmailExistsAsync(string email, int? excludeId = null);
+		Task ReinstateAsync(int id);
+		Task ResignAsync(int id);
 		Task SetMustChangePasswordAsync(int userId, bool value);
+		Task UpdateAsync(UserUpdateDto dto);
 		Task UpdatePasswordAsync(int userId, string hashedPassword);
+		Task UpdateUserRolesAsync(int userId, List<int> roleIds);
 	}
 
 	public class UserRepository : IUserRepository
@@ -154,6 +159,28 @@ namespace EatTogether.Models.Repositories
 			return user;
 		}
 
+		public async Task<UserEditDto?> GetForEditAsync(int id)
+		{
+			var userEditDto = await _context.Users
+				.AsNoTracking()
+				.Where(u => u.Id == id)
+				.Select(u => new UserEditDto
+				{
+					Id = u.Id,
+					EmployeeNumber = u.EmployeeNumber,
+					CreatedAt = u.CreatedAt,
+					Name = u.Name,
+					Account = u.Account,
+					Email = u.Email,
+					Phone = u.Phone,
+					HireDate = u.HireDate,
+					IsActive = u.IsActive,
+					RoleIds = u.UserRoles.Select(ur => ur.RoleId).ToList()
+				})
+				.FirstOrDefaultAsync();
+			return userEditDto;
+		}
+
 		public async Task InsertAsync(UserInsertDto dto)
 		{
 			var user = new User
@@ -236,6 +263,63 @@ AND LEN(EmployeeNumber) = 10
 			return result is string maxNumber ? maxNumber : "";
 		}
 
+		public async Task UpdateAsync(UserUpdateDto dto)
+		{
+			var user = await _context.Users.FindAsync(dto.Id);
+			if (user == null) return;
+
+			user.Name = dto.Name;
+			user.Email = dto.Email;
+			user.Phone = dto.Phone;
+			user.HireDate = dto.HireDate;
+			user.IsActive = dto.IsActive;
+
+			// 密碼有填才更新
+			if (dto.HashedPassword != null)
+			{
+				user.HashedPassword = dto.HashedPassword;
+				user.MustChangePassword = dto.MustChangePassword ?? false;
+			}
+
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task UpdateUserRolesAsync(int userId, List<int> roleIds)
+		{
+			var existing = _context.UserRoles.Where(ur => ur.UserId == userId);
+			_context.UserRoles.RemoveRange(existing);
+
+			foreach (var roleId in roleIds)
+			{
+				_context.UserRoles.Add(new UserRole
+				{
+					UserId = userId,
+					RoleId = roleId
+				});
+			}
+
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task ResignAsync(int id)
+		{
+			var user = await _context.Users.FindAsync(id);
+			if (user == null) return;
+
+			user.IsDeleted = true;
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task ReinstateAsync(int id)
+		{
+			var user = await _context.Users.FindAsync(id);
+			if (user == null) return;
+
+			user.IsDeleted = false;
+			user.IsActive = true;   // 復職時一併恢復啟用
+			await _context.SaveChangesAsync();
+		}
+
 		public async Task UpdatePasswordAsync(int userId, string hashedPassword)
 		{
 			var user = await _context.Users.FindAsync(userId);
@@ -253,5 +337,7 @@ AND LEN(EmployeeNumber) = 10
 			user.MustChangePassword = value;
 			await _context.SaveChangesAsync();
 		}
+
+
 	}
 }

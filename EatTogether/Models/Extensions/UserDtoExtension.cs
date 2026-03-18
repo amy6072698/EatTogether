@@ -26,5 +26,22 @@ namespace EatTogether.Models.Extensions
 				CanReinstate = dto.CanReinstate
 			};
 		}
+		public static UserEditViewModel ToEditVm(this UserEditDto dto)
+		{
+			return new UserEditViewModel
+			{
+				Id = dto.Id,
+				EmployeeNumber = dto.EmployeeNumber,
+				CreatedAt = dto.CreatedAt,
+				Name = dto.Name,
+				Account = dto.Account,
+				Email = dto.Email,
+				Phone = dto.Phone,
+				HireDate = dto.HireDate,
+				IsActive = dto.IsActive,
+				RoleIds = dto.RoleIds
+				// Password 不預填
+			};
+		}
 	}
 }
