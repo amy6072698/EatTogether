@@ -278,7 +278,7 @@
 ********************文章********************
 
 
-[working]add 文章新增頁面
+[V]add 文章新增頁面
 	url: /Articles/Create
 	[V]add ViewModel, Dto , 擴充方法
 		ArticleCreateViewModel class
@@ -310,16 +310,16 @@
 
 		在 Program.cs 註冊IArticleRepository, ArticleRepository, service
 
-	[working]add ArticlesController
+	[V]add ArticlesController
 		Create()
 			Create.cshtml
 		ctor(ArticleService articleService)
 		Create(ArticleCreateViewModel vm)[Authorize]
 
 
-[]add 文章列表頁面
+[working]add 文章列表頁面
 	url: /Articles/Index
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[working]add ViewModel, Dto , 擴充方法
 		ArticleViewModel class
 			Id, Title, CategoryName,  EventTitle, IsPinned, Status
 	
