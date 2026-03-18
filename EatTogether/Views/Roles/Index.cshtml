@@ -45,9 +45,7 @@
                             data-name="@role.RoleName"
                             data-description="@(role.Description ?? "")"
                             data-is-default="@(!role.CanDelete).ToString().ToLower()"
-                            data-functions="@string.Join(",", role.FunctionDisplayNames)"
-                            data-employee-ids="">
-                            <%-- data-employee-ids 先留空字串，JS 編輯 Modal 開啟時後端已知要從 RoleEditDto 取 --%>
+                            data-functions="@string.Join(",", role.FunctionDisplayNames)">
                             <td>@role.RoleName</td>
                             <td>@(role.Description ?? "—")</td>
                             <td>

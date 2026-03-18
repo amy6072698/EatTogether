@@ -14,14 +14,14 @@
    apiFetch — 統一 API 呼叫封裝
    ============================================================ */
 async function apiFetch(url, options = {}) {
-    const defaults = {
+    const config = {
         credentials: 'include',
+        ...options,
         headers: {
             'Content-Type': 'application/json',
             ...(options.headers || {})
         }
     };
-    const config = { ...options, ...defaults };
     try {
         const response = await fetch(url, config);
         if (response.status === 401) {
@@ -48,15 +48,13 @@ function initDataTable() {
         language: {
             url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/zh-HANT.json'
         },
-        paging: 10,
-        ordering: true,
+        paging: true,
+        ordering: false,
         searching: true,
         dom: "<'row'<'col-12'tr>>" +
             "<'row align-items-center mt-2'<'col-auto'i><'col'p>>",
         columnDefs: [
             { targets: '_all', defaultContent: '' },
-            { orderable: false, targets: [0, 1, 2, 3] },
-            // 加這行，指定不要換行的欄位 index
             { className: 'text-nowrap', targets: [0] }  // 0 = 角色名稱欄
         ]
     });
@@ -69,9 +67,22 @@ function initOverviewModal() {
     const btn = document.querySelector('#btn-open-overview');
     if (!btn) return;
 
-    btn.addEventListener('click', function () {
-        const modal = document.querySelector('#modal-overview');
-        if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+    btn.addEventListener('click',async function () {
+        try {
+            // 向後端請求總覽資料
+            const res = await apiFetch('/Roles/Overview', { method: 'GET' });
+            if (!res || !res.ok) {
+                Swal.fire({ icon: 'error', title: '無法載入總覽資料', confirmButtonColor: '#1A0D08' });
+                return;
+            }
+
+            // TODO: 渲染總覽矩陣（如需動態渲染）
+            const modal = document.querySelector('#modal-overview');
+            if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+        } catch (error) {
+            console.error('載入總覽資料失敗:', error);
+            Swal.fire({ icon: 'error', title: '系統錯誤', confirmButtonColor: '#1A0D08' });
+        }
     });
 }
 
@@ -82,25 +93,33 @@ function initCreateModal() {
     const btnOpen = document.querySelector('#btn-open-create');
     if (!btnOpen) return;
 
-    btnOpen.addEventListener('click', function () {
-        // 清空表單
-        const nameInput = document.querySelector('#create-role-name');
-        const descInput = document.querySelector('#create-role-desc');
-        if (nameInput) nameInput.value = '';
-        if (descInput) descInput.value = '';
+    btnOpen.addEventListener('click', async function () {
+        try {
+            // 向後端請求表單資料
+            const res = await apiFetch('/Roles/Create', { method: 'GET' });
+            if (!res || !res.ok) {
+                Swal.fire({ icon: 'error', title: '無法載入表單資料', confirmButtonColor: '#1A0D08' });
+                return;
+            }
 
-        // 取消所有可勾選的權限 checkbox（disabled 的跳過）
-        document.querySelectorAll('#create-perm-grid input[type="checkbox"]:not(:disabled)').forEach(cb => {
-            cb.checked = false;
-        });
+            const data = await res.json();
 
-        // 取消所有員工勾選
-        document.querySelectorAll('#create-employee-list input[type="checkbox"]').forEach(cb => {
-            cb.checked = false;
-        });
+            // 清空輸入欄位
+            document.querySelector('#create-role-name').value = '';
+            document.querySelector('#create-role-desc').value = '';
 
-        const modal = document.querySelector('#modal-create-role');
-        if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+            // 渲染權限卡片與員工清單
+            renderPermissionCards('#create-perm-grid', data.allFunctions || [], []);
+            renderEmployeeList('#create-employee-list', data.allUsers || [], []);
+
+            // 顯示 Modal
+            const modal = document.querySelector('#modal-create-role');
+            if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+        }
+        catch (error) {
+            console.error('載入表單資料失敗:', error);
+            Swal.fire({ icon: 'error', title: '系統錯誤', confirmButtonColor: '#1A0D08' });
+        }
     });
 
     // 新增確認按鈕
@@ -127,7 +146,7 @@ function initCreateModal() {
         });
 
         try {
-            const res = await apiFetch('/Role/Create', {
+            const res = await apiFetch('/Roles/Create', {
                 method: 'POST',
                 body: JSON.stringify({
                     roleName,
@@ -156,39 +175,47 @@ function initCreateModal() {
    編輯角色 Modal
    ============================================================ */
 function initEditModal() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
         const btn = e.target.closest('.btn-edit-role');
         if (!btn) return;
 
         const row = btn.closest('tr');
         if (!row) return;
 
-        const roleId          = row.dataset.id          ?? '';
-        const roleName        = row.dataset.name        ?? '';
-        const roleDescription = row.dataset.description ?? '';
-        const functions       = (row.dataset.functions    || '').split(',').filter(v => v);
-        const employeeIds     = (row.dataset.employeeIds  || '').split(',').filter(v => v);
+        const roleId = row.dataset.id ?? '';
+        if (!roleId) return;
 
-        // 填入基本資料
-        const idInput   = document.querySelector('#edit-role-id');
-        const nameInput = document.querySelector('#edit-role-name');
-        const descInput = document.querySelector('#edit-role-desc');
-        if (idInput)   idInput.value   = roleId;
-        if (nameInput) nameInput.value = roleName;
-        if (descInput) descInput.value = roleDescription;
+        try {
+            const res = await apiFetch(`/Roles/Edit/${roleId}`, { method: 'GET' });
+            if (!res || !res.ok) {
+                Swal.fire({ icon: 'error', title: '無法載入角色資料', confirmButtonColor: '#1A0D08' });
+                return;
+            }
 
-        // 勾選/取消 權限（disabled 的跳過）
-        document.querySelectorAll('#edit-perm-grid input[type="checkbox"]:not(:disabled)').forEach(cb => {
-            cb.checked = functions.includes(cb.value);
-        });
+            const data = await res.json();
 
-        // 勾選/取消 員工指派
-        document.querySelectorAll('#edit-employee-list input[type="checkbox"]').forEach(cb => {
-            cb.checked = employeeIds.includes(cb.value);
-        });
+            // 填入基本資料
+            const idInput = document.querySelector('#edit-role-id');
+            const nameInput = document.querySelector('#edit-role-name');
+            const descInput = document.querySelector('#edit-role-desc');
+            if (idInput) idInput.value = data.id;
+            if (nameInput) nameInput.value = data.roleName || '';
+            if (descInput) descInput.value = data.description || '';
 
-        const modal = document.querySelector('#modal-edit-role');
-        if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+            // 重新渲染權限卡片與員工清單
+            renderPermissionCards('#edit-perm-grid', data.allFunctions || [], data.selectedFunctionIds || []);
+            renderEmployeeList('#edit-employee-list', data.allUsers || [], data.selectedUserIds || []);
+
+            // 顯示 Modal
+            const modal = document.querySelector('#modal-edit-role');
+            if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+        }
+        catch (error) {
+            console.error('載入角色資料失敗:', error);
+            Swal.fire({ icon: 'error', title: '系統錯誤', text: '請稍後再試', confirmButtonColor: '#1A0D08' });
+        }
+        
+        
     });
 
     // 儲存變更確認按鈕
@@ -216,7 +243,7 @@ function initEditModal() {
         });
 
         try {
-            const res = await apiFetch(`/Role/Edit/${roleId}`, {
+            const res = await apiFetch(`/Roles/Edit/${roleId}`, {
                 method: 'PUT',
                 body: JSON.stringify({
                     id: parseInt(roleId, 10),
@@ -240,13 +267,107 @@ function initEditModal() {
             Swal.fire({ icon: 'error', title: '系統錯誤', text: '請稍後再試', confirmButtonColor: '#1A0D08' });
         }
     });
+
+    
+}
+
+
+/* ============================================================
+   動態渲染權限卡片（根據後端回傳的 AllFunctions）
+   ============================================================ */
+function renderPermissionCards(containerId, allFunctions, selectedIds) {
+    const container = document.querySelector(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // 🔥 建立 Bootstrap row 容器
+    const row = document.createElement('div');
+    row.className = 'row g-2';
+
+    allFunctions.forEach((func, index) => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6';  // 每個卡片佔 50% 寬度
+
+        const isOwnerOnly = func.isOwnerOnly;
+        const isChecked = selectedIds.includes(func.id);
+
+        // 根據不同 containerId 使用不同的 name 和 id 前綴
+        const prefix = containerId.includes('create') ? 'create' : 'edit';
+        const inputName = containerId.includes('create') ? 'functions' : 'edit-functions';
+
+        col.innerHTML = `
+            <div class="perm-card ${isOwnerOnly ? 'owner-only' : ''}">
+                <div class="form-check">
+                    <input type="checkbox" 
+                           class="form-check-input" 
+                           id="${prefix}-perm-${index}"
+                           name="${inputName}" 
+                           value="${func.id}"
+                           ${isChecked ? 'checked' : ''}
+                           ${isOwnerOnly ? 'disabled' : ''} />
+                    <label class="form-check-label" for="${prefix}-perm-${index}">
+                        <div class="d-flex align-items-center">
+                            <span class="perm-card-name">${func.displayName}</span>
+                            ${isOwnerOnly ? '<span class="owner-only-tag ms-2">僅限店長</span>' : ''}
+                        </div>
+                        <span class="perm-card-desc">${func.description || ''}</span>
+                    </label>
+                </div>
+            </div>
+        `;
+
+        row.appendChild(col);
+    });
+
+    container.appendChild(row);
+}
+
+/* ============================================================
+   動態渲染員工清單（根據後端回傳的 AllUsers）
+   ============================================================ */
+function renderEmployeeList(containerId, allUsers, selectedIds) {
+    const container = document.querySelector(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    allUsers.forEach((user, index) => {
+        const isChecked = selectedIds.includes(user.id);
+        const statusBadge = user.isActive
+            ? '<span class="badge bg-success ms-1">在職</span>'
+            : '<span class="badge bg-warning ms-1">請假</span>';
+
+        // 根據不同 containerId 使用不同的 id 前綴
+        const prefix = containerId.includes('create') ? 'create' : 'edit';
+
+        const item = document.createElement('div');
+        item.className = 'employee-assign-item';
+        item.innerHTML = `
+            <div class="form-check">
+                <input type="checkbox" 
+                       class="form-check-input me-2" 
+                       id="${prefix}-emp-${index}" 
+                       value="${user.id}"
+                       ${isChecked ? 'checked' : ''} />
+                <label class="form-check-label" for="${prefix}-emp-${index}">
+                    <span class="emp-name">${user.name}</span>
+                    <span class="emp-no">${user.employeeNumber}</span>
+                    <span class="emp-account">· ${user.account}</span>
+                    ${statusBadge}
+                </label>
+            </div>
+        `;
+
+        container.appendChild(item);
+    });
 }
 
 /* ============================================================
    刪除角色（事件委派）
    ============================================================ */
 function initDeleteAction() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click',async function (e) {
         const btn = e.target.closest('.btn-delete-role');
         if (!btn) return;
 
@@ -284,7 +405,7 @@ function initDeleteAction() {
             if (!result.isConfirmed) return;
 
             try {
-                const res = await apiFetch(`/Role/Delete/${roleId}`, { method: 'DELETE' });
+                const res = await apiFetch(`/Roles/Delete/${roleId}`, { method: 'DELETE' });
                 if (!res) return;
 
                 if (res.ok) {
