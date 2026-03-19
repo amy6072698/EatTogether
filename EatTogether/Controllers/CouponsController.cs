@@ -1,11 +1,13 @@
-﻿using EatTogether.Models.Services;
-using System;
+﻿using EatTogether.Models.Infra;
+using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace EatTogether.Controllers
 {
-    public class CouponsController : Controller
+	[RequirePermission("Coupon_Manage")]
+	public class CouponsController : Controller
     {
         private readonly CouponService _couponService;
 

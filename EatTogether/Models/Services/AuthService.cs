@@ -19,6 +19,7 @@ namespace EatTogether.Models.Services
 		private readonly IUserRepository _userRepo;
 		private readonly IRoleRepository _roleRepo;
 		private readonly IPasswordResetTokenRepository _tokenRepo;
+		private readonly IRoleFunctionRepository _roleFuncRepo;
 		private readonly IPasswordResetEmailService _emailService;
 		private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -26,12 +27,14 @@ namespace EatTogether.Models.Services
 			IUserRepository userRepo,
 			IRoleRepository roleRepo,
 			IPasswordResetTokenRepository tokenRepo,
+			IRoleFunctionRepository roleFuncRepo,
 			IPasswordResetEmailService emailService,
 			IHttpContextAccessor httpContextAccessor)
 		{
 			_userRepo = userRepo;
 			_roleRepo = roleRepo;
 			_tokenRepo = tokenRepo;
+			_roleFuncRepo = roleFuncRepo;
 			_emailService = emailService;
 			_httpContextAccessor = httpContextAccessor;
 		}
@@ -55,6 +58,9 @@ namespace EatTogether.Models.Services
 
 			var roleNames = await _roleRepo.GetRoleNamesByIdsAsync(user.RoleIds);
 
+			var functionNames = (await _roleFuncRepo.GetFunctionNamesByRoleIdsAsync(user.RoleIds)).ToList();
+
+
 			// 5. 驗證通過 → 組裝 LoginDto 回傳
 			var loginDto = new LoginDto
 			{
@@ -63,6 +69,7 @@ namespace EatTogether.Models.Services
 				Name = user.Name,
 				RoleIds = user.RoleIds,
 				RoleNames = roleNames,
+				FunctionNames = functionNames,
 				MustChangePassword = user.MustChangePassword
 			};
 

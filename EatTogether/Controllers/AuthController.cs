@@ -172,7 +172,8 @@ namespace EatTogether.Controllers
 				UserId = loginDto.UserId,
 				RoleIds = loginDto.RoleIds,
 				Name = loginDto.Name,
-				RoleNames = loginDto.RoleNames
+				RoleNames = loginDto.RoleNames,
+				FunctionNames = loginDto.FunctionNames
 			};
 
 			var token = _jwtHelper.GenerateToken(payloadDto);

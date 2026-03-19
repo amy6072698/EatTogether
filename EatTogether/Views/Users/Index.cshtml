@@ -94,7 +94,7 @@
                             data-email="@(row.Email)"
                             data-phone="@(row.Phone)"
                             data-hire-date="@(row.HireDate?.ToString("yyyy-MM-dd"))"
-                            data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")"
+                            data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")"
                             data-role-ids="@string.Join(",", row.RoleIds)">
                             <td>@row.EmployeeNumber</td>
                             <td>@row.Name</td>
@@ -102,7 +102,7 @@
                             <td>@(row.Email)</td>
                             <td>@(row.Phone)</td>
                             <td>@(row.HireDate?.ToString("yyyy-MM-dd"))</td>
-                            <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             <td>
                                 @foreach (var roleName in row.RoleNames)
                                 {

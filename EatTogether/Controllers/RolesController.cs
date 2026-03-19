@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-	//[RequirePermission("Staff_Manage")]
+	[RequirePermission("Staff_Manage")]
 	public class RolesController : Controller
 	{
 		private readonly IRoleService _roleService;
