@@ -282,6 +282,9 @@
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
+    .detail-table .split-check-col { display: none; }
+    .detail-table.split-active .split-check-col { display: table-cell; }
+
         .detail-table th {
             padding: 12px 16px;
             background: #f8f9fa;
@@ -842,12 +845,20 @@
                         </button>
                     </div>
                 </div>
-                <div id="couponTag" style="display:none; margin-bottom:14px; padding:10px 14px;
+                <div id="couponTag" style="display:none; margin-bottom:10px; padding:10px 14px;
                                 background:#fff8e1; border:1px solid #f0c040;
                                 border-radius:10px;">
                     <div style="font-size:0.75rem;color:#b7770d;font-weight:700;margin-bottom:4px;">優惠券</div>
                     <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#b7770d;">
                         🎫 <span id="couponTagName"></span>
+                    </div>
+                </div>
+                <div id="eventTag" style="display:none; margin-bottom:14px; padding:10px 14px;
+                                background:#f0fff4; border:1px solid #52c788;
+                                border-radius:10px;">
+                    <div style="font-size:0.75rem;color:#27ae60;font-weight:700;margin-bottom:4px;">🎉 活動優惠</div>
+                    <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#27ae60;">
+                        <span id="eventTagName"></span>
                     </div>
                 </div>
                 <div class="amount-row">
@@ -1030,10 +1041,11 @@
         }
 
         // 6. 渲染餐點明細表格
+        currentData = data;
         const tbody = document.getElementById('detailBody');
         tbody.innerHTML = '';
 
-        // 排序邏輯（只對父項目排序）：未出餐(0) -> 已出餐(1) -> 已結帳(2) -> 已取消(3)
+        // 排序邏輯：未出餐(0) -> 已出餐(1) -> 已結帳(2) -> 已取消(3)
         const sortOrder = item => {
             if (item.status === 2) return 3;
             if (item.isBilled === true) return 2;
@@ -1041,11 +1053,34 @@
             return 1;
         };
 
-        // 分離父項目（一般餐點 + 套餐標題）與子項目
         const parentItems = data.items.filter(i => !i.parentDetailId);
         const sortedParents = [...parentItems].sort((a, b) => sortOrder(a) - sortOrder(b));
 
-        sortedParents.forEach(item => {
+        // 非拆單模式：相同餐點合併顯示
+        let displayParents;
+        if (splitMode) {
+            displayParents = sortedParents;
+        } else {
+            const groupMap = new Map();
+            sortedParents.forEach(item => {
+                if (item.isSetMeal) {
+                    // 套餐不合併（每份套餐內容可能不同）
+                    groupMap.set('sm_' + item.detailId, { ...item });
+                    return;
+                }
+                const key = `${item.productName}|${item.unitPrice}|${item.status}|${item.isBilled}`;
+                if (groupMap.has(key)) {
+                    const g = groupMap.get(key);
+                    g.qty    += 1;
+                    g.subTotal += item.subTotal;
+                } else {
+                    groupMap.set(key, { ...item });
+                }
+            });
+            displayParents = [...groupMap.values()].sort((a, b) => sortOrder(a) - sortOrder(b));
+        }
+
+        displayParents.forEach(item => {
             const isCancelled = item.status === 2;
             const isUnserved  = item.status === 0;
             const isBilled    = item.isBilled === true;
@@ -1057,14 +1092,15 @@
             if (isSetMeal)   tr.classList.add('is-setmeal-row');
 
             let badge = '';
-            if (isSetMeal)   badge += `<span class="status-badge badge-setmeal">套餐</span>`;
-            if (isUnserved)  badge += `<span class="status-badge badge-unserved">未出餐</span>`;
-            if (isCancelled) badge += `<span class="status-badge badge-cancel">已取消</span>`;
+            if (isSetMeal)          badge += `<span class="status-badge badge-setmeal">套餐</span>`;
+            if (isUnserved)         badge += `<span class="status-badge badge-unserved">未出餐</span>`;
+            if (isCancelled)        badge += `<span class="status-badge badge-cancel">已取消</span>`;
+            if (item.isInvalidGift) badge += `<span class="status-badge" style="background:#e74c3c;color:#fff;">⚠️ 需補差價</span>`;
 
             // 拆單 checkbox：套餐標題可勾選（代表整份套餐），子項目不顯示
             const showCheck = !isCancelled && !isUnserved && !isBilled;
             tr.innerHTML = `
-                <td class="split-check-col" style="display:none;">
+                <td class="split-check-col">
                     ${showCheck ? `<input type="checkbox" class="detail-check"
                         data-detail-id="${item.detailId}"
                         data-subtotal="${item.subTotal}"
@@ -1090,7 +1126,7 @@
                     childTr.dataset.parentId = item.detailId;
                     childTr.dataset.detailId = child.detailId;
                     childTr.innerHTML = `
-                        <td class="split-check-col" style="display:none;"></td>
+                        <td class="split-check-col"></td>
                         <td style="padding-left:28px;">
                             <span style="color:#e67e22;margin-right:4px;">└</span>${child.productName}
                         </td>
@@ -1103,7 +1139,11 @@
             }
         });
 
-        // 7. 更新金額資訊
+        // 7. 套用拆單模式 class（renderDetail 重新渲染後確保 class 正確）
+        document.querySelector('.detail-table')?.classList.toggle('split-active', splitMode);
+        document.getElementById('splitCheckCol').style.display = splitMode ? '' : 'none';
+
+        // 8. 更新金額資訊
         document.getElementById('amtOriginal').textContent = data.originalAmount.toLocaleString();
         document.getElementById('amtDiscount').textContent = data.discountAmount.toLocaleString();
         document.getElementById('amtTotal').textContent    = data.totalAmount.toLocaleString();
@@ -1116,6 +1156,16 @@
             couponTag.style.display = 'block';
         } else {
             couponTag.style.display = 'none';
+        }
+
+        // 9. 活動標籤顯示
+        const eventTag  = document.getElementById('eventTag');
+        const eventName = document.getElementById('eventTagName');
+        if (data.eventTitle) {
+            eventName.textContent  = data.eventTitle;
+            eventTag.style.display = 'block';
+        } else {
+            eventTag.style.display = 'none';
         }
 
         // 9. 更新全域變數與付款狀態
@@ -1352,6 +1402,7 @@
                 document.getElementById('unservedWarning').style.display = 'none';
                 document.getElementById('checkoutBtn').classList.remove('show');
                 document.getElementById('couponTag').style.display = 'none';
+                document.getElementById('eventTag').style.display  = 'none';
                 setTimeout(() => window.location.href = "/Payments/Create", 1500);
             } else {
                 // 取消未出餐並結帳，正常重新渲染明細
@@ -1395,6 +1446,7 @@
                     document.getElementById('unservedWarning').style.display = 'none';
                     document.getElementById('checkoutBtn').classList.remove('show');
                     document.getElementById('couponTag').style.display = 'none';
+                    document.getElementById('eventTag').style.display  = 'none';
                     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
                     if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
                     setTimeout(() => window.location.href = "/Payments/Create", 1500);
@@ -1477,27 +1529,26 @@
     }
     });
         let splitMode = false;
+    let currentData = null;
 
     function toggleSplitMode() {
         splitMode = !splitMode;
-        const btn       = document.getElementById('splitModeBtn');
-        const checkCol  = document.querySelectorAll('#splitCheckCol, .split-check-col');
-        const splitSec  = document.getElementById('splitBillSection');
-        const normalSec = document.getElementById('checkoutBtn').parentElement.parentElement;
+        const btn      = document.getElementById('splitModeBtn');
+        const splitSec = document.getElementById('splitBillSection');
 
-        btn.textContent = splitMode ? '取消拆單' : '拆單結帳';
-        btn.style.background = splitMode ? '#fff5f5' : '#fff';
-        btn.style.color      = splitMode ? '#c0392b' : '#1a77c9';
-        btn.style.borderColor= splitMode ? '#c0392b' : '#1a77c9';
+        btn.textContent  = splitMode ? '取消拆單' : '拆單結帳';
+        btn.style.background  = splitMode ? '#fff5f5' : '#fff';
+        btn.style.color       = splitMode ? '#c0392b' : '#1a77c9';
+        btn.style.borderColor = splitMode ? '#c0392b' : '#1a77c9';
 
-        checkCol.forEach(el => el.style.display = splitMode ? '' : 'none');
-        splitSec.style.display  = splitMode ? 'block' : 'none';
+        splitSec.style.display = splitMode ? 'block' : 'none';
 
-        // 取消拆單時清除所有勾選
         if (!splitMode) {
-            document.querySelectorAll('.detail-check').forEach(c => c.checked = false);
             document.getElementById('splitSubtotal').textContent = '0';
         }
+
+        // 重新渲染明細（切換合併/拆開顯示）
+        if (currentData) renderDetail(currentData);
     }
 
     function toggleAll(master) {
@@ -1578,6 +1629,7 @@
             document.getElementById('checkoutBtn').classList.remove('show');
             document.getElementById('unservedWarning').style.display = 'none';
             document.getElementById('couponTag').style.display = 'none';
+            document.getElementById('eventTag').style.display  = 'none';
             // 1.5 秒後 reload 更新左側桌子狀態
             setTimeout(() => window.location.href = "/Payments/Create", 1500);
         }

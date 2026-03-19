@@ -30,4 +30,6 @@ public partial class Event
     public int IsAutoDiscount { get; set; }
 
     public virtual ICollection<Article> Articles { get; set; } = new List<Article>();
+
+    public virtual ICollection<PreOrder> PreOrders { get; set; } = new List<PreOrder>();
 }

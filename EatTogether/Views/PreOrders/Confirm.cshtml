@@ -4,6 +4,7 @@
     ViewData["Title"] = "確認訂單";
     // 之後做登入後改成 User.Identity.IsAuthenticated
     bool isMember = false;
+    var bestEvent = Model.ApplicableEvents.FirstOrDefault();
 }
 
 <style>
@@ -210,6 +211,7 @@
 
         .amount-row.discount {
             color: #27ae60;
+            font-size: 0.88rem;
         }
 
         .amount-row.total {
@@ -332,7 +334,8 @@
         <input type="hidden" name="TableId" value="@Model.TableId" />
         <input type="hidden" name="InOrOut" value="@Model.InOrOut.ToString().ToLower()" />
         <input type="hidden" name="Note" value="@Model.Note" />
-        <input type="hidden" name="DiscountAmount" id="discountAmount" value="0" />
+        <input type="hidden" name="DiscountAmount" id="discountAmount" value="@(bestEvent?.CalculatedDiscount ?? 0)" />
+        <input type="hidden" name="EventId" id="eventIdInput" value="@bestEvent?.Id" />
 
         <!-- 訂單資訊 -->
         <div class="card">
@@ -433,6 +436,22 @@
                     </div>
                 }
             }
+
+            @* 活動贈品預覽（NT$0，不可增減） *@
+            @foreach (var giftEv in Model.ApplicableEvents.Where(e => e.DiscountType == "Gift" && !string.IsNullOrEmpty(e.RewardItem)))
+            {
+                <div class="item-row gift-preview-row" data-gift-name="@giftEv.RewardItem">
+                    <div>
+                        <div class="item-name">
+                            🎁 @giftEv.RewardItem
+                            <span style="font-size:0.72rem;background:#27ae60;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">活動贈品</span>
+                        </div>
+                        <div class="item-unit" style="color:#27ae60;">@giftEv.Title</div>
+                    </div>
+                    <div class="item-price" style="color:#27ae60;font-weight:700;">NT$ 0</div>
+                </div>
+            }
+            <div id="dynamicGiftRows"></div>
         </div>
 
         <!-- 優惠券 -->
@@ -446,6 +465,12 @@
             <p id="couponMsg" class="coupon-msg"></p>
         </div>
 
+        <!-- 活動優惠（動態渲染） -->
+        <div id="eventCard" class="card" style="display:none;border-color:#27ae60;background:#f0fff4;">
+            <div class="section-title" style="color:#27ae60;">🎉 活動優惠</div>
+            <div id="eventsList"></div>
+        </div>
+
         <!-- 金額 -->
         <div class="card">
             <div class="section-title">金額明細</div>
@@ -453,13 +478,18 @@
                 <span>餐點金額</span>
                 <span>NT$ <span id="originalAmount">@Model.OriginalAmount</span></span>
             </div>
-            <div class="amount-row discount">
-                <span>折扣金額</span>
-                <span>− NT$ <span id="discountDisplay">0</span></span>
+            <div class="amount-row discount" id="eventDiscountRow"
+                 style="@(bestEvent != null && bestEvent.CalculatedDiscount > 0 ? "display:flex;" : "display:none;")">
+                <span>活動折扣小計</span>
+                <span>− NT$ <span id="eventDiscountDisplay">@(bestEvent?.CalculatedDiscount ?? 0)</span></span>
+            </div>
+            <div class="amount-row discount" id="couponDiscountRow" style="display:none;">
+                <span>優惠券折扣</span>
+                <span>− NT$ <span id="couponDiscountDisplay">0</span></span>
             </div>
             <div class="amount-row total">
                 <span>最後金額</span>
-                <span>NT$ <span id="totalAmount">@Model.OriginalAmount</span></span>
+                <span>NT$ <span id="totalAmount">@(Model.OriginalAmount - (bestEvent?.CalculatedDiscount ?? 0))</span></span>
             </div>
         </div>
 
@@ -493,9 +523,33 @@
     </form>
 </div>
 
+<!-- 贈品重複詢問 Modal -->
+<div id="giftModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:28px 28px 20px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:10px;color:#1a1a1a;">🎁 活動贈品通知</div>
+        <div id="giftModalMsg" style="font-size:0.92rem;color:#444;line-height:1.6;margin-bottom:20px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button id="giftModalCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;color:#555;font-size:0.9rem;cursor:pointer;">只要贈品</button>
+            <button id="giftModalConfirm" style="padding:8px 20px;border-radius:8px;border:none;background:#27ae60;color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;">兩份都要</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const unitPrices = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.UnitPrice)))];
     const qtys       = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.Qty)))];
+    let totalItems   = @Model.Items.Count; // 追蹤 Items 陣列長度（供贈品項目插入）
+
+    // 伺服器端預載活動資料
+    const serverEvents = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.ApplicableEvents,
+        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+    ));
+
+    // 活動相關狀態（初始值由伺服器端提供）
+    let currentEventId        = @(bestEvent != null ? bestEvent.Id.ToString() : "null");
+    let eventCouponDiscount   = 0;
+    let eventActivityDiscount = @(bestEvent?.CalculatedDiscount ?? 0);
 
     function changeQty(idx, delta) {
         qtys[idx] = Math.max(0, qtys[idx] + delta);
@@ -513,22 +567,42 @@
         recalculate();
     }
 
-    function recalculate() {
+    async function recalculate() {
         let original = 0;
         qtys.forEach((q, i) => { original += q * unitPrices[i]; });
 
-        // 數量改變時重新驗證優惠券
-        const couponId = document.getElementById('couponIdInput').value;
-        if (couponId) applyCoupon();  // 重新打 API 確認 MinSpend 是否仍符合
-
-        const discount = parseInt(document.getElementById('discountAmount').value || 0);
         document.getElementById('originalAmount').textContent = original;
-        document.getElementById('totalAmount').textContent    = original - discount;
+
+        // 重新驗證優惠券（金額改變可能影響 MinSpend）
+        const couponId = document.getElementById('couponIdInput').value;
+        if (couponId) {
+            await applyCoupon();  // 內部已呼叫 checkEvents + updateTotals
+        } else {
+            await checkEvents(original);
+            updateTotals();
+        }
 
         // 全部為 0 → 鎖住送出
         const hasItem = qtys.some(q => q > 0);
         document.getElementById('submitBtn').disabled           = !hasItem;
         document.getElementById('emptyWarning').style.display  = hasItem ? 'none' : 'block';
+    }
+
+    /** 更新折扣顯示與合計 */
+    function updateTotals() {
+        const original = parseInt(document.getElementById('originalAmount').textContent);
+        const totalDiscount = eventCouponDiscount + eventActivityDiscount;
+
+        // 活動折扣小計列（有折扣才顯示）
+        document.getElementById('eventDiscountRow').style.display = eventActivityDiscount > 0 ? 'flex' : 'none';
+        document.getElementById('eventDiscountDisplay').textContent = eventActivityDiscount;
+
+        // 優惠券折扣列（有優惠券才顯示）
+        document.getElementById('couponDiscountRow').style.display = eventCouponDiscount > 0 ? 'flex' : 'none';
+        document.getElementById('couponDiscountDisplay').textContent = eventCouponDiscount;
+
+        document.getElementById('discountAmount').value    = totalDiscount;
+        document.getElementById('totalAmount').textContent = Math.max(0, original - totalDiscount);
     }
 
     async function applyCoupon() {
@@ -537,9 +611,11 @@
         const original = parseInt(document.getElementById('originalAmount').textContent);
 
         if (!code) {
-            setDiscount(0);
+            eventCouponDiscount = 0;
             document.getElementById('couponIdInput').value = '';
             msg.style.display = 'none';
+            await checkEvents(original);
+            updateTotals();
             return;
         }
 
@@ -552,29 +628,149 @@
             const data = await res.json();
 
             if (data.isValid) {
-                setDiscount(data.discount);
+                eventCouponDiscount = data.discount;
                 document.getElementById('couponIdInput').value = data.couponId;
                 msg.className   = 'coupon-msg ok';
                 msg.textContent = data.message;
             } else {
-                setDiscount(0);
+                eventCouponDiscount = 0;
                 document.getElementById('couponIdInput').value = '';
                 msg.className   = 'coupon-msg err';
                 msg.textContent = '❌ ' + data.message;
             }
         } catch {
+            eventCouponDiscount = 0;
             msg.className   = 'coupon-msg err';
             msg.textContent = '❌ 驗證失敗，請稍後再試';
         }
 
         msg.style.display = 'block';
+        await checkEvents(original);
+        updateTotals();
     }
 
+    /** 查詢符合條件的活動（初次載入用 server 資料，之後改量時用 AJAX） */
+    async function checkEvents(originalAmount, useServerData) {
+        if (originalAmount <= 0) {
+            clearEvent();
+            return;
+        }
+
+        let events;
+        if (useServerData) {
+            events = serverEvents;
+        } else {
+            try {
+                const res = await fetch(`/Events/GetApplicableEvents?amount=${originalAmount}`);
+                if (!res.ok) { clearEvent(); return; }
+                events = await res.json();
+            } catch {
+                clearEvent();
+                return;
+            }
+        }
+
+        // 過濾出金額達標的活動
+        const matched = (events || []).filter(e => e.minSpend <= originalAmount);
+        renderEvents(matched);
+    }
+
+    function renderEvents(matched) {
+        const card  = document.getElementById('eventCard');
+        const list  = document.getElementById('eventsList');
+
+        if (!matched || matched.length === 0) {
+            card.style.display    = 'none';
+            list.innerHTML        = '';
+            currentEventId        = null;
+            eventActivityDiscount = 0;
+            document.getElementById('eventIdInput').value = '';
+            updateGiftRows([]);
+            return;
+        }
+
+        // 折扣類活動取門檻最高的，贈品全部套用
+        const discountEvents = matched.filter(e => e.discountType !== 'Gift');
+        const giftEvents     = matched.filter(e => e.discountType === 'Gift');
+        const bestDiscount   = discountEvents.length
+            ? discountEvents.reduce((b, e) => e.minSpend > b.minSpend ? e : b, discountEvents[0])
+            : null;
+
+        const activeEvents = bestDiscount ? [bestDiscount, ...giftEvents] : giftEvents;
+
+        // 更新 EventId（折扣活動 or 第一個贈品活動）
+        const primaryEv = bestDiscount ?? giftEvents[0];
+        currentEventId  = primaryEv.id;
+        document.getElementById('eventIdInput').value = primaryEv.id;
+        eventActivityDiscount = bestDiscount?.calculatedDiscount ?? 0;
+
+        // 活動優惠 card 只顯示折扣類（非贈品）活動
+        const cardEvents = activeEvents.filter(e => e.discountType !== 'Gift');
+        if (cardEvents.length > 0) {
+            list.innerHTML = cardEvents.map((ev, i) => `
+                <div style="display:flex;align-items:center;gap:12px;${i > 0 ? 'margin-top:10px;padding-top:10px;border-top:1px solid #d4edda;' : ''}">
+                    <div style="flex:1;">
+                        <div style="font-weight:700;color:#1a1a1a;font-size:0.95rem;">${ev.title}</div>
+                        <div style="font-size:0.82rem;color:#555;">${ev.summary}</div>
+                    </div>
+                    <div style="background:#27ae60;color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;font-size:0.88rem;white-space:nowrap;">${ev.discountDescription}</div>
+                </div>`).join('');
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+            list.innerHTML = '';
+        }
+
+        // 更新贈品預覽列
+        updateGiftRows(giftEvents);
+    }
+
+    function updateGiftRows(giftEvents) {
+        // 1. 隱藏所有靜態贈品列（Razor 預渲染的）
+        document.querySelectorAll('.gift-preview-row').forEach(row => {
+            row.style.display = 'none';
+        });
+
+        const container = document.getElementById('dynamicGiftRows');
+        container.innerHTML = '';
+
+        // 2. 為每個符合條件的贈品活動建立或顯示贈品列
+        giftEvents.forEach(ev => {
+            if (!ev.rewardItem) return;
+
+            // 優先找靜態列（Razor 已渲染的）
+            const staticRow = [...document.querySelectorAll('.gift-preview-row')]
+                .find(r => r.dataset.giftName?.trim() === ev.rewardItem.trim());
+
+            if (staticRow) {
+                staticRow.style.display = '';
+            } else {
+                // 動態建立
+                const div = document.createElement('div');
+                div.className = 'item-row gift-preview-row';
+                div.dataset.giftName = ev.rewardItem;
+                div.innerHTML = `
+                    <div>
+                        <div class="item-name">
+                            🎁 ${ev.rewardItem}
+                            <span style="font-size:0.72rem;background:#27ae60;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">活動贈品</span>
+                        </div>
+                        <div class="item-unit" style="color:#27ae60;">${ev.title}</div>
+                    </div>
+                    <div class="item-price" style="color:#27ae60;font-weight:700;">NT$ 0</div>`;
+                container.appendChild(div);
+            }
+        });
+    }
+
+    function clearEvent() {
+        renderEvents([]);
+    }
+
+    // 相容舊版呼叫（僅優惠券折扣）
     function setDiscount(amount) {
-        document.getElementById('discountAmount').value        = amount;
-        document.getElementById('discountDisplay').textContent = amount;
-        const original = parseInt(document.getElementById('originalAmount').textContent);
-        document.getElementById('totalAmount').textContent     = original - amount;
+        eventCouponDiscount = amount;
+        updateTotals();
     }
 
     function setPayMethod(method) {
@@ -583,4 +779,54 @@
             document.getElementById('pay-' + m).classList.toggle('active', m === method);
         });
     }
+
+    // 自訂 Modal（取代 confirm()）
+    function showGiftModal(giftName) {
+        return new Promise(resolve => {
+            const modal   = document.getElementById('giftModal');
+            const msg     = document.getElementById('giftModalMsg');
+            const btnOk   = document.getElementById('giftModalConfirm');
+            const btnCancel = document.getElementById('giftModalCancel');
+
+            msg.textContent = `活動將免費贈送「${giftName}」，您已加入了這道餐點，是否還需要保留原本點的這份（需付費）？`;
+            modal.style.display = 'flex';
+
+            const cleanup = (result) => {
+                modal.style.display = 'none';
+                btnOk.removeEventListener('click', onOk);
+                btnCancel.removeEventListener('click', onCancel);
+                resolve(result);
+            };
+            const onOk     = () => cleanup(true);
+            const onCancel = () => cleanup(false);
+            btnOk.addEventListener('click', onOk);
+            btnCancel.addEventListener('click', onCancel);
+        });
+    }
+
+    // 頁面載入：檢查贈品是否與已點餐點重複，詢問是否保留付費那份
+    (async function checkGiftDuplicates() {
+        const giftRows = document.querySelectorAll('.gift-preview-row');
+        if (!giftRows.length) return;
+
+        const paidRows = [...document.querySelectorAll('.item-row:not(.gift-preview-row)')]
+            .filter(row => row.id && row.id.startsWith('row-'));
+
+        for (const giftRow of giftRows) {
+            const giftName = giftRow.dataset.giftName?.trim().toLowerCase();
+            if (!giftName) continue;
+
+            for (const row of paidRows) {
+                const idx    = parseInt(row.id.replace('row-', ''));
+                const nameEl = row.querySelector('.item-name');
+                const paidName = nameEl?.firstChild?.textContent?.trim().toLowerCase() ?? '';
+                if (!document.getElementById(`qty-hidden-${idx}`)) continue;
+
+                if (paidName.includes(giftName) || giftName.includes(paidName)) {
+                    const keep = await showGiftModal(giftRow.dataset.giftName);
+                    if (!keep) changeQty(idx, -1);
+                }
+            }
+        }
+    })();
 </script>

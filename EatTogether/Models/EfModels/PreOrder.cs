@@ -23,6 +23,10 @@ public partial class PreOrder
 
     public int? CouponId { get; set; }
 
+    public int? EventId { get; set; }
+
+    public int? PeopleNum { get; set; }
+
     public int OriginalAmount { get; set; }
 
     public int DiscountAmount { get; set; }
@@ -40,6 +44,8 @@ public partial class PreOrder
     public DateTime? CancelledAt { get; set; }
 
     public virtual Coupon Coupon { get; set; }
+
+    public virtual Event Event { get; set; }
 
     public virtual Member Member { get; set; }
 

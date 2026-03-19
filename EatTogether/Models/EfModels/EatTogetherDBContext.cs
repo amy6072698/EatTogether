@@ -423,6 +423,10 @@ public partial class EatTogetherDBContext : DbContext
                 .HasForeignKey(d => d.CouponId)
                 .HasConstraintName("FK_PreOrders_Coupons");
 
+            entity.HasOne(d => d.Event).WithMany(p => p.PreOrders)
+                .HasForeignKey(d => d.EventId)
+                .HasConstraintName("FK_PreOrders_Events");
+
             entity.HasOne(d => d.Member).WithMany(p => p.PreOrders)
                 .HasForeignKey(d => d.MemberId)
                 .HasConstraintName("FK_PreOrders_Members");

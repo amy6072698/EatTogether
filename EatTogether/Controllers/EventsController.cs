@@ -111,6 +111,39 @@ namespace EatTogether.Controllers
 			return View("Create", vm);
 		}
 
+		/// <summary>AJAX：依消費金額回傳符合條件的進行中活動（供點餐確認頁自動套用）</summary>
+		[HttpGet]
+		public async Task<IActionResult> GetApplicableEvents(int amount)
+		{
+			var events = await _service.GetApplicableEventsAsync(amount);
+			return Json(events);
+		}
 
+		/// <summary>診斷用：回傳所有活動的狀態（Debug 用，上線前可移除）</summary>
+		[HttpGet]
+		public async Task<IActionResult> DiagEvents(int amount = 0)
+		{
+			var all = await _service.GetAllForIndexAsync();
+			var today = DateTime.Today;
+			return Json(new
+			{
+				today = today.ToString("yyyy-MM-dd"),
+				amount,
+				events = all.Select(e => new
+				{
+					e.Id,
+					e.Title,
+					e.Status,
+					startDate = e.StartDate.ToString("yyyy-MM-dd"),
+					endDate = e.EndDate.ToString("yyyy-MM-dd"),
+					e.MinSpend,
+					e.DiscountType,
+					e.DiscountValue,
+					isDateOk = e.StartDate.Date <= today && e.EndDate.Date >= today,
+					isAmountOk = amount > 0 && e.MinSpend <= amount,
+					isStatusOk = e.Status == 1
+				})
+			});
+		}
 	}
 }

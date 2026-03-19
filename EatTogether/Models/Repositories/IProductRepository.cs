@@ -9,5 +9,6 @@ namespace EatTogether.Models.Repositories
 
         // 12
         Task<List<SetMealItemGroupDto>> GetSetMealItemsAsync(int setMealId);
+        Task<int?> GetPriceByNameAsync(string name);
     }
 }

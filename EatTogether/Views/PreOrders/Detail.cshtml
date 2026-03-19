@@ -368,7 +368,27 @@
                 </div>
             </div>
                         }
+
+            @if (Model.PeopleNum.HasValue)
+            {
+                <div class="info-item">
+                    <div class="info-label">用餐人數</div>
+                    <div class="info-value">@Model.PeopleNum 人</div>
+                </div>
+            }
         </div>
+
+        <!-- 活動 -->
+        @if (!string.IsNullOrEmpty(Model.EventTitle))
+        {
+            <div style="margin-top:16px">
+                <div class="info-label" style="margin-bottom:6px">套用活動</div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#eafaf1;border:1px dashed #a9dfbf;border-radius:10px;">
+                    <span style="font-size:1.2rem">🎉</span>
+                    <div style="font-weight:700;color:#1a1a1a;font-size:0.92rem;">@Model.EventTitle</div>
+                </div>
+            </div>
+        }
 
         <!-- 備註 -->
         @if (!string.IsNullOrEmpty(Model.Note))

@@ -1,4 +1,6 @@
-﻿namespace EatTogether.Models.ViewModels
+﻿using EatTogether.Models.DTOs;
+
+namespace EatTogether.Models.ViewModels
 {
     public class ConfirmPreOrderViewModel
     {
@@ -9,7 +11,9 @@
         public int? CouponId { get; set; }
         public string? CouponCode { get; set; }
         public int DiscountAmount { get; set; }
+        public int? EventId { get; set; }
         public List<CreatePreOrderItemViewModel> Items { get; set; } = new();
+        public List<EventApplicableDto> ApplicableEvents { get; set; } = new();
         public int OriginalAmount => Items
                                       .Where(i => !i.ParentIndex.HasValue)
                                       .Sum(i => i.Qty * i.UnitPrice);

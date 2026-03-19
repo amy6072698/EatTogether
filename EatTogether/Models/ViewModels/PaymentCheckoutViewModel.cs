@@ -11,6 +11,7 @@
         public string PayMethod { get; set; }
         public int OriginalAmount { get; set; }
         public string? CouponName { get; set; }
+        public string? EventTitle { get; set; }
         public int DiscountAmount { get; set; }
         public int TotalAmount { get; set; }
         public bool HasUnserved { get; set; }

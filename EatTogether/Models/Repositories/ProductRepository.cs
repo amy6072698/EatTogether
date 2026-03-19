@@ -74,7 +74,7 @@ namespace EatTogether.Models.Repositories
                 .OrderBy(s => s.DisplayOrder)
                 .ToListAsync();
 
-            // ©T©w¶µ¥Ø¡]IsOptional=0¡^©ñ GroupNo=0
+            // ï¿½Tï¿½wï¿½ï¿½ï¿½Ø¡]IsOptional=0ï¿½^ï¿½ï¿½ GroupNo=0
             var result = items
                 .GroupBy(s => s.IsOptional ? s.OptionGroupNo ?? 0 : -1)
                 .OrderBy(g => g.Key)
@@ -93,6 +93,15 @@ namespace EatTogether.Models.Repositories
                 .ToList();
 
             return result;
+        }
+
+        public async Task<int?> GetPriceByNameAsync(string name)
+        {
+            var dish = await _context.Dishes
+                .Where(d => d.DishName == name)
+                .Select(d => (int?)d.Price)
+                .FirstOrDefaultAsync();
+            return dish;
         }
     }
 }

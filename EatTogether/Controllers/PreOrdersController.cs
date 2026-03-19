@@ -105,6 +105,9 @@ namespace EatTogether.Controllers
                 return View("Create", vm);
             }
 
+            // 伺服器端預先查詢符合金額的活動
+            confirmVm.ApplicableEvents = await _service.GetApplicableEventsAsync(confirmVm.OriginalAmount);
+
             return View(confirmVm);
         }
 
@@ -121,6 +124,7 @@ namespace EatTogether.Controllers
                 PayMethod = vm.PayMethod,
                 Note = vm.Note,
                 CouponId = vm.CouponId,
+                EventId = vm.EventId,
                 DiscountAmount = vm.DiscountAmount,
                 Items = vm.Items
                     .Where(i => i.Qty > 0 || i.ParentIndex.HasValue)
