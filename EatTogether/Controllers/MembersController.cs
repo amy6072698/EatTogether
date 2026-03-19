@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-	//[RequirePermission("Member_Manage")]
+	[RequirePermission("Member_Manage")]
 	public class MembersController : Controller
     {
 		private readonly IMemberService _memberService;
@@ -31,13 +31,14 @@ namespace EatTogether.Controllers
 			return View(vm);
 		}
 
-		// GET /Members/Detail/{id}  �X JSON�A�ѸԱ� Modal AJAX �I�s
+		// GET /Members/Detail/{id}
+		// JSON，供詳情 Modal AJAX 呼叫
 		[HttpGet]
 		public async Task<IActionResult> Detail(int id)
 		{
 			var dto = await _memberService.GetDetailAsync(id);
 			if (dto is null)
-				return NotFound(new { message = "�䤣��ӷ|���C" });
+				return NotFound(new { message = "找不到該會員" });
 
 			return Json(dto.ToDetailVm());
 		}
@@ -48,7 +49,7 @@ namespace EatTogether.Controllers
 			var result = await _memberService.BlacklistAsync(id, request?.Reason);
 
 			return result.IsSuccess
-				? Ok(new { message = "�w���\�[�J�¦W��C" })
+				? Ok(new { message = "已成功加入黑名單" })
 				: BadRequest(new { message = result.ErrorMessage });
 		}
 
@@ -59,7 +60,7 @@ namespace EatTogether.Controllers
 			var result = await _memberService.UnblacklistAsync(id);
 
 			return result.IsSuccess
-				? Ok(new { message = "�w���\�Ѱ��¦W��C" })
+				? Ok(new { message = "已成功解除黑名單" })
 				: BadRequest(new { message = result.ErrorMessage });
 		}
 	}
