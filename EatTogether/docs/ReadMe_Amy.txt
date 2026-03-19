@@ -772,7 +772,7 @@
 
 	[V] 補上驗證 RoleCreateDto、RoleEditDto
 
-[working] add 刪除角色功能
+[V] add 刪除角色功能
 	url: DELETE /Role/Delete/{id}
 
 	[V] RoleRepository（modify）
@@ -797,49 +797,54 @@
 =========
 [RequirePermission("Member_Manage")] 套用於所有 Member Actions
 
-[] add 會員列表功能
+[working] add 會員列表功能
 	url: GET /Member/Index
 
-	[] DTO（Models/DTOs/MemberListDto.cs）
+	[V] DTO（Models/DTOs/MemberListDto.cs）
 		MemberListDto
 			int Id
 			string Name, Account, Email
 			string? Phone
+			DateOnly? BirthDate
 			DateTime CreatedAt
 			bool IsConfirmed, IsBlacklisted, IsDeleted
+			DateTime? DeletedAt
 			string? BlacklistReason
 
-	[] DTO（Models/DTOs/MemberSearchDto.cs）
+	[V] DTO（Models/DTOs/MemberSearchDto.cs）
 		MemberSearchDto
 			string? Name, Account, Email, Phone
 			string Status   // All / Normal / Unconfirmed / Blacklisted / Deleted
 			string SortBy   // CreatedAt_Desc / CreatedAt_Asc
 
-	[] IMemberRepository / MemberRepository（Models/Repositories/MemberRepository.cs）
+	[V] IMemberRepository / MemberRepository（Models/Repositories/MemberRepository.cs）
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto dto)
 			// 狀態優先順序：IsDeleted=1 → 已刪除；IsBlacklisted=1 → 黑名單；IsConfirmed=0 → 未驗證；其餘 → 正常
 
-	[] IMemberService / MemberService（Models/Services/MemberService.cs）
+	[V] IMemberService / MemberService（Models/Services/MemberService.cs）
 		ctor(IMemberRepository repo)
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto dto)
 
-	[] ViewModel（Models/ViewModels/MemberIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberViewModel.cs）
 		MemberIndexViewModel
 			IEnumerable<MemberRowViewModel> Rows
 			string? Name, Account, Email, Phone
 			string Status, SortBy
 
-	[] ViewModel（Models/ViewModels/MemberRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberViewModel.cs）
 		MemberRowViewModel
 			// 對應 MemberListDto + 前端顯示用欄位
 			string StatusText    // 啟用中 / 未驗證 / 黑名單 / 已刪除
 			string StatusColor   // green / yellow / red / gray
 			string ButtonType    // blacklist / unblacklist / disabled / none
 
-	[] Extension（Models/Extensions/MemberDtoExtension.cs）
-		MemberRowViewModel ToRowViewModel(this MemberListDto dto)
+	[V] Extension（Models/Extensions/MemberDtoExtension.cs）
+		(string text, string color) ResolveStatus(MemberListDto dto)
+		string ResolveButtonType(MemberListDto dto)
+		MemberRowViewModel ToRowVm(this MemberListDto dto)
+		MemberDetailViewModel ToDetailVm(this MemberDetailDto dto)
 
-	[] MemberController（Controllers/MemberController.cs）
+	[V] MemberController（Controllers/MemberController.cs）
 		GET /Member/Index
 
 	[V] Members/Index.cshtml（Views/Members/Index.cshtml）
@@ -859,7 +864,7 @@
 [] add 會員詳情功能
 	url: GET /Member/Detail/{id}
 
-	[] DTO（Models/DTOs/MemberDetailDto.cs）
+	[V] DTO（Models/DTOs/MemberDetailDto.cs）
 		MemberDetailDto
 			// 同 MemberListDto + BirthDate, AvatarFileName, DeletedAt
 
@@ -872,7 +877,7 @@
 	[] MemberService（modify）
 		Task<MemberDetailDto?> GetDetailAsync(int id)
 
-	[] ViewModel（Models/ViewModels/MemberDetailViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberDetailViewModel.cs）
 		MemberDetailViewModel
 			// 對應 MemberDetailDto
 			// 黑名單原因：黑名單狀態顯示；未填寫顯示「（未填寫）」
