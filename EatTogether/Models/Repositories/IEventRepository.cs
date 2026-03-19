@@ -8,5 +8,6 @@ namespace EatTogether.Models.Repositories
 		Task<List<EventDto>> GetAllAsync();
 		Task EditAsync(EventEditDto dto);
 		Task<EventEditDto> GetEditByIdAsync(int id);
+		Task<List<EventApplicableDto>> GetApplicableEventsAsync(int amount);
 	}
 }
