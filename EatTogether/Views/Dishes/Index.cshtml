@@ -414,8 +414,9 @@
 
                 return matchCategory && matchSearch && matchStatus;
             });
-            // filteredCards.sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order)); // Bug 1 Fix: Removed this line
-
+            
+            // 確保最新新增的餐點（ID 較大）顯示在最前面
+            filteredCards.sort((a, b) => parseInt(b.dataset.id) - parseInt(a.dataset.id));
 
             if (resetPage) currentPage = 1;
             renderPage();

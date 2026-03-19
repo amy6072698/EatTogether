@@ -19,6 +19,7 @@
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="ImageUrl" />
                 <input type="hidden" id="croppedImageData" name="CroppedImageData" />
+                <input type="hidden" id="itemsJson" name="ItemsJson" />
 
                 <div class="row">
                     <!-- 左側資料區 -->
@@ -34,7 +35,7 @@
                                 <label class="form-label fw-bold text-secondary">套餐定價</label>
                                 <div class="input-group input-group-lg shadow-sm">
                                     <span class="input-group-text bg-light border-light-subtle">$</span>
-                                    <input asp-for="SetPrice" class="form-control border-light-subtle" min="0" step="1" />
+                                    <input asp-for="SetPrice" class="form-control border-light-subtle" min="0" step="1" value="@Model.SetPrice?.ToString("0")" />
                                 </div>
                                 <span asp-validation-for="SetPrice" class="text-danger small"></span>
                             </div>
@@ -107,7 +108,7 @@
                             <label class="form-label fw-bold text-secondary d-block text-start mb-3">套餐圖片</label>
 
                             <div id="imageArea" class="position-relative border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center"
-                                 style="aspect-ratio: 4/3; cursor: pointer;" onclick="document.getElementById('imageInput').click()">
+                                 style="aspect-ratio: 4/3; cursor: pointer; border: 2px dashed #cbd5e0 !important;" onclick="editOrUploadImage()">
 
                                 <div id="placeholderContent" class="text-center" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : "display:none")">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
@@ -115,17 +116,43 @@
                                     <small class="text-muted">建議比例 4:3</small>
                                 </div>
 
-                                <img id="previewImg" src="@(Model.ImageUrl ?? "")" class="img-fluid" style="@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none;" : "display:block;") width:100%; height:100%; object-fit: cover;" />
+                                <img id="previewImg" src="@(Model.ImageUrl ?? "")" class="img-fluid @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")" style="width:100%; height:100%; object-fit: cover;" />
 
-                                <div id="editBadge" class="position-absolute bottom-0 end-0 p-3">
-                                    <span class="badge bg-dark bg-opacity-75 p-2 rounded-circle shadow-sm">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </span>
+                                <div id="editBadge" class="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-50 text-white text-center py-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
+                                    <i class="fas fa-camera me-1"></i> 點擊更換或重新裁切
+                                </div>
+
+                                <div id="cropperArea" class="w-100 h-100 d-none" style="background-color: #eee;">
+                                    <img id="cropperImg" src="" style="display: block; max-width: 100%;">
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('imageInput').click()">
+                                    <i class="fas fa-upload me-1"></i> 更換圖片
+                                </button>
+                            </div>
+
+                            <div id="cropControls" class="mt-3 d-none text-start">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-primary w-100 fw-bold shadow-sm" onclick="saveCrop()">
+                                            <i class="fas fa-check-circle me-1"></i> 確定位置
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-outline-danger w-100 fw-bold shadow-sm" onclick="cancelCrop()">
+                                            取消
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-primary fw-bold"><i class="fas fa-arrows-alt me-1"></i> 請拖曳圖片對準框架</small>
                                 </div>
                             </div>
 
                             <input type="file" id="imageInput" class="form-control d-none" accept="image/*"
-                                   onchange="handleFileSelect(this)" />
+                                   onchange="onFileChange(this)" />
 
                             <div class="mt-4 p-3 bg-light rounded-3 border-0 small text-start text-muted">
                                 <div class="mb-1">建立時間：@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
@@ -149,17 +176,13 @@
 
     <!-- 套餐餐點明細 -->
     <div class="card mb-4 shadow-sm border-0">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white py-3 border-bottom">
             <span class="fw-bold"><i class="fas fa-list me-1 text-primary"></i>套餐包含餐點</span>
-            <button type="button" class="btn btn-success rounded-pill shadow-sm px-4" onclick="saveItems()">
-                <i class="fas fa-save me-1"></i> 儲存餐點設定
-            </button>
         </div>
         <div class="card-body p-4">
             <div id="itemAlertBox"></div>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    <!-- Adjust col-lg-x and offset-lg-x as needed -->
                     <div id="category-slots-container">
                         @foreach (var categoryVm in Model.CategoriesWithDishes)
                         {
@@ -198,30 +221,13 @@
                             </div>
                         }
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Cropper Modal (同 Create) -->
-<div class="modal fade" id="cropperModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-white border-bottom py-3">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-crop-alt me-2 text-primary"></i>裁切圖片</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0 bg-light">
-                <div class="img-container" style="height: 500px; width: 100%;">
-                    <img id="cropperImage" src="" style="max-width: 100%;">
+                    <div class="mt-5 pt-4 border-top d-flex justify-content-end">
+                        <button type="button" class="btn btn-success btn-lg px-5 shadow-sm rounded-pill" onclick="saveItems()">
+                            <i class="fas fa-save me-1"></i> 儲存餐點設定
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer bg-white border-top-0 py-3">
-                <button type="button" class="btn btn-outline-secondary border-0" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary px-5 shadow-sm rounded-pill" onclick="confirmCrop()">
-                    確認裁切
-                </button>
             </div>
         </div>
     </div>
@@ -254,6 +260,21 @@
             border-color: var(--bs-primary) !important;
             background-color: #f0f7ff !important;
         }
+
+        #imageArea.drag-over {
+            border-color: #0d6efd !important;
+            background: #f8fbff;
+        }
+
+        /* 隱藏裁切框的四個角控制點，讓它看起來不能縮放 */
+        .cropper-line, .cropper-point {
+            display: none !important;
+        }
+
+        .cropper-view-box {
+            outline: 2px solid #0d6efd;
+            outline-opacity: 0.7;
+        }
     </style>
 }
 
@@ -262,10 +283,168 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
         const setMealId = @Model.Id;
-        // const availableList = document.getElementById('available-dishes'); // No longer needed
-        // const selectedList = document.getElementById('selected-dishes');   // No longer needed
-        // const editor = document.getElementById('item-editor');           // No longer needed
+        let myCropper = null;
+        const imageInput = document.getElementById("imageInput");
+        const imageArea = document.getElementById("imageArea");
+        const placeholderContent = document.getElementById("placeholderContent");
+        const cropperArea = document.getElementById("cropperArea");
+        const cropperImg = document.getElementById("cropperImg");
+        const previewImg = document.getElementById("previewImg");
+        const editBadge = document.getElementById("editBadge");
+        const cropControls = document.getElementById("cropControls");
 
+        function updateDiscountLabel() {
+            const type = document.getElementById("DiscountType").value;
+            document.getElementById("discountLabel").innerHTML =
+                type === "percent" ? '折扣值（%） <span class="text-danger">*</span>' : '折扣值（元） <span class="text-danger">*</span>';
+        }
+
+        function collectItems() {
+            const allItems = [];
+            const categorySlots = document.querySelectorAll('.category-slot');
+            
+            categorySlots.forEach(categorySlot => {
+                const isCategoryOptional = categorySlot.querySelector('.is-optional-toggle').checked;
+                let optionGroupNo = null;
+                let pickLimit = null;
+
+                if (isCategoryOptional) {
+                    optionGroupNo = parseInt(categorySlot.querySelector('.category-group-no').value);
+                    pickLimit = parseInt(categorySlot.querySelector('.category-pick-limit').value);
+                }
+
+                const dishRows = categorySlot.querySelectorAll('.dish-selection-row');
+                dishRows.forEach(row => {
+                    const dishId = parseInt(row.querySelector('.dish-id-select').value);
+                    const quantity = parseInt(row.querySelector('.dish-quantity').value);
+                    const displayOrder = parseInt(row.querySelector('.dish-display-order').value);
+
+                    if (!isNaN(dishId) && dishId > 0) {
+                        allItems.push({
+                            SetMealId: setMealId,
+                            DishId: dishId,
+                            Quantity: quantity,
+                            IsOptional: isCategoryOptional,
+                            OptionGroupNo: isCategoryOptional ? optionGroupNo : null,
+                            PickLimit: isCategoryOptional ? pickLimit : null,
+                            DisplayOrder: displayOrder
+                        });
+                    }
+                });
+            });
+            return allItems;
+        }
+
+        // 攔截表單提交，同步餐點資料
+        document.getElementById("editForm").addEventListener("submit", function(e) {
+            const items = collectItems();
+            document.getElementById("itemsJson").value = JSON.stringify(items);
+        });
+
+        // --- Main Image Handling Logic (Same as Dishes) ---
+
+        function editOrUploadImage() {
+            const hasExistingImage = previewImg.src && !previewImg.src.includes('no-image.png') && !previewImg.classList.contains('d-none');
+            if (hasExistingImage) {
+                openCropperWithUrl(previewImg.src);
+            } else {
+                imageInput.click();
+            }
+        }
+
+        function openCropperWithUrl(url) {
+            previewImg.classList.add("d-none");
+            placeholderContent.classList.add("d-none");
+            editBadge.classList.add("d-none");
+            cropperArea.classList.remove("d-none");
+            cropControls.classList.remove("d-none");
+
+            cropperImg.src = url;
+
+            cropperImg.onload = function() {
+                if (myCropper) myCropper.destroy();
+                myCropper = new Cropper(cropperImg, {
+                    aspectRatio: 4 / 3,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    background: false,
+                    responsive: true,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+                cropperImg.onload = null;
+            };
+            if (cropperImg.complete) cropperImg.onload();
+        }
+
+        function processFile(file) {
+            if (!file || !file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = (e) => openCropperWithUrl(e.target.result);
+            reader.readAsDataURL(file);
+        }
+
+        function onFileChange(input) {
+            if (input.files && input.files[0]) {
+                processFile(input.files[0]);
+            }
+        }
+
+        function saveCrop() {
+            if (!myCropper) return;
+            const canvas = myCropper.getCroppedCanvas({ width: 800, height: 600, imageSmoothingQuality: 'high' });
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+            document.getElementById("croppedImageData").value = dataUrl;
+            previewImg.src = dataUrl;
+            exitCropper();
+        }
+
+        function cancelCrop() {
+            exitCropper();
+        }
+
+        function exitCropper() {
+            if (myCropper) {
+                myCropper.destroy();
+                myCropper = null;
+            }
+            cropperArea.classList.add("d-none");
+            cropControls.classList.add("d-none");
+
+            const hasImage = previewImg.src 
+                && !previewImg.src.endsWith("/") 
+                && !previewImg.src.includes("no-image.png")
+                && previewImg.src !== window.location.href;
+
+            if (hasImage) {
+                previewImg.classList.remove("d-none");
+                editBadge.classList.remove("d-none");
+                placeholderContent.style.display = "none";
+            } else {
+                placeholderContent.style.display = "";
+                previewImg.classList.add("d-none");
+                editBadge.classList.add("d-none");
+            }
+        }
+
+        // --- Drag and Drop ---
+        imageArea.addEventListener("dragover", e => { e.preventDefault(); imageArea.classList.add("drag-over"); });
+        imageArea.addEventListener("dragleave", () => { imageArea.classList.remove("drag-over"); });
+        imageArea.addEventListener("drop", e => {
+            e.preventDefault();
+            imageArea.classList.remove("drag-over");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // --- Original SetMeal Detail Logic ---
         function formatSelectedOptionText(item) {
             let text = `${item.dishName} ($${item.dishPrice}) x${item.quantity}`;
             if (item.isOptional === true || item.isOptional === 'true') {
@@ -276,9 +455,6 @@
             return text;
         }
 
-        // Old dual-list box functions removed
-
-        // Helper function to toggle optional fields for a category
         function toggleCategoryOptionalFields(categoryId) {
             const categorySlot = document.querySelector(`.category-slot[data-category-id="${categoryId}"]`);
             const isOptionalToggle = categorySlot.querySelector('.is-optional-toggle');
@@ -291,15 +467,12 @@
             }
         }
 
-        // Helper to generate options HTML for dish dropdown
         function getCategorySelectOptions(categoryId, allDishesInCategories) {
             const category = allDishesInCategories.find(c => c.categoryId == categoryId);
             if (!category || !category.dishesInThisCategory) return '';
 
             let optionsHtml = '<option value="" data-price="0">請選擇餐點</option>';
             category.dishesInThisCategory.forEach(dish => {
-                // Assuming dish.text might contain something like "DishName ($Price)"
-                // We want to store the price in a data attribute
                 const priceMatch = dish.text.match(/\$(\d+(\.\d+)?)/);
                 const price = priceMatch ? priceMatch[1] : 0;
                 optionsHtml += `<option value="${dish.value}" data-price="${price}">${dish.text}</option>`;
@@ -307,7 +480,6 @@
             return optionsHtml;
         }
 
-        // Helper to render a single dish selection row
         function renderDishSelectionRow(categoryId, categorySelectOptions, initialItem = null) {
             const dishId = initialItem ? initialItem.dishId : '';
             const quantity = initialItem ? initialItem.quantity : 1;
@@ -337,27 +509,22 @@
             return rowHtml;
         }
 
-
         document.addEventListener('DOMContentLoaded', function () {
-            // New UI Initialization
-            const categoriesWithDishes = @Html.Raw(Json.Serialize(Model.CategoriesWithDishes));
+            const categoriesWithDishes = @Html.Raw(ViewBag.CategoriesWithDishesJson);
 
             categoriesWithDishes.forEach(categoryVm => {
                 const categorySlot = document.querySelector(`.category-slot[data-category-id="${categoryVm.categoryId}"]`);
                 const dishSelectionRowsContainer = categorySlot.querySelector('.dish-selection-rows');
                 const categorySelectOptions = getCategorySelectOptions(categoryVm.categoryId, categoriesWithDishes);
 
-                // Render existing selected items for this category
                 categoryVm.selectedItemsForCategory.forEach(item => {
                     const rowHtml = renderDishSelectionRow(categoryVm.categoryId, categorySelectOptions, item);
                     dishSelectionRowsContainer.insertAdjacentHTML('beforeend', rowHtml);
-                    // Set selected dish in dropdown
                     const newRow = dishSelectionRowsContainer.lastElementChild;
                     newRow.querySelector('.dish-id-select').value = item.dishId;
                 });
             });
 
-            // Event listener for Add Dish buttons
             document.querySelectorAll('.add-dish-to-category').forEach(button => {
                 button.addEventListener('click', function() {
                     const categoryId = this.dataset.categoryId;
@@ -370,25 +537,21 @@
                 });
             });
 
-            // Event listener for Remove Dish buttons (delegated)
             document.getElementById('category-slots-container').addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-dish-from-category')) {
                     e.target.closest('.dish-selection-row').remove();
                 }
             });
 
-            // Initial toggle for optional fields
             document.querySelectorAll('.is-optional-toggle').forEach(toggle => {
                 toggleCategoryOptionalFields(toggle.id.split('-')[1]);
             });
-
         });
 
-        // Helper to format item for confirmation summary
-        function formatItemForSummary(item, dishName) {
-            let text = `${dishName} ($${item.dishPrice}) x${item.quantity}`;
-            if (item.isOptional === true || item.isOptional === 'true') {
-                text += ` <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">限選 ${item.pickLimit ?? ''}</span>`;
+        function formatItemForSummary(item, dishName, dishPrice) {
+            let text = `${dishName} ($${dishPrice}) x${item.Quantity}`;
+            if (item.IsOptional === true || item.IsOptional === 'true') {
+                text += ` <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">限選 ${item.PickLimit ?? ''}</span>`;
             } else {
                 text += ` <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1">固定</span>`;
             }
@@ -404,23 +567,25 @@
 
             categorySlots.forEach(categorySlot => {
                 const categoryId = parseInt(categorySlot.dataset.categoryId);
-                const categoryName = categorySlot.querySelector('h5').textContent; // Get category name
+                const categoryName = categorySlot.querySelector('h5').textContent;
                 const isCategoryOptional = categorySlot.querySelector('.is-optional-toggle').checked;
                 let optionGroupNoForCategory = null;
                 let pickLimitForCategory = null;
 
                 if (isCategoryOptional) {
-                    optionGroupNoForCategory = parseInt(categorySlot.querySelector('.category-group-no').value);
-                    pickLimitForCategory = parseInt(categorySlot.querySelector('.category-pick-limit').value);
+                    const groupNoEl = categorySlot.querySelector('.category-group-no');
+                    const pickLimitEl = categorySlot.querySelector('.category-pick-limit');
+                    optionGroupNoForCategory = parseInt(groupNoEl.value);
+                    pickLimitForCategory = parseInt(pickLimitEl.value);
+                    
                     if (isNaN(optionGroupNoForCategory) || isNaN(pickLimitForCategory) || optionGroupNoForCategory < 1 || pickLimitForCategory < 1) {
                         showAlert('itemAlertBox', 'danger', `分類 ${categoryName} 的「群組編號」或「選取上限」無效。`);
                         isValid = false;
-                        return; // Skip this category
+                        return;
                     }
                 }
 
                 const dishRows = categorySlot.querySelectorAll('.dish-selection-row');
-                // Add category header to summary
                 if (dishRows.length > 0) {
                     summaryHtml += `<h6 class="fw-bold mt-3 text-dark-emphasis">${categoryName}</h6><ul class="list-group list-group-flush mb-2 border rounded shadow-sm">`;
                 }
@@ -435,60 +600,57 @@
                     const displayOrder = parseInt(displayOrderInput.value);
 
                     const selectedOption = dishIdSelect.options[dishIdSelect.selectedIndex];
-                    const dishName = selectedOption.text.split('(')[0].trim(); // Extract just the name
+                    const dishName = selectedOption.text.split('(')[0].trim();
                     const dishPrice = selectedOption.dataset.price || 0;
 
                     if (isNaN(dishId) || dishId === 0) {
                         showAlert('itemAlertBox', 'danger', `分類 ${categoryName} 中有未選擇餐點的列。`);
                         isValid = false;
-                        return; // Skip this row
+                        return;
                     }
                     if (isNaN(quantity) || quantity < 1) {
                         showAlert('itemAlertBox', 'danger', `餐點 ${dishName} 的數量無效。`);
                         isValid = false;
-                        return; // Skip this row
+                        return;
                     }
                      if (isNaN(displayOrder) || displayOrder < 1) {
                         showAlert('itemAlertBox', 'danger', `餐點 ${dishName} 的顯示順序無效。`);
                         isValid = false;
-                        return; // Skip this row
+                        return;
                     }
 
                     const itemToSave = {
-                        dishId: dishId,
-                        dishPrice: dishPrice, // For summary display
-                        quantity: quantity,
-                        isOptional: isCategoryOptional,
-                        optionGroupNo: isCategoryOptional ? optionGroupNoForCategory : null,
-                        pickLimit: isCategoryOptional ? pickLimitForCategory : null,
-                        displayOrder: displayOrder
+                        SetMealId: setMealId,
+                        DishId: dishId,
+                        Quantity: quantity,
+                        IsOptional: isCategoryOptional,
+                        OptionGroupNo: isCategoryOptional ? optionGroupNoForCategory : null,
+                        PickLimit: isCategoryOptional ? pickLimitForCategory : null,
+                        DisplayOrder: displayOrder
                     };
                     allItemsToSave.push(itemToSave);
-
-                    // Add to summary
-                    summaryHtml += `<li class="list-group-item small py-2">- ${formatItemForSummary(itemToSave, dishName)}</li>`;
+                    summaryHtml += `<li class="list-group-item small py-2">- ${formatItemForSummary(itemToSave, dishName, dishPrice)}</li>`;
                 });
                 if (dishRows.length > 0) {
                     summaryHtml += `</ul>`;
                 }
             });
 
-            if (!isValid) {
-                return; // Stop if any validation failed
-            }
+            if (!isValid) return;
 
             if (allItemsToSave.length === 0) {
-                summaryHtml = '<p>您沒有選擇任何餐點，套餐內容將被清空。</p>';
+                if (!confirm('您沒有選擇任何餐點，確定要清空此套餐的所有餐點嗎？')) {
+                    return;
+                }
+                summaryHtml = '<p class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>您即將清空此套餐的所有餐點內容。</p>';
             }
 
             saveConfirmSummaryDiv.innerHTML = summaryHtml;
             const saveConfirmModal = new bootstrap.Modal(document.getElementById('saveConfirmModal'));
             saveConfirmModal.show();
 
-            // Set up event listener for the confirmation button
             document.getElementById('confirmSaveItemsBtn').onclick = async function() {
-                saveConfirmModal.hide(); // Hide the confirmation modal
-
+                saveConfirmModal.hide();
                 const response = await fetch(`/SetMeals/UpdateItems/${setMealId}`, {
                     method: 'POST',
                     headers: {
@@ -501,7 +663,9 @@
                 if (response.ok) {
                     const result = await response.json();
                     showAlert('itemAlertBox', 'success', result.message);
-                    setTimeout(() => location.reload(), 1500);
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index", "SetMeals")';
+                    }, 1500);
                 } else {
                     const error = await response.json();
                     showAlert('itemAlertBox', 'danger', error.message || '儲存失敗，請檢查網路連線或聯絡管理員。');
@@ -516,53 +680,5 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                   </div>`;
         }
-
-        // --- CropperJS and other page logic from before ---
-        let cropper = null;
-        let originalFile = null;
-
-        function updateDiscountLabel() {
-            const type = document.getElementById("DiscountType").value;
-            document.getElementById("discountLabel").innerHTML =
-                type === "percent" ? '折扣值（%） <span class="text-danger">*</span>' : '折扣值（元） <span class="text-danger">*</span>';
-        }
-
-        function handleFileSelect(input) { if (input.files && input.files[0]) openCropper(input.files[0]); }
-
-        function openCropper(file) {
-            originalFile = file;
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.getElementById("cropperImage");
-                img.src = e.target.result;
-                new bootstrap.Modal(document.getElementById("cropperModal")).show();
-                document.getElementById("cropperModal").addEventListener("shown.bs.modal", () => {
-                    if (cropper) cropper.destroy();
-                    cropper = new Cropper(img, { aspectRatio: 4 / 3, viewMode: 1, autoCropArea: 1 });
-                }, { once: true });
-            };
-            reader.readAsDataURL(originalFile);
-        }
-
-        function confirmCrop() {
-            if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 600 });
-            const base64 = canvas.toDataURL("image/jpeg", 0.9);
-            document.getElementById("croppedImageData").value = base64;
-            const previewImg = document.getElementById("previewImg");
-            previewImg.src = base64;
-            previewImg.style.display = "block";
-            document.getElementById("placeholderContent").style.display = "none";
-            bootstrap.Modal.getInstance(document.getElementById("cropperModal")).hide();
-            cropper.destroy(); cropper = null;
-        }
-
-        const area = document.getElementById('imageArea');
-        area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('border-primary'); });
-        area.addEventListener('dragleave', () => { area.classList.remove('border-primary'); });
-        area.addEventListener('drop', (e) => {
-            e.preventDefault(); area.classList.remove('border-primary');
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) openCropper(e.dataTransfer.files[0]);
-        });
     </script>
 }

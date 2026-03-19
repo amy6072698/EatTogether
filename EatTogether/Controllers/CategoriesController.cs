@@ -6,8 +6,10 @@ using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace EatTogether.Controllers
 {
@@ -67,21 +69,30 @@ namespace EatTogether.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] CategoryViewModel vm)
 		{
-			if (!ModelState.IsValid)
+			try
 			{
-				var errors = ModelState.ToDictionary(
-					kvp => kvp.Key,
-					kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-				);
-				return BadRequest(errors);
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(new { message = "資料格式不正確" });
+				}
+
+				var allCategories = await _categoryService.GetAllAsync();
+                
+                // 改用「目前最大值 + 1」作為預設排序，這是最穩定的做法
+                if (vm.DisplayOrder <= 0)
+                {
+                    vm.DisplayOrder = allCategories.Any() ? allCategories.Max(c => c.DisplayOrder) + 1 : 1;
+                }
+
+				await _categoryService.CreateAsync(vm.ToDto());
+				return Ok(new { message = "新增成功" });
 			}
-
-            // New logic to set DisplayOrder
-            var allCategories = await _categoryService.GetAllAsync();
-            vm.DisplayOrder = allCategories.Any() ? allCategories.Min(c => c.DisplayOrder) - 1 : 1;
-
-			await _categoryService.CreateAsync(vm.ToDto());
-			return Ok(new { message = "新增成功" });
+			catch (Exception ex)
+			{
+                // 捕捉具體的資料庫或邏輯錯誤並回傳
+                var innerMsg = ex.InnerException != null ? " (" + ex.InnerException.Message + ")" : "";
+				return StatusCode(500, new { message = "新增失敗: " + ex.Message + innerMsg });
+			}
 		}
 
 		// 用於 Modal 提交的編輯 (如果需要)
@@ -166,11 +177,18 @@ namespace EatTogether.Controllers
 		[HttpPost]
 		public async Task<IActionResult> UploadImage([FromBody] CategoryImageUploadRequest request)
 		{
-			if (string.IsNullOrEmpty(request?.Base64Data))
-				return BadRequest("未提供圖片資料");
+			try
+			{
+				if (string.IsNullOrEmpty(request?.Base64Data))
+					return BadRequest("未提供圖片資料");
 
-			var imageUrl = await SaveCategoryImageAsync(request.Base64Data, request.CategoryName);
-			return Ok(new { imageUrl });
+				var imageUrl = await SaveCategoryImageAsync(request.Base64Data, request.CategoryName);
+				return Ok(new { imageUrl });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { message = "圖片處理失敗: " + ex.Message });
+			}
 		}
 
 		// ── 私有存檔方法（根據使用者要求修改）──

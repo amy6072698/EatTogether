@@ -188,33 +188,42 @@ namespace EatTogether.Models.Repositories
                     using var transaction = await _context.Database.BeginTransactionAsync();
                     try
                     {
-                        // 1. 刪除現有所有項目
-                        var existingItems = _context.SetMealItems.Where(i => i.SetMealId == setMealId);
-                        _context.SetMealItems.RemoveRange(existingItems);
-                        await _context.SaveChangesAsync();
+                        // 1. 刪除該套餐現有的所有項目
+                        var existingItems = await _context.SetMealItems
+                                                .Where(i => i.SetMealId == setMealId)
+                                                .ToListAsync();
+                        
+                        if (existingItems.Any())
+                        {
+                            _context.SetMealItems.RemoveRange(existingItems);
+                            await _context.SaveChangesAsync();
+                        }
 
                         // 2. 新增傳入的項目
-                        var newItems = itemDtos.Select(dto => new SetMealItem
+                        if (itemDtos != null && itemDtos.Any())
                         {
-                            SetMealId = setMealId, // 確保使用傳入的 setMealId
-                            DishId = dto.DishId,
-                            Quantity = dto.Quantity,
-                            IsOptional = dto.IsOptional,
-                            OptionGroupNo = dto.IsOptional ? dto.OptionGroupNo : null,
-                            PickLimit = dto.IsOptional ? dto.PickLimit : null,
-                            DisplayOrder = dto.DisplayOrder
-                        });
+                            var newItems = itemDtos.Select(dto => new SetMealItem
+                            {
+                                SetMealId = setMealId,
+                                DishId = dto.DishId,
+                                Quantity = dto.Quantity,
+                                IsOptional = dto.IsOptional,
+                                OptionGroupNo = dto.IsOptional ? dto.OptionGroupNo : null,
+                                PickLimit = dto.IsOptional ? dto.PickLimit : null,
+                                DisplayOrder = dto.DisplayOrder
+                            }).ToList();
 
-                        await _context.SetMealItems.AddRangeAsync(newItems);
-                        await _context.SaveChangesAsync();
+                            await _context.SetMealItems.AddRangeAsync(newItems);
+                            await _context.SaveChangesAsync();
+                        }
 
                         // 3. 提交事務
                         await transaction.CommitAsync();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         await transaction.RollbackAsync();
-                        throw;
+                        throw new Exception("更新套餐餐點失敗: " + ex.Message);
                     }
                 }
 
