@@ -5,11 +5,6 @@
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">新增餐點</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item"><a asp-action="Index">餐點管理</a></li>
-        <li class="breadcrumb-item active">新增餐點</li>
-    </ol>
 
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -95,8 +90,8 @@
                     <div class="col-lg-4 border-start">
                         <div class="ps-lg-3">
                             <label class="form-label fw-bold">餐點圖片</label>
-                            
-                            <div id="imagePlaceholder" class="border rounded bg-light d-flex flex-column align-items-center justify-content-center mb-3" 
+
+                            <div id="imagePlaceholder" class="border rounded bg-light d-flex flex-column align-items-center justify-content-center mb-3"
                                  style="aspect-ratio: 4/3; cursor: pointer;" onclick="document.getElementById('imageInput').click()">
                                 <i class="fas fa-utensils fa-3x text-secondary mb-2"></i>
                                 <span class="text-secondary">點擊或拖曳圖片至此</span>
@@ -116,13 +111,13 @@
 
                             <input type="file" id="imageInput" class="form-control d-none" accept="image/*"
                                    onchange="handleFileSelect(this)" />
-                            
+
                             <div class="d-grid mt-3">
                                 <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
                                     <i class="fas fa-upload me-1"></i>選擇圖片
                                 </button>
                             </div>
-                            
+
                             <div class="mt-4 p-3 bg-light rounded border border-info">
                                 <h6 class="text-info mb-2"><i class="fas fa-info-circle me-1"></i>上傳說明</h6>
                                 <ul class="small text-muted mb-0 ps-3">
@@ -178,9 +173,11 @@
             border-color: #0d6efd !important;
             background-color: #f8f9fa !important;
         }
-        #imagePlaceholder:hover i {
-            color: #0d6efd !important;
-        }
+
+            #imagePlaceholder:hover i {
+                color: #0d6efd !important;
+            }
+
         .img-container img {
             display: block;
             max-width: 100%;
@@ -252,13 +249,13 @@
             document.getElementById("croppedImageData").value = base64;
             document.getElementById("previewImg").src = base64;
             document.getElementById("previewBox").style.display = "block";
-            
+
             document.getElementById("imagePlaceholder").style.display = "none";
 
             const modalElement = document.getElementById("cropperModal");
             const modal = bootstrap.Modal.getInstance(modalElement);
             modal.hide();
-            
+
             cropper.destroy();
             cropper = null;
         }

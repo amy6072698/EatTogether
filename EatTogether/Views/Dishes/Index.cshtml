@@ -5,10 +5,6 @@
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">餐點管理</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item active">餐點管理</li>
-    </ol>
 
     <!-- 統計卡片 -->
     <div class="row mb-4">
@@ -56,7 +52,7 @@
                 <div class="col-xl-3 col-lg-2 col-md-4">
                     <div class="input-group shadow-sm">
                         <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="searchInput" class="form-control border-start-0" 
+                        <input type="text" id="searchInput" class="form-control border-start-0"
                                placeholder="搜尋餐點名稱..." oninput="filterCards(true)" />
                     </div>
                 </div>
@@ -134,7 +130,7 @@
 
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-body p-4 bg-light bg-opacity-10">
-            
+
             <!-- 操作模式切換按鈕 -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <small class="text-muted">
@@ -156,7 +152,7 @@
                          data-name="@item.DishName.ToLower()"
                          data-order="@item.DisplayOrder">
                         <div class="card h-100 border-0 shadow-sm dish-card-inner position-relative">
-                            
+
                             <!-- 拖曳把手 -->
                             <div class="drag-handle position-absolute top-0 end-0 p-2 d-none" style="z-index:20; cursor:move;">
                                 <i class="fas fa-grip-vertical fa-lg text-secondary opacity-50"></i>
@@ -165,7 +161,7 @@
                             <!-- 批次勾選框 -->
                             <div class="batch-check position-absolute top-0 start-0 p-2 d-none" style="z-index:20;">
                                 <div class="form-check">
-                                    <input class="form-check-input card-checkbox shadow" type="checkbox" 
+                                    <input class="form-check-input card-checkbox shadow" type="checkbox"
                                            data-id="@item.Id" onchange="updateSelectedCount()">
                                 </div>
                             </div>
@@ -174,9 +170,9 @@
                                 @if (!string.IsNullOrEmpty(item.ImageUrl))
                                 {
                                     <img src="@item.ImageUrl"
-                                          style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position: center center;"
-                                          alt="@item.DishName"
-                                          onerror="this.src='/images/no-image.png'; this.onerror=null;" />
+                                         style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position: center center;"
+                                         alt="@item.DishName"
+                                         onerror="this.src='/images/no-image.png'; this.onerror=null;" />
                                 }
                                 else
                                 {
@@ -190,14 +186,14 @@
                                 <div class="position-absolute top-0 start-0 p-2 d-flex gap-1" style="z-index: 10; margin-top: -45px;">
                                     @if (item.IsRecommended)
                                     {
-                                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
                                              style="width:34px; height:34px; border: 2px solid #0d6efd;">
                                             <i class="fas fa-thumbs-up text-primary"></i>
                                         </div>
                                     }
                                     @if (item.IsPopular)
                                     {
-                                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
                                              style="width:34px; height:34px; border: 2px solid #ffc107;">
                                             <i class="fas fa-crown text-warning"></i>
                                         </div>
@@ -207,10 +203,17 @@
                                 <h6 class="card-title mb-1 fw-bold text-truncate" title="@item.DishName">@item.DishName</h6>
                                 <div class="text-muted small mb-2 d-flex justify-content-center align-items-center gap-2">
                                     <span><i class="fas fa-tag me-1 small"></i>@item.CategoryName</span>
-                                    @if (item.IsVegetarian) { <span class="text-success"><i class="fas fa-leaf me-1"></i>素食</span> }
-                                    @if (item.SpicyLevel > 0) { 
+                                    @if (item.IsVegetarian)
+                                    {
+                                        <span class="text-success"><i class="fas fa-leaf me-1"></i>素食</span>
+                                    }
+                                    @if (item.SpicyLevel > 0)
+                                    {
                                         <span class="text-danger">
-                                            @for(int i=0; i<item.SpicyLevel; i++){ <i class="fas fa-pepper-hot"></i> }
+                                            @for (int i = 0; i < item.SpicyLevel; i++)
+                                            {
+                                                <i class="fas fa-pepper-hot"></i>
+                                            }
                                         </span>
                                     }
                                 </div>
@@ -218,12 +221,18 @@
                                     <span class="fw-bold text-danger fs-5">$@item.Price</span>
                                 </div>
                                 <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">
-                                    <span class="badge rounded-pill @(item.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") px-2 border @(item.IsActive ? "border-success" : "border-secondary")" 
+                                    <span class="badge rounded-pill @(item.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") px-2 border @(item.IsActive ? "border-success" : "border-secondary")"
                                           style="cursor:pointer;" onclick="toggleFeature(@item.Id, 'Active')" id="active-badge-@item.Id">
                                         @(item.IsActive ? "上架中" : "已下架")
                                     </span>
-                                    @if (item.IsTakeOut) { <span class="badge rounded-pill bg-info-subtle text-info px-2 border border-info">外帶</span> }
-                                    @if (item.IsLimited) { <span class="badge rounded-pill bg-warning-subtle text-warning px-2 border border-warning">限定</span> }
+                                    @if (item.IsTakeOut)
+                                    {
+                                        <span class="badge rounded-pill bg-info-subtle text-info px-2 border border-info">外帶</span>
+                                    }
+                                    @if (item.IsLimited)
+                                    {
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning px-2 border border-warning">限定</span>
+                                    }
                                 </div>
                                 <div class="d-flex gap-2">
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm flex-fill fw-bold shadow-sm">
@@ -264,30 +273,79 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+            }
+
+        .dish-card-inner {
+            transition: all 0.2s ease-in-out;
+            border: 1px solid transparent !important;
         }
-        .dish-card-inner { transition: all 0.2s ease-in-out; border: 1px solid transparent !important; }
-        .dish-card-inner:hover { transform: translateY(-8px); box-shadow: 0 1rem 2rem rgba(0,0,0,0.12) !important; border-color: #0d6efd !important; }
-        .page-link { cursor: pointer; color: #495057; border-radius: 4px !important; margin: 0 2px; }
-        .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
-        .badge { font-weight: 600; font-size: 0.7rem; }
+
+            .dish-card-inner:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 1rem 2rem rgba(0,0,0,0.12) !important;
+                border-color: #0d6efd !important;
+            }
+
+        .page-link {
+            cursor: pointer;
+            color: #495057;
+            border-radius: 4px !important;
+            margin: 0 2px;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+
+        .badge {
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
 
         /* 批次模式 */
-        #dishCardContainer.batch-mode .batch-check { display: block !important; }
-        #dishCardContainer.batch-mode .dish-card-inner { cursor: pointer; }
+        #dishCardContainer.batch-mode .batch-check {
+            display: block !important;
+        }
+
+        #dishCardContainer.batch-mode .dish-card-inner {
+            cursor: pointer;
+        }
+
         #dishCardContainer.batch-mode .dish-card.selected .dish-card-inner {
             border: 2px solid #0d6efd !important;
             box-shadow: 0 0 0 3px rgba(13,110,253,.18) !important;
         }
-        .card-checkbox { width: 1.2em; height: 1.2em; cursor: pointer; }
+
+        .card-checkbox {
+            width: 1.2em;
+            height: 1.2em;
+            cursor: pointer;
+        }
 
         /* 排序模式 */
-        #dishCardContainer.sort-mode .drag-handle { display: block !important; }
-        #dishCardContainer.sort-mode .dish-card-inner { border: 1px dashed #ffc107 !important; }
-        .sortable-ghost { opacity: 0.4; background: #fff3cd !important; border: 2px dashed #ffc107 !important; }
-        .sortable-chosen { box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important; }
+        #dishCardContainer.sort-mode .drag-handle {
+            display: block !important;
+        }
+
+        #dishCardContainer.sort-mode .dish-card-inner {
+            border: 1px dashed #ffc107 !important;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #fff3cd !important;
+            border: 2px dashed #ffc107 !important;
+        }
+
+        .sortable-chosen {
+            box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+        }
     </style>
 }
 
@@ -377,7 +435,7 @@
             const end = start + PAGE_SIZE;
             filteredCards.slice(start, end).forEach(c => c.style.display = "");
 
-            document.getElementById("pageInfo").textContent = 
+            document.getElementById("pageInfo").textContent =
                 `目前顯示：${total} 筆餐點中的第 ${Math.min(start + 1, total)} ~ ${Math.min(end, total)} 筆`;
 
             renderPaginationButtons("pagination", totalPages);
@@ -494,7 +552,7 @@
         /* 排序模式 JS */
         function toggleSortMode() {
             if (isBatchMode) exitBatchMode();
-            
+
             isSortMode = !isSortMode;
             const container = document.getElementById("dishCardContainer");
             const bar       = document.getElementById("sortModeBar");

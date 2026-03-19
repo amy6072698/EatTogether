@@ -36,6 +36,24 @@
         bool inDish = ctrl is "Categories" or "Dishes" or "SetMeals";
         bool inOrder = ctrl is "PreOrders" or "Payments";
         bool inCoupon = ctrl == "Coupons";
+
+        // ← 新增：從 JWT Claims 取出目前登入者的權限清單
+        bool canStaffView = User.HasClaim("Permission", "Staff_View");
+        bool canStaffManage = User.HasClaim("Permission", "Staff_Manage");
+        bool canMemberManage = User.HasClaim("Permission", "Member_Manage");
+        bool canMenuManage = User.HasClaim("Permission", "Menu_Manage");
+        bool canOrderManage = User.HasClaim("Permission", "Order_Manage");
+        bool canOrderStatus = User.HasClaim("Permission", "Order_StatusUpdate");
+        bool canTableManage = User.HasClaim("Permission", "Table_Manage");
+        bool canReservation = User.HasClaim("Permission", "Reservation_Manage");
+        bool canCouponManage = User.HasClaim("Permission", "Coupon_Manage");
+        bool canEventManage = User.HasClaim("Permission", "Event_Manage");
+        bool canReportManage = User.HasClaim("Permission", "Report_Manage");
+
+        // 「員工管理」群組：有 Staff_View 或 Staff_Manage 其一即顯示
+        bool showStaffGroup = canStaffView || canStaffManage;
+        // 「訂單管理」群組：有 Order_Manage 或 Order_StatusUpdate 其一即顯示
+        bool showOrderGroup = canOrderManage || canOrderStatus;
     }
 
     @if (ViewData["HideNav"] as bool? == true)
@@ -95,94 +113,140 @@
                 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                     <div class="sb-sidenav-menu">
                         <div class="nav">
-                            <div class="sb-sidenav-menu-heading">人員管理</div>
+                            @* ── 人員管理 ── *@
+                            @if (showStaffGroup || canMemberManage)
+                            {
+                                <div class="sb-sidenav-menu-heading">人員管理</div>
+                            }
 
-                            <a class="nav-link @(inUser ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseUser" aria-expanded="@(inUser ? "true" : "false")" aria-controls="collapseUser">
-                                <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
-                                員工管理
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse @(inUser ? "show" : "")" id="collapseUser" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link @(ctrl == "Users" && action == "Index" ? "active" : "")" asp-controller="Users" asp-action="Index">員工管理</a>
-                                    <a class="nav-link @(ctrl == "Roles" && action == "Index" ? "active" : "")" asp-controller="Roles" asp-action="Index">權限管理</a>
-                                </nav>
-                            </div>
-                            <a class="nav-link @(ctrl == "Members" ? "active" : "")" asp-controller="Members" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                會員管理
-                            </a>
+                            @if (showStaffGroup)
+                            {
+                                <a class="nav-link @(inUser ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseUser" aria-expanded="@(inUser ? "true" : "false")" aria-controls="collapseUser">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
+                                    員工管理
+                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                </a>
+                                <div class="collapse @(inUser ? "show" : "")" id="collapseUser" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        @if (canStaffView || canStaffManage)
+                                        {
+                                            <a class="nav-link @(ctrl == "Users" && action == "Index" ? "active" : "")" asp-controller="Users" asp-action="Index">員工管理</a>
+                                        }
+                                        @if (canStaffManage)
+                                        {
+                                            <a class="nav-link @(ctrl == "Roles" && action == "Index" ? "active" : "")" asp-controller="Roles" asp-action="Index">權限管理</a>
+                                        }
+                                    </nav>
+                                </div>
+                            }
 
+                            @if (canMemberManage)
+                            {
+                                <a class="nav-link @(ctrl == "Members" ? "active" : "")" asp-controller="Members" asp-action="Index">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                    會員管理
+                                </a>
+                            }
 
-                            <div class="sb-sidenav-menu-heading">菜單管理</div>
+                            @* ── 菜單管理 ── *@
+                            @if (canMenuManage)
+                            {
+                                <div class="sb-sidenav-menu-heading">菜單管理</div>
+                                <a class="nav-link @(inDish ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMenu" aria-expanded="@(inDish ? "true" : "false")" aria-controls="collapseMenu">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-utensils"></i></div>
+                                    菜單維護
+                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                </a>
+                                <div class="collapse @(inDish ? "show" : "")" id="collapseMenu" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link @(ctrl == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index">分類管理</a>
+                                        <a class="nav-link @(ctrl == "Dishes" ? "active" : "")" asp-controller="Dishes" asp-action="Index">單點管理</a>
+                                        <a class="nav-link @(ctrl == "SetMeals" ? "active" : "")" asp-controller="SetMeals" asp-action="Index">套餐管理</a>
+                                    </nav>
+                                </div>
+                            }
 
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMenu" aria-expanded="false" aria-controls="collapseMenu">
-                                <div class="sb-nav-link-icon"><i class="fas fa-utensils"></i></div>
-                                菜單維護
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseMenu" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" asp-controller="Categories" asp-action="Index">分類管理</a>
-                                    <a class="nav-link" asp-controller="Dishes" asp-action="Index">單點管理</a>
-                                    <a class="nav-link" asp-controller="SetMeals" asp-action="Index">套餐管理</a>
-                                </nav>
-                            </div>
+                            @* ── 訂單管理 ── *@
+                            @if (showOrderGroup)
+                            {
+                                <div class="sb-sidenav-menu-heading">訂單管理</div>
+                                <a class="nav-link @(inOrder ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="@(inOrder ? "true" : "false")" aria-controls="collapseOrders">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-receipt"></i></div>
+                                    訂單管理
+                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                </a>
+                                <div class="collapse @(inOrder ? "show" : "")" id="collapseOrders" aria-labelledby="headingOrders" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        @if (canOrderStatus)
+                                        {
+                                            <a class="nav-link @(ctrl == "PreOrders" && action == "Create" ? "active" : "")" asp-controller="PreOrders" asp-action="Create">點餐</a>
+                                            <a class="nav-link @(ctrl == "PreOrders" && action == "TodayPreOrderList" ? "active" : "")" asp-controller="PreOrders" asp-action="TodayPreOrderList">待處理訂單</a>
+                                        }
+                                        @if (canOrderManage)
+                                        {
+                                            <a class="nav-link @(ctrl == "Payments" ? "active" : "")" asp-controller="Payments" asp-action="Create">結帳</a>
+                                            <a class="nav-link @(ctrl == "PreOrders" && action == "AllOrders" ? "active" : "")" asp-controller="PreOrders" asp-action="AllOrders">所有訂單</a>
+                                        }
+                                    </nav>
+                                </div>
 
+                                @if (canTableManage)
+                                {
+                                    <a class="nav-link @(ctrl == "Tables" ? "active" : "")" asp-controller="Tables" asp-action="Index">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-border-all"></i></div>
+                                        桌位管理
+                                    </a>
+                                }
+                            }
 
-                            <div class="sb-sidenav-menu-heading">訂單管理</div>
-                            <a class="nav-link @(inUser ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="@(inUser ? "true" : "false")" aria-controls="collapseOrders">
-                                <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
-                                訂單管理
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse @(inUser ? "show" : "")" id="collapseOrders" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" asp-controller="PreOrders" asp-action="Create">點餐(暫時)</a>
-                                    <a class="nav-link @(ctrl == "Users" && action == "Index" ? "active" : "")" asp-controller="PreOrders" asp-action="TodayPreOrderList">待處理訂單</a>
-                                    <a class="nav-link" asp-controller="Payments" asp-action="Create">結帳</a>
-                                    <a class="nav-link" asp-controller="PreOrders" asp-action="AllOrders">所有訂單</a>
-                                </nav>
-                            </div>
+                            @* ── 預約管理 ── *@
+                            @if (canReservation)
+                            {
+                                <div class="sb-sidenav-menu-heading">預約管理</div>
+                                <a class="nav-link @(ctrl == "Reservations" ? "active" : "")" asp-controller="Reservations" asp-action="Index">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+                                    訂位管理
+                                </a>
+                            }
 
-                            <a class="nav-link @(ctrl == "Tables" ? "active" : "")" asp-controller="Tables" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-border-all"></i></div>
-                                桌位管理
-                            </a>
+                            @* ── 行銷管理 ── *@
+                            @if (canCouponManage || canEventManage)
+                            {
+                                <div class="sb-sidenav-menu-heading">行銷管理</div>
+                            }
 
+                            @if (canCouponManage)
+                            {
+                                <a class="nav-link @(inCoupon ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCoupon" aria-expanded="@(inCoupon ? "true" : "false")" aria-controls="collapseCoupon">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-ticket-alt"></i></div>
+                                    優惠券管理
+                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                </a>
+                                <div class="collapse @(inCoupon ? "show" : "")" id="collapseCoupon" aria-labelledby="headingCoupon" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link @(ctrl == "Coupons" && action == "Index" ? "active" : "")" asp-controller="Coupons" asp-action="Index">優惠券列表</a>
+                                        <a class="nav-link @(ctrl == "Coupons" && action == "MemberCoupons" ? "active" : "")" asp-controller="Coupons" asp-action="MemberCoupons">領券紀錄</a>
+                                    </nav>
+                                </div>
+                            }
 
-                            <div class="sb-sidenav-menu-heading">預約管理</div>
+                            @if (canEventManage)
+                            {
+                                <a class="nav-link @(ctrl == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-week"></i></div>
+                                    活動管理
+                                </a>
+                            }
 
-                            <a class="nav-link @(ctrl == "Reservations" ? "active" : "")" asp-controller="Reservations" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
-                                訂位管理
-                            </a>
-
-
-                            <div class="sb-sidenav-menu-heading">行銷管理</div>
-
-                            <a class="nav-link @(inCoupon ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCoupon" aria-expanded="@(inCoupon ? "true" : "false")" aria-controls="collapseCoupon">
-                                <div class="sb-nav-link-icon"><i class="fas fa-ticket-alt"></i></div>
-                                優惠券管理
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse @(inCoupon ? "show" : "")" id="collapseCoupon" aria-labelledby="headingCoupon" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link @(ctrl == "Coupons" && action == "Index" ? "active" : "")" asp-controller="Coupons" asp-action="Index">優惠券列表</a>
-                                    <a class="nav-link @(ctrl == "Coupons" && action == "MemberCoupons" ? "active" : "")" asp-controller="Coupons" asp-action="MemberCoupons">領券紀錄</a>
-                                </nav>
-                            </div>                                                        
-
-                            <a class="nav-link @(ctrl == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-week"></i></div>
-                                活動管理
-                            </a>
-
-                            <div class="sb-sidenav-menu-heading">報表管理</div>
-                            <a class="nav-link @(ctrl == "Report" ? "active" : "")" asp-controller="Report" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-bar"></i></div>
-                                報表管理
-                            </a>
+                            @* ── 報表管理 ── *@
+                            @if (canReportManage)
+                            {
+                                <div class="sb-sidenav-menu-heading">報表管理</div>
+                                <a class="nav-link @(ctrl == "Report" ? "active" : "")" asp-controller="Report" asp-action="Index">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-chart-bar"></i></div>
+                                    報表管理
+                                </a>
+                            }
 
                             <div class="sb-sidenav-footer-blank"></div>
                         </div>

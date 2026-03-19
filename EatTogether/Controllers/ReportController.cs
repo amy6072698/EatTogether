@@ -1,12 +1,14 @@
 using EatTogether.Models.DTOs;
+using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-    // [Authorize(Roles = "Admin")]
-    public class ReportController : Controller
+	// [Authorize(Roles = "Admin")]
+	[RequirePermission("Report_Manage")]
+	public class ReportController : Controller
     {
         private readonly IReportService _reportService;
         public ReportController(IReportService reportService) => _reportService = reportService;

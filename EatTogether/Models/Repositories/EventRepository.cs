@@ -5,13 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EatTogether.Models.Repositories
 {
-	public interface IEventRepository
-	{
-		Task CreateAsync(EventCreateDto dto);
-		Task<List<EventDto>> GetAllAsync();
-		Task EditAsync(EventEditDto dto);
-		Task<EventEditDto> GetEditByIdAsync(int id);
-	}
 
 	public class EventRepository : IEventRepository
 	{

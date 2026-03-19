@@ -1,5 +1,6 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.Extensions;
+using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EatTogether.Controllers
 {
 	//[Authorize]
+	[RequirePermission("Event_Manage")]
 	public class EventsController : Controller
 	{
 		private readonly EventService _service;

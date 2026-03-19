@@ -13,16 +13,9 @@
     </div>
 }
 
-@section Styles{
+@section Styles {
 
-    <style>
-        /* 讓 DataTables 的長度選擇器與我們的篩選按鈕排在同一行 */
-        .dataTables_filter {
-            display: flex !important;
-            align-items: center;
-            gap: 15px; /* 設定間距 */
-            margin-bottom: 15px;
-        }
+    <style>        
 
         /* 讓篩選按鈕不要跟文字擠在一起 */
         #filter-container {
@@ -53,7 +46,7 @@
         <div class="card-body">
             <div id="filter-container" class="d-inline-block me-5">
                 <strong>篩選：</strong>
-                <button type="button" class="btn btn-sm btn-outline-dark filter-btn" data-status="">全部</button> |
+                <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-status="">全部</button> |
                 <button type="button" class="btn btn-sm btn-outline-success filter-btn" data-status="進行中">進行中</button> |
                 <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" data-status="未開始">未開始</button> |
                 <button type="button" class="btn btn-sm btn-outline-danger filter-btn" data-status="已結束">已結束</button>
@@ -203,14 +196,16 @@
             
         </div>  
 </div>
+</div>
+
 
 
 @section Scripts {
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    <script>
+        <script>
 
         $(document).ready(function () {
             var table = $('#indexList').DataTable({
@@ -221,8 +216,9 @@
                 "order": [[ 0, "desc" ]], 
                 //將篩選狀態標籤移進dataTables格式裡
                 "retrieve": true,
+                "dom": '<"d-flex justify-content-between align-items-center mb-3"<"filter-left"><"filter-right"f>>t<"d-flex justify-content-between mt-3"ip>',
                 "initComplete": function(settings, json) {
-                   $("#filter-container").prependTo($(".dataTables_filter"));
+                    $("#filter-container").appendTo($(".filter-left"));
                 }
             });
 
@@ -241,9 +237,9 @@
 
 
 
-        });
+            });
 
 
 
-    </script>
+        </script>
 }

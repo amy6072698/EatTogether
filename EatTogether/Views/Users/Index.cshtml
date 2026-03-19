@@ -8,10 +8,7 @@
 
     <!-- 頁面標題列 -->
     <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
-        <div>
-            <h1 class="page-header-title">員工管理</h1>
-            <p class="page-header-subtitle">管理餐廳員工資訊</p>
-        </div>
+        <h1 class="fw-bold">員工管理</h1>
         <div class="d-flex align-items-center gap-2">
             <select id="sort-select" class="form-select form-select-sm" style="width:auto;">
                 <option value="HireDateDesc">到職日期（最新）</option>
@@ -97,7 +94,7 @@
                             data-email="@(row.Email)"
                             data-phone="@(row.Phone)"
                             data-hire-date="@(row.HireDate?.ToString("yyyy-MM-dd"))"
-                            data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")"
+                            data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")"
                             data-role-ids="@string.Join(",", row.RoleIds)">
                             <td>@row.EmployeeNumber</td>
                             <td>@row.Name</td>
@@ -105,7 +102,7 @@
                             <td>@(row.Email)</td>
                             <td>@(row.Phone)</td>
                             <td>@(row.HireDate?.ToString("yyyy-MM-dd"))</td>
-                            <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             <td>
                                 @foreach (var roleName in row.RoleNames)
                                 {
@@ -121,24 +118,24 @@
                                 <div class="action-btn-group">
                                     @* @if (row.CanEdit)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-primary btn-edit-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="編輯">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-primary btn-edit-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="編輯">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
                                     @* }
                                     @if (row.CanResign)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-danger btn-resign-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="離職">
-                                            <i class="fa-solid fa-user-minus"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-resign-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="離職">
+                                        <i class="fa-solid fa-user-minus"></i>
+                                    </button>
                                     @* }
                                     @if (row.CanReinstate)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-success btn-reinstate-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="復職">
-                                            <i class="fa-solid fa-user-plus"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-success btn-reinstate-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="復職">
+                                        <i class="fa-solid fa-user-plus"></i>
+                                    </button>
                                     @* } *@
                                 </div>
                             </td>

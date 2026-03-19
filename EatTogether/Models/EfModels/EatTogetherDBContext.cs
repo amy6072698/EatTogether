@@ -188,6 +188,7 @@ public partial class EatTogetherDBContext : DbContext
                 .HasMaxLength(20);
             entity.Property(e => e.DiscountValue).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.EndDate).HasPrecision(0);
+            entity.Property(e => e.IsAutoDiscount).HasDefaultValue(1);
             entity.Property(e => e.RewardItem).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasPrecision(0);
             entity.Property(e => e.Summary)

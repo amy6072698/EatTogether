@@ -1,6 +1,9 @@
 後台部分
 
 開發活動機制
+
+[V]活動表加上是否由系統自動帶入的判斷值，0為手工判定，1為系統帶入，作為訂單結帳用途
+
 [V]add 活動新增頁面 url:/Events/Create
 	[V]add ViewModel, Dto
 		EventCreateViewModel class
@@ -71,7 +74,7 @@
 	
 
 
-[working]add 活動編輯 url: /Events/Edit?eventsId=00
+[V]add 活動編輯 url: /Events/Edit?eventsId=00
 	[V]add ViewModel, Dto , VM轉Dto的擴充方法
 		EventEditViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -130,15 +133,15 @@
 	**複製並建立新活動: 跳轉至create頁面，輸入框自動填入資料
 	**撈EventId資料，日期預設為當日日期，新的EventId一樣在新增完成時自動生成
 
-[working]add 系統自動偵測活動時間，自動更新活動狀態
+[V]add 系統自動偵測活動時間，自動更新活動狀態
 
 
 開發文章機制
 
 ********************文章分類********************
 
-[]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
-	[]add ViewModel, Dto
+[V]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
+	[V]add ViewModel, Dto , 轉換擴充方法
 		ArticleCategoryCreateViewModel class
 			Name, SortOrder, IsEnabled
 
@@ -151,19 +154,10 @@
 			→ ToDto(this ArticleCategoryCreateViewModel vm)
 			Dto → Entity（Repository 寫入用）
 			→ArticleCategory ToEntity(this ArticleCategoryCreateDto dto)
-
-			文章分類編輯 
-			vm <-> dto
- 			→ ToDto(this ArticleCategoryEditViewModel vm)
-   			→ ToViewModel(this ArticleCategoryEditDto dto)
-			// Dto → Entity（Repository 寫入用）
-			→Article ToEntity(this ArticleCategoryEditDto dto)
-
-			// Entity → Dto（Repository 讀取用）
-			ArticleCategoryDto ToDto(this ArticleCategory entity)		
+	
 
 
-	[]add Service/Repository
+	[V]add Service/Repository
 		IArticleCategoryRepository interface
 			void Create (ArticleCategoryCreateDto dto)
 
@@ -176,14 +170,16 @@
 
 		在 Program.cs 註冊IArticleCategoryRepository , ArticleCategoryRepository, service
 
-	[]add ArticleCategoriesController
+	[V]add ArticleCategoriesController
 		Create()
 		ctor(ArticleCategoryService articleCategoryService)
 		Create(ArticleCategoryCreateViewModel  vm)[Authorize]
+		_CreatePartial.cshtml
 
+	[V]新增輸入框紅字驗證
 
-[]add 文章分類首頁頁面 url:/ArticleCategories/Index
-	[]add ViewModel, Dto
+[V]add 文章分類首頁頁面 url:/ArticleCategories/Index
+	[V]add ViewModel, Dto, 轉換方法
 		ArticleCategoryViewModel class
 			Name, SortOrder, IsEnabled
 			(分類名、排序、是否啟用)
@@ -198,44 +194,57 @@
 			ArticleCategoryDto ToDto(this ArticleCategory entity)	
 		
 
-	[]modify ArticleCategoryRepository 
+	[V]modify ArticleCategoryRepository 
 		ArticleCategoryRepository interface
 			add IEnumerable<ArticleCategoryDto> GetAll()
 
-	[]modify 	ArticleService
+	[V]modify ArticleService
 			List<ArticleCategoryDto> GetAllForIndex()
 
 		
 
-	[]modify ArticleCategoriesController
+	[V]modify ArticleCategoriesController
 		add IActionResult index action[Authorize]
 		**運用modal方式去增刪查改
 			Index.cshtml
 
+	
 
-[]add 文章分類編輯
+[V]add 文章分類編輯
 	url: /ArticleCategories/Edit?articleCategoryId=00 (不會用網址跳轉，像是接口，讓modal去連接)
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , modify擴充方法
 		ArticleCategoryEditViewModel class
 			Id, Name, SortOrder, IsEnabled
 
 		ArticleCategoryEditDto class
 			Id, Name, SortOrder, IsEnabled
 
+		ArticleCategoryMappingExtension		
+			文章分類編輯 
+			vm <-> dto
+ 			→ ToDto(this ArticleCategoryEditViewModel vm)
+   			→ ToViewModel(this ArticleCategoryEditDto dto)
+			// Dto → Entity（Repository 寫入用）
+			→Article ToEntity(this ArticleCategoryEditDto dto)
+
+			// Entity → Dto（Repository 讀取用）
+			ArticleCategoryDto ToDto(this ArticleCategory entity)	
+
 		
 
-	[]modify ArticleCategoryRepository
+	[V]modify ArticleCategoryRepository
 		IArticleCategoryRepository interface
 			add void Edit(ArticleCategoryEditDto dto)
 			add ArticleCategoryEditDto GetEditById(int id)
 
-	[]modify 	ArticleCategoryService
+	[V]modify 	ArticleCategoryService
 			void Edit(ArticleCategoryEditDto dto)
 
-	[]modify ArticleCategoriesController
+	[V]modify ArticleCategoriesController
 		add IActionResult Edit action[Authorize]
 		HttpGet Edit(int id)[Authorize]
 		HttpPost Edit(ArticleCategoryEditViewModel  vm)[Authorize]
+		_EditPartial.cshtml
 
 
 
@@ -272,9 +281,9 @@
 ********************文章********************
 
 
-[]add 文章新增頁面
+[V]add 文章新增頁面
 	url: /Articles/Create
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleCreateViewModel class
 			CategoryName, EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 			IEnumerable<SelectListItem> 用於選取文章分類及活動;需要注入對應 Service 填充(ICategoryService.GetSelectList()+ IEventService.GetSelectList())
@@ -282,36 +291,15 @@
 		ArticleCreateDto class
 			CategoryName,  EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 
-		//ArticleCreateViewModelExtension class /  VM → Dto
-			ArticleCreateDto  ToDto(this ArticleCreateViewModel  vm)
 
-	[]add  ArticleMappingExtension class  放文章區域全部的ToVm, ToDto, ToEntity方法
-	            新增文章 vm -> dto
-		→ ToDto(this ArticleCreateViewModel vm)
-		// Dto → Entity（Repository 寫入用）
-		→Article ToEntity(this ArticleCreateDto dto)
-		
-	            文章列表 dto -> vm
-		→ ToViewModel(this ArticleDto dto)
-		// Entity → Dto（Repository 讀取用）
-		ArticleDto ToDto(this Article entity)
-
-	            文章預覽 dto -> vm
-		→ ToViewModel(this ArticleDetailsDto dto)
-		// Entity → Dto（Repository 讀取用）
-		ArticleDetailsDto ToDto(this Article entity)
-
-	            編輯文章 vm <-> dto
- 		→ ToDto(this ArticleEditViewModel vm)
-   		→ ToViewModel(this ArticleEditDto dto)
-		// Dto → Entity（Repository 寫入用）
-		→Article ToEntity(this ArticleEditDto dto)
-
-		// Entity → Dto（Repository 讀取用）
-		ArticleDto ToDto(this Article entity)
+		add  ArticleMappingExtension class  放文章區域全部的ToVm, ToDto, ToEntity方法
+			新增文章 vm -> dto
+			→ ToDto(this ArticleCreateViewModel vm)
+			// Dto → Entity（Repository 寫入用）
+			→Article ToEntity(this ArticleCreateDto dto)	            
 				
 
-	[]add Service/Repository
+	[V]add Service/Repository
 		IArticleRepository interface
 			void Create(ArticleCreateDto dto)
 
@@ -325,61 +313,49 @@
 
 		在 Program.cs 註冊IArticleRepository, ArticleRepository, service
 
-	[]add ArticlesController
+	[V]add ArticlesController
 		Create()
 			Create.cshtml
 		ctor(ArticleService articleService)
 		Create(ArticleCreateViewModel vm)[Authorize]
 
 
-[]add 文章列表頁面
+[V]add 文章列表頁面
 	url: /Articles/Index
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleViewModel class
 			Id, Title, CategoryName,  EventTitle, IsPinned, Status
 	
 		ArticleDto class
 			Id, Title, CategoryName,  EventTitle, IsPinned, Status
 
+		modify ArticleMappingExtension class
+			文章列表 dto -> vm
+			→ ToViewModel(this ArticleDto dto)
+			// Entity → Dto（Repository 讀取用）
+			ArticleDto ToDto(this Article entity)
+
 			
 
-	[]modify ArticleRepository
+	[V]modify ArticleRepository
 		IArticleRepository interface
 			add IEnumerable<ArticleDto> GetAll()
 
-	[]modify 	ArticleService
+	[V]modify 	ArticleService
 			List<ArticleDto> GetAllForIndex()
 
-	[]modify ArticlesController
+	[V]modify ArticlesController
 		add IActionResult index action[Authorize]
 			Index.cshtml
 
 	**文章狀態:已發佈、草稿、已下架
 
-[]add 文章預覽頁面
-	url: /Articles/Details?articleId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
-		ArticleDetailsViewModel class
-			Id, Title, Description, CategoryName , PublishDate , IsPinned
-	
-		ArticleDetailsDto class
-			Id, Title, Description, CategoryName ,PublishDate , IsPinned
+	[V]頁面美化
 
-	[]modify ArticleRepository
-		IArticleRepository interface
-			add   ArticleDetailsDto GetById(int id)
 
-	[]modify 	ArticleService
-			add ArticleDetailsDto GetById(int id)
-
-	[]modify ArticlesController
-		add IActionResult Details action[Authorize]
-			Details.cshtml
-				add EditArticle button(Redirct to Edit頁面)
-
-[]add 文章編輯頁面
+[V]add 文章編輯頁面
 	url: /Articles/Edit?articleId=00
-	[]add ViewModel, Dto , VM轉Dto的擴充方法
+	[V]add ViewModel, Dto , 擴充方法
 		ArticleEditViewModel class
 			Id, CategoryName, EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 			IEnumerable<SelectListItem> 用於選取文章分類及活動;需要注入對應 Service 填充(ICategoryService.GetSelectList()+
@@ -388,30 +364,44 @@ IEventService.GetSelectList())
 		ArticleEditDto class
 			Id, CategoryName, EventTitle, Title, Description, CoverImageUrl, PublishDate, ExpiryDate, IsPinned, Status
 
+		modify ArticleMappingExtension class			
+			編輯文章 vm <-> dto
+ 			→ ToDto(this ArticleEditViewModel vm)
+   			→ ToViewModel(this ArticleEditDto dto)
+			// Dto → Entity（Repository 寫入用）
+			→Article ToEntity(this ArticleEditDto dto)
 
-	[]modify ArticleRepository
+			// Entity → Dto（Repository 讀取用）
+			ArticleDto ToDto(this Article entity)
+		
+
+
+	[V]modify ArticleRepository
 		IArticleRepository interface
 			add void Edit(ArticleEditDto dto)
 			add ArticleEditDto GetEditById(int id)
 
-	[]modify 	ArticleService
+	[V]modify 	ArticleService
 			void Edit(ArticleEditDto dto)
 
-	[]modify ArticlesController
+	[V]modify ArticlesController
 		add IActionResult Edit action[Authorize]
 			Edit.cshtml
 		HttpGet Edit(int id)[Authorize]
 
 		HttpPost Edit(ArticleEditViewModel vm)[Authorize]
+
+	[V]頁面美化
+
 		
-[]文章軟刪除(下架)
-	[]modify IArticleRepository interface
+[V]文章軟刪除(下架)
+	[V]modify IArticleRepository interface
     		add void UpdateStatus(int id, int status)
 
-	[]modify  ArticleService
+	[V]modify  ArticleService
     		add void Unpublish(int id) 
 
-	[]modify ArticlesController  (這邊再思考該如何處理)
+	[V]modify ArticlesController  (這邊再思考該如何處理)
 	// Index 頁面上的下架按鈕
 	[HttpPost]
 	[Authorize]

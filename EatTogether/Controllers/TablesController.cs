@@ -1,11 +1,13 @@
 ﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-    public class TablesController : Controller
+	[RequirePermission("Table_Manage")]
+	public class TablesController : Controller
     {
         private readonly TableService _tableService;
 

@@ -1,0 +1,376 @@
+﻿@model EatTogether.Models.ViewModels.ArticleEditViewModel
+
+@{
+    ViewData["Title"] = "文章編輯";
+    bool isDraft = Model.Status == 0;       // 0 = 草稿
+    bool isPublished = Model.Status == 1;   // 1 = 已發佈
+}
+
+@section Styles{
+    <style>
+        .image-preview-wrapper {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+        }
+
+        #imagePreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #fff;
+        }
+
+        /* 已發佈狀態：唯讀欄位樣式 */
+        .readonly-field {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+    </style>
+}
+
+<div class="container-fluid mt-4" style="max-width: 90%;">
+    <h1>文章編輯</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">文章列表</a></li>
+        <li class="breadcrumb-item active">文章編輯</li>
+    </ol>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" id="articleForm">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" id="Status" name="Status" value="@Model.Status" />
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="m-0 font-weight-bold text-dark">
+                    <i class="bi bi-pencil-square me-2"></i>編輯文章
+                    @if (isDraft)
+                    {
+                        <span class="badge bg-secondary ms-2">草稿</span>
+                    }
+                    else if (isPublished)
+                    {
+                        <span class="badge bg-success ms-2">已發佈</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-dark ms-2">已結束</span>
+                    }
+                </h5>
+
+                @if (isPublished)
+                {
+                    <a href="#" class="text-danger text-decoration-none"
+                       id="btnUnpublish"
+                       data-url="@Url.Action("Unpublish", new { id = Model.Id })">
+                        <i class="bi bi-arrow-down-circle me-1"></i>立即下架
+                    </a>
+                }
+            </div>
+
+            <div class="card-body">
+
+                <div class="row mb-3 align-items-start">
+                    <div class="col-md-4">
+                        <label asp-for="CategoryId" class="form-label">類別</label>
+                        <select asp-for="CategoryId" asp-items="Model.CategorySelectList" class="form-select">
+                            <option value="">-- 請選擇類別 --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="EventId" class="form-label">活動</label>
+                        <select asp-for="EventId" asp-items="Model.EventSelectList" class="form-select">
+                            <option value="">-- 不關聯活動 --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="d-none d-md-block">&nbsp;</label>
+                        <div class="form-check form-switch pt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" asp-for="IsPinned">
+                            <label class="form-check-label" asp-for="IsPinned">置頂文章</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">標題</label>
+                    <input asp-for="Title" class="form-control" placeholder="請輸入文章標題" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">內文</label>
+                    <input type="hidden" asp-for="Description" id="hiddenDescription" data-val="false" />
+                    <div id="editor" style="height: 400px;">
+                        @Html.Raw(Model.Description)
+                    </div>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="CoverImageFile" class="form-label">上傳封面圖片</label>
+                        <input asp-for="CoverImageFile" type="file" class="form-control" accept="image/*" />
+                        <input type="hidden" asp-for="ExistingCoverImageUrl" />
+                        <span asp-validation-for="CoverImageFile" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label d-block">圖片預覽</label>
+                        <div class="image-preview-wrapper border rounded bg-light d-flex align-items-center justify-content-center overflow-hidden">
+                            @if (!string.IsNullOrEmpty(Model.ExistingCoverImageUrl))
+                            {
+                                <img id="imagePreview" src="@Model.ExistingCoverImageUrl" alt="預覽圖" style="display:block;" />
+                                <div id="previewPlaceholder" class="text-muted text-center p-3" style="display:none;">
+                                    <i class="bi bi-image fs-1 d-block mb-2"></i>
+                                    <span>選取檔案後顯示預覽</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <img id="imagePreview" src="#" alt="預覽圖" style="display:none;" />
+                                <div id="previewPlaceholder" class="text-muted text-center p-3">
+                                    <i class="bi bi-image fs-1 d-block mb-2"></i>
+                                    <span>選取檔案後顯示預覽</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="PublishDate" class="form-label">上架日期</label>
+                        @if (isPublished)
+                        {
+                            <div class="readonly-field">
+                                @Model.PublishDate?.ToString("yyyy/MM/dd")
+                            </div>
+                            <input type="hidden" asp-for="PublishDate" />
+                        }
+                        else
+                        {
+                            <input asp-for="PublishDate" class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="PublishDate" class="text-danger"></span>
+                        }
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="ExpiryDate" class="form-label">下架日期</label>
+                        <input asp-for="ExpiryDate" class="form-control"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-light d-flex justify-content-end gap-2 py-3">
+
+                @if (isDraft)
+                {                                   
+
+                    <div class="btn-group">
+                        <button type="button" id="btnSaveDraft" class="btn btn-secondary px-4">
+                            <i class="bi bi-file-earmark me-1"></i>儲存草稿
+                        </button>
+                        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button type="button" id="btnPublish" class="dropdown-item">
+                                    <i class="bi bi-send-fill me-1"></i>發佈
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-danger px-4"
+                            id="btnDeleteDraft"
+                            data-url="@Url.Action("DeleteDraft", new { id = Model.Id })">
+                        <i class="bi bi-trash me-1"></i>刪除草稿
+                    </button>
+
+
+                }
+                else
+                {
+                    <button type="button" id="btnSavePublished" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i>完成更改
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">取消</a>
+
+                }
+
+            </div>
+        </div>
+
+        <!-- 確認操作 Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title" id="confirmModalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-3">
+                        <i id="confirmModalIcon" class="fs-1 d-block mb-3"></i>
+                        <p id="confirmModalMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pt-0">
+                        <a id="confirmModalBtn" href="#" class="btn px-4">確定</a>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- 日期錯誤提示 Modal -->
+        <div class="modal fade" id="dateErrorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <i class="bi bi-exclamation-circle-fill text-warning fs-1 d-block mb-3"></i>
+                        <p class="fs-5 mb-0">下架日期不能早於上架日期</p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pt-0">
+                        <button type="button" class="btn btn-warning px-4" data-bs-dismiss="modal">確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $.validator.setDefaults({ ignore: [] });
+
+            // 初始化 Quill
+            var quill = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // 同步 Quill 內容到 hidden input
+            function syncQuill() {
+                var content = quill.root.innerHTML;
+                if (content === '<p><br></p>' || content === '<p></p>') content = '';
+                $('#hiddenDescription').val(content);
+            }
+
+            // 統一送出函式（狀態值由外部傳入）
+            function handleFormSubmit(statusValue) {
+
+                // 日期驗證（下架日期選填，但若有填則不能早於上架日期）
+                var publishDate = $('input[name="PublishDate"]').val();
+                var expiryDate = $('input[name="ExpiryDate"]').val();
+
+                if (publishDate && expiryDate && expiryDate < publishDate) {
+                    new bootstrap.Modal(document.getElementById('dateErrorModal')).show();
+                    return; // 阻止送出
+                }
+
+                $('#Status').val(statusValue);
+                syncQuill();
+                if ($('#articleForm').valid()) {
+                    $('#articleForm').submit();
+                }
+            }
+
+            // ── 草稿狀態的按鈕 ──
+            // 儲存草稿（保持 status=0）
+            $('#btnSaveDraft').on('click', function () {
+                handleFormSubmit(0);
+            });
+
+            // 發佈（status 改成 1）
+            $('#btnPublish').on('click', function () {
+                handleFormSubmit(1);
+            });
+
+            // ── 已發佈狀態的按鈕 ──
+            // 完成更改（保持 status=1，不改狀態）
+            $('#btnSavePublished').on('click', function () {
+                handleFormSubmit(1);
+            });
+
+            // 圖片預覽
+            function previewImage(input) {
+                const preview = $('#imagePreview');
+                const placeholder = $('#previewPlaceholder');
+
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.attr('src', e.target.result).show();
+                        placeholder.hide();
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    preview.attr('src', '#').hide();
+                    placeholder.show();
+                }
+            }
+
+            $('input[name="CoverImageFile"]').on('change', function () {
+                previewImage(this);
+            });
+
+
+            // 立即下架
+            $('#btnUnpublish').on('click', function (e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                $('#confirmModalTitle').text('立即下架');
+                $('#confirmModalIcon').attr('class', 'fs-1 d-block mb-3 bi bi-arrow-down-circle text-warning');
+                $('#confirmModalMessage').text('確定要將此文章立即下架嗎？');
+                $('#confirmModalBtn').attr('href', url).removeClass('btn-danger').addClass('btn-warning');
+                new bootstrap.Modal(document.getElementById('confirmModal')).show();
+            });
+
+            // 刪除草稿
+            $('#btnDeleteDraft').on('click', function () {
+                var url = $(this).data('url');
+                $('#confirmModalTitle').text('刪除草稿');
+                $('#confirmModalIcon').attr('class', 'fs-1 d-block mb-3 bi bi-trash text-danger');
+                $('#confirmModalMessage').text('確定要刪除這篇草稿嗎？此操作無法復原。');
+                $('#confirmModalBtn').attr('href', url).removeClass('btn-warning').addClass('btn-danger');
+                new bootstrap.Modal(document.getElementById('confirmModal')).show();
+            });
+
+
+
+        });
+    </script>
+}
+
+

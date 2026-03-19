@@ -58,6 +58,12 @@ namespace EatTogether.Models.Infra
 				claims.Add(new Claim("roleId", roleId.ToString()));
 			}
 
+			//把每個 FunctionName 寫成獨立 Claim
+			foreach (var fn in payloadDto.FunctionNames)
+			{
+				claims.Add(new Claim("Permission", fn));
+			}
+
 			// JWT 所需的安全金鑰物件
 			var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 

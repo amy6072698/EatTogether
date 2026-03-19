@@ -5,10 +5,6 @@
 
 <div class="container-fluid px-4">
     <h1 class="mt-4 fw-bold">分類管理</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item active">分類管理</li>
-    </ol>
 
     <!-- 統計卡片 -->
     <div class="row mb-4">
@@ -720,7 +716,7 @@
                 }
             });
         });
-        
+
         function editOrUploadCategoryImage() {
             const previewImg = document.getElementById("edit_previewImg");
             if (previewImg.src && !previewImg.classList.contains('d-none')) {
@@ -729,7 +725,7 @@
                 document.getElementById('edit_imageInput').click();
             }
         }
-        
+
         document.getElementById('edit_imageArea').onclick = editOrUploadCategoryImage;
 
 
@@ -752,7 +748,7 @@
                 cropper = new Cropper(img, { aspectRatio: 4/3, viewMode: 1, autoCropArea: 1 });
             }, { once: true });
         }
-        
+
         function confirmCrop() {
             if (!cropper) return;
             const base64 = cropper.getCroppedCanvas({ width: 800, height: 600 }).toDataURL("image/jpeg", 0.9);

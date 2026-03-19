@@ -1,0 +1,23 @@
+﻿@model EatTogether.Models.ViewModels.ArticleCategoryEditViewModel
+
+
+<form asp-action="Edit" id="editForm">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label">類別名稱</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="SortOrder" class="form-label">排序</label>
+        <input asp-for="SortOrder" class="form-control" type="number" />
+        <span asp-validation-for="SortOrder" class="text-danger"></span>
+    </div>
+    <div class="mb-3 form-check">
+        <input asp-for="IsEnabled" class="form-check-input" type="checkbox" />
+        <label asp-for="IsEnabled" class="form-check-label">是否啟用</label>
+    </div>
+    <div class="modal-footer px-0 pb-0">
+        <button type="submit" class="btn btn-primary">儲存</button>
+        <button type="button" class="btn btn-secondary" onclick="$('#editModal').modal('hide')">取消</button>
+    </div>
+</form>

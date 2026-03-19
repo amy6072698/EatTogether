@@ -27,5 +27,7 @@ public partial class Event
 
     public int Status { get; set; }
 
+    public int IsAutoDiscount { get; set; }
+
     public virtual ICollection<Article> Articles { get; set; } = new List<Article>();
 }

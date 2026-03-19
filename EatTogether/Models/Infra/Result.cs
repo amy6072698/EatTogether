@@ -2,21 +2,21 @@
 {
     public class Result
     {
-        public bool IsSuccess { get; set; }
-        public string ErrorMessage { get; set; }
+		public bool IsSuccess { get; private set; }
+		public string ErrorMessage { get; private set; } = "";
 
-        public static Result Success()
-            => new Result { IsSuccess = true };
+		public static Result Success()
+			=> new Result { IsSuccess = true };
 
-        public static Result Fail(string msg)
-                => new Result { IsSuccess = false, ErrorMessage = msg };
-    }
+		public static Result Fail(string msg)
+			=> new Result { IsSuccess = false, ErrorMessage = msg };
+	}
 
 	// 泛型版本，多一個 Value 存回傳資料
 	public class Result<T>
 	{
-		public bool IsSuccess { get; set; }
-		public string ErrorMessage { get; set; } = "";
+		public bool IsSuccess { get; private set; }
+		public string ErrorMessage { get; private set; } = "";
 
 		private T? _value;
 		public T Value => IsSuccess

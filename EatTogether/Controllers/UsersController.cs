@@ -1,4 +1,4 @@
-using EatTogether.Models.DTOs;
+﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.Extensions;
 using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
@@ -18,17 +18,17 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/Index
-		//[RequirePermission("Staff_View")]
+		[RequirePermission("Staff_View")]   // Staff_Manage 的人透過 canManage claim 取得額外功能
 		[HttpGet]
 		public async Task<IActionResult> Index(UserIndexViewModel vm)
 		{
-			// // �q JWT ���o�ثe�n�J�̸�T
+			// 從 JWT 取得目前登入者資訊
 			var currentUserId = int.Parse(User.FindFirstValue("UserId") ?? "0");
 
-			// �ˬd�ثe�n�J�̬O�_�֦��u�޲z���u�v���v���аO (Claim)
+			// 檢查目前登入者是否擁有「管理員工」的權限標記 (Claim)
 			var canManage = User.HasClaim("Permission", "Staff_Manage");
 
-			// �d�߱���
+			// 查詢條件
 			var searchDto = new UserSearchDto
 			{
 				EmployeeNumber = vm.EmployeeNumber,
@@ -56,8 +56,8 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/NextEmployeeNumber
-		// �w�����u�s���]�e�ݶ} Modal �ɩI�s�^
-		//[RequirePermission("Staff_Manage")]
+		// 預產員工編號（前端開 Modal 時呼叫）
+		[RequirePermission("Staff_Manage")]
 		[HttpGet]
 		public async Task<IActionResult> NextEmployeeNumber()
 		{
@@ -67,8 +67,8 @@ namespace EatTogether.Controllers
 
 
 		// POST /Users/Create
-		// �s�W���u
-		//[RequirePermission("Staff_Manage")]
+		// 新增員工
+		[RequirePermission("Staff_Manage")]
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
 		{
@@ -88,8 +88,8 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/Edit/{id}
-		// �e�ݶ}�s�� Modal �ɩI�s�A���o�w����
-		//[RequirePermission("Staff_Manage")]
+		// 前端開編輯 Modal 時呼叫，取得預填資料
+		[RequirePermission("Staff_Manage")]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id)
 		{
@@ -103,8 +103,8 @@ namespace EatTogether.Controllers
 		}
 
 		// PUT /Users/Edit/{id}
-		// �x�s�s��
-		//[RequirePermission("Staff_Manage")]
+		// 儲存編輯
+		[RequirePermission("Staff_Manage")]
 		[HttpPut]
 		public async Task<IActionResult> Edit(int id, [FromBody] UserEditViewModel vm)
 		{
@@ -122,7 +122,7 @@ namespace EatTogether.Controllers
 		}
 
 		// PATCH /Users/Resign/{id}
-		//[RequirePermission("Staff_Manage")]
+		[RequirePermission("Staff_Manage")]
 		[HttpPatch]
 		public async Task<IActionResult> Resign(int id)
 		{
@@ -134,7 +134,7 @@ namespace EatTogether.Controllers
 		}
 
 		// PATCH /Users/Reinstate/{id}
-		//[RequirePermission("Staff_Manage")]
+		[RequirePermission("Staff_Manage")]
 		[HttpPatch]
 		public async Task<IActionResult> Reinstate(int id)
 		{

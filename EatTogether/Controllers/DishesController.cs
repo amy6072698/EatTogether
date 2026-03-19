@@ -1,17 +1,19 @@
-﻿using EatTogether.Models.Services;
+﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Infra;
+using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
-using EatTogether.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace EatTogether.Controllers
 {
-    public class DishesController : Controller
+	[RequirePermission("Menu_Manage")]
+	public class DishesController : Controller
     {
         private readonly DishService _dishService;
         private readonly CategoryService _categoryService;

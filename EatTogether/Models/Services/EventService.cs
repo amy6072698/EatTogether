@@ -14,16 +14,16 @@ namespace EatTogether.Models.Services
 		}
 
 		// 新增活動
-		public async Task<EventServiceResult<bool>> CreateAsync(EventCreateDto dto)
+		public async Task<Event_Article_ServiceResult<bool>> CreateAsync(EventCreateDto dto)
 		{
 			try
 			{
 				await _repo.CreateAsync(dto);
-				return EventServiceResult<bool>.Ok(true);
+				return Event_Article_ServiceResult<bool>.Ok(true);
 			}
 			catch (Exception ex)
 			{
-				return EventServiceResult<bool>.Fail($"新增失敗：{ex.Message}");
+				return Event_Article_ServiceResult<bool>.Fail($"新增失敗：{ex.Message}");
 			}
 		}
 
@@ -46,17 +46,17 @@ namespace EatTogether.Models.Services
 		}
 
 		// 編輯活動
-		public async Task<EventServiceResult<bool>> EditAsync(EventEditDto dto)
+		public async Task<Event_Article_ServiceResult<bool>> EditAsync(EventEditDto dto)
 		{
 			try
 			{
 				await _repo.EditAsync(dto);
 
-				return EventServiceResult<bool>.Ok(true);
+				return Event_Article_ServiceResult<bool>.Ok(true);
 			}
 			catch (Exception ex)
 			{
-				return EventServiceResult<bool>.Fail($"編輯失敗：{ex.Message}");
+				return Event_Article_ServiceResult<bool>.Fail($"編輯失敗：{ex.Message}");
 			}
 		}
 

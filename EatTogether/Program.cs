@@ -103,8 +103,16 @@ namespace EatTogether
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IReportService, ReportService>();
 
-            builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+
+			builder.Services.AddScoped<IEventRepository, EventRepository>();
 			builder.Services.AddScoped<EventService>();
+			builder.Services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+			builder.Services.AddScoped<ArticleCategoryService>();
+			builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+			builder.Services.AddScoped<ArticleService>();
+
+
 
 			// 註冊 Infra（需要 DI 的才註冊）
 			builder.Services.AddHttpContextAccessor();
@@ -144,7 +152,7 @@ namespace EatTogether
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Auth}/{action=Login}/{id?}");
 
             app.Run();
         }

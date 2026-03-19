@@ -1,10 +1,12 @@
 ﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Infra;
 using EatTogether.Models.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-    public class PaymentsController : Controller
+	[RequirePermission("Order_Manage")]
+	public class PaymentsController : Controller
     {
         private readonly IOrderService _service;
         public PaymentsController(IOrderService service) => _service = service;

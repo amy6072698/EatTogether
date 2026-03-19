@@ -1,10 +1,12 @@
-﻿using EatTogether.Models.Services;
+﻿using EatTogether.Models.Infra;
+using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-    public class ReservationsController : Controller
+	[RequirePermission("Reservation_Manage")]
+	public class ReservationsController : Controller
     {
         private readonly ReservationService _reservationService;
 

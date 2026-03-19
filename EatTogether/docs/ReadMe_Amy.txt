@@ -772,7 +772,7 @@
 
 	[V] 補上驗證 RoleCreateDto、RoleEditDto
 
-[working] add 刪除角色功能
+[V] add 刪除角色功能
 	url: DELETE /Role/Delete/{id}
 
 	[V] RoleRepository（modify）
@@ -797,49 +797,54 @@
 =========
 [RequirePermission("Member_Manage")] 套用於所有 Member Actions
 
-[] add 會員列表功能
+[V] add 會員列表功能
 	url: GET /Member/Index
 
-	[] DTO（Models/DTOs/MemberListDto.cs）
+	[V] DTO（Models/DTOs/MemberListDto.cs）
 		MemberListDto
 			int Id
 			string Name, Account, Email
 			string? Phone
+			DateOnly? BirthDate
 			DateTime CreatedAt
 			bool IsConfirmed, IsBlacklisted, IsDeleted
+			DateTime? DeletedAt
 			string? BlacklistReason
 
-	[] DTO（Models/DTOs/MemberSearchDto.cs）
+	[V] DTO（Models/DTOs/MemberSearchDto.cs）
 		MemberSearchDto
 			string? Name, Account, Email, Phone
 			string Status   // All / Normal / Unconfirmed / Blacklisted / Deleted
 			string SortBy   // CreatedAt_Desc / CreatedAt_Asc
 
-	[] IMemberRepository / MemberRepository（Models/Repositories/MemberRepository.cs）
+	[V] IMemberRepository / MemberRepository（Models/Repositories/MemberRepository.cs）
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto dto)
 			// 狀態優先順序：IsDeleted=1 → 已刪除；IsBlacklisted=1 → 黑名單；IsConfirmed=0 → 未驗證；其餘 → 正常
 
-	[] IMemberService / MemberService（Models/Services/MemberService.cs）
+	[V] IMemberService / MemberService（Models/Services/MemberService.cs）
 		ctor(IMemberRepository repo)
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto dto)
 
-	[] ViewModel（Models/ViewModels/MemberIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberViewModel.cs）
 		MemberIndexViewModel
 			IEnumerable<MemberRowViewModel> Rows
 			string? Name, Account, Email, Phone
 			string Status, SortBy
 
-	[] ViewModel（Models/ViewModels/MemberRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberViewModel.cs）
 		MemberRowViewModel
 			// 對應 MemberListDto + 前端顯示用欄位
 			string StatusText    // 啟用中 / 未驗證 / 黑名單 / 已刪除
 			string StatusColor   // green / yellow / red / gray
 			string ButtonType    // blacklist / unblacklist / disabled / none
 
-	[] Extension（Models/Extensions/MemberDtoExtension.cs）
-		MemberRowViewModel ToRowViewModel(this MemberListDto dto)
+	[V] Extension（Models/Extensions/MemberDtoExtension.cs）
+		(string text, string color) ResolveStatus(MemberListDto dto)
+		string ResolveButtonType(MemberListDto dto)
+		MemberRowViewModel ToRowVm(this MemberListDto dto)
+		MemberDetailViewModel ToDetailVm(this MemberDetailDto dto)
 
-	[] MemberController（Controllers/MemberController.cs）
+	[V] MemberController（Controllers/MemberController.cs）
 		GET /Member/Index
 
 	[V] Members/Index.cshtml（Views/Members/Index.cshtml）
@@ -856,28 +861,28 @@
 			黑名單 → 解除黑名單（綠，可點）
 			已刪除 → 加入黑名單（灰，Disabled）；解除黑名單不顯示
 
-[] add 會員詳情功能
+[V] add 會員詳情功能
 	url: GET /Member/Detail/{id}
 
-	[] DTO（Models/DTOs/MemberDetailDto.cs）
+	[V] DTO（Models/DTOs/MemberDetailDto.cs）
 		MemberDetailDto
 			// 同 MemberListDto + BirthDate, AvatarFileName, DeletedAt
 
-	[] Extension（Models/Extensions/MemberDtoExtension.cs）（modify）
-		MemberDetailViewModel ToDetailViewModel(this MemberDetailDto dto)
+	[V] Extension（Models/Extensions/MemberDtoExtension.cs）（modify）
+		MemberDetailViewModel ToDetailVm(this MemberDetailDto dto)
 
-	[] MemberRepository（modify）
+	[V] MemberRepository（modify）
 		Task<MemberDetailDto?> GetByIdAsync(int id)
 
-	[] MemberService（modify）
+	[V] MemberService（modify）
 		Task<MemberDetailDto?> GetDetailAsync(int id)
 
-	[] ViewModel（Models/ViewModels/MemberDetailViewModel.cs）
+	[V] ViewModel（Models/ViewModels/MemberDetailViewModel.cs）
 		MemberDetailViewModel
 			// 對應 MemberDetailDto
 			// 黑名單原因：黑名單狀態顯示；未填寫顯示「（未填寫）」
 
-	[] MemberController（modify）
+	[V] MemberController（modify）
 		GET /Member/Detail/{id}（JSON，供 Modal AJAX 呼叫）
 
 	[V] 會員詳情 Modal（嵌入 Members/Index.cshtml）
@@ -886,20 +891,20 @@
 		黑名單原因：僅「黑名單」狀態顯示；未填寫顯示「（未填寫）」
 		底部按鈕：「關閉」
 
-[] add 黑名單管理功能
+[V] add 黑名單管理功能
 	url: PATCH /Member/Blacklist/{id}
 	url: PATCH /Member/Unblacklist/{id}
 
-	[] MemberRepository（modify）
+	[V] MemberRepository（modify）
 		Task UpdateBlacklistAsync(int id, bool isBlacklisted, string? reason)
 
-	[] MemberService（modify）
+	[V] MemberService（modify）
 		Task<Result> BlacklistAsync(int id, string? reason)
 			// IsBlacklisted → 1，儲存 BlacklistReason（允許 NULL）
 		Task<Result> UnblacklistAsync(int id)
 			// IsBlacklisted → 0，BlacklistReason → NULL
 
-	[] MemberController（modify）
+	[V] MemberController（modify）
 		PATCH /Member/Blacklist/{id}
 		PATCH /Member/Unblacklist/{id}
 
@@ -918,7 +923,7 @@
 =========
 共用版面（_Layout.cshtml）
 =========
-[V] 已完成
+[V] Logo 及顏色
 	<head> 加入 favicon（favicon.svg 主要，favicon-32x32.png 備用）
 	Navbar Logo 改用 <img src="/images/logo-full.svg" alt="義起吃" />
 	全站 CSS 品牌色票變數（9 色）
@@ -932,7 +937,48 @@
 		--eat-sidebar-sub   #4E2A17（Sidebar 子項目 active 底色）
 		--eat-sidebar-hover #2C1610（Sidebar 項目 hover 底色）
 
-[] 待完成
+[] 登入狀態與權限導向 RequirePermission
+	[V] UsersController
+		Staff_View → GET /Users/Index
+		Staff_Manage → 
+			NextEmployeeNumber, Create,
+			GET Edit, PUT Edit, 
+			PATCH Resign, PATCH Reinstate
+
+	[V] RolesController
+		Staff_Manage → class（所有 Actions）
+
+	[V] MembersController
+		Staff_Manage → class（所有 Actions）
+
+	[V] CategoriesController / DishesController / SetMealsController
+		Menu_Manage → class（所有 Actions）
+
+	[V] PreOrdersController
+		Order_StatusUpdate → GET Create, POST Create,
+			Confirm, Submit, TodayPreOrderList, UpdateDetailStatus
+			Success, PendingCount, ValidateCoupon, GetSetMealItems
+		Order_Manage → CancelOrder, AllOrders, Detail, CancelAllByTable
+
+	[V] PaymentsController
+		Order_Manage → class（所有 Actions）
+
+	[V] TablesController
+		Table_Manage → class（所有 Actions）
+
+	[V] ReservationsController
+		Reservation_Manage → class（所有 Actions）
+
+	[V] CouponsController
+		Coupon_Manage → class（所有 Actions）
+
+	[V] EventsController
+		Event_Manage → class（所有 Actions）
+
+	[V] ReportController
+		Report_Manage → class（所有 Actions）
+
+[] 登入狀態與權限導向 UI
 	Navbar 右側：從 JWT Payload 動態顯示「登入者姓名 + 角色」與「登出」按鈕
 	Sidebar：從 JWT Payload 角色聯集動態顯示/隱藏選單項目（含分組標題）
 	頁面內操作按鈕依權限動態隱藏，無權限者不渲染至 DOM
