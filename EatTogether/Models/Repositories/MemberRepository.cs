@@ -8,6 +8,7 @@ namespace EatTogether.Models.Repositories
 	{
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto search);
 		Task<MemberDetailDto?> GetByIdAsync(int id);
+		Task UpdateBlacklistAsync(int id, bool isBlacklisted, string? reason);
 	}
 
 	public class MemberRepository : IMemberRepository
@@ -94,6 +95,18 @@ namespace EatTogether.Models.Repositories
 					AvatarFileName = m.AvatarFileName,
 				})
 				.FirstOrDefaultAsync();
+		}
+
+		// 更新黑名單狀態
+		public async Task UpdateBlacklistAsync(int id, bool isBlacklisted, string? reason)
+		{
+			var member = await _context.Members.FindAsync(id);
+			if (member is null) return;
+
+			member.IsBlacklisted = isBlacklisted;
+			member.BlacklistReason = isBlacklisted ? reason : null;
+
+			await _context.SaveChangesAsync();
 		}
 	}
 }

@@ -861,7 +861,7 @@
 			黑名單 → 解除黑名單（綠，可點）
 			已刪除 → 加入黑名單（灰，Disabled）；解除黑名單不顯示
 
-[working] add 會員詳情功能
+[V] add 會員詳情功能
 	url: GET /Member/Detail/{id}
 
 	[V] DTO（Models/DTOs/MemberDetailDto.cs）
@@ -891,20 +891,20 @@
 		黑名單原因：僅「黑名單」狀態顯示；未填寫顯示「（未填寫）」
 		底部按鈕：「關閉」
 
-[] add 黑名單管理功能
+[working] add 黑名單管理功能
 	url: PATCH /Member/Blacklist/{id}
 	url: PATCH /Member/Unblacklist/{id}
 
-	[] MemberRepository（modify）
+	[V] MemberRepository（modify）
 		Task UpdateBlacklistAsync(int id, bool isBlacklisted, string? reason)
 
-	[] MemberService（modify）
+	[V] MemberService（modify）
 		Task<Result> BlacklistAsync(int id, string? reason)
 			// IsBlacklisted → 1，儲存 BlacklistReason（允許 NULL）
 		Task<Result> UnblacklistAsync(int id)
 			// IsBlacklisted → 0，BlacklistReason → NULL
 
-	[] MemberController（modify）
+	[V] MemberController（modify）
 		PATCH /Member/Blacklist/{id}
 		PATCH /Member/Unblacklist/{id}
 

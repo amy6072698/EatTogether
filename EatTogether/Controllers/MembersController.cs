@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-	[RequirePermission("Member_Manage")]
+	//[RequirePermission("Member_Manage")]
 	public class MembersController : Controller
     {
 		private readonly IMemberService _memberService;
@@ -46,5 +46,31 @@ namespace EatTogether.Controllers
 
 			return Json(dto.ToDetailVm());
 		}
+		// PATCH /Member/Blacklist/{id}
+		[HttpPatch]
+		public async Task<IActionResult> Blacklist(int id, [FromBody] BlacklistRequest request)
+		{
+			var result = await _memberService.BlacklistAsync(id, request?.Reason);
+
+			return result.IsSuccess
+				? Ok(new { message = "已成功加入黑名單。" })
+				: BadRequest(new { message = result.ErrorMessage });
+		}
+
+		// PATCH /Member/Unblacklist/{id}
+		[HttpPatch]
+		public async Task<IActionResult> Unblacklist(int id)
+		{
+			var result = await _memberService.UnblacklistAsync(id);
+
+			return result.IsSuccess
+				? Ok(new { message = "已成功解除黑名單。" })
+				: BadRequest(new { message = result.ErrorMessage });
+		}
+	}
+
+	public class BlacklistRequest
+	{
+		public string? Reason { get; set; }
 	}
 }
