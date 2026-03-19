@@ -189,7 +189,6 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.DiscountValue).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.EndDate).HasPrecision(0);
             entity.Property(e => e.IsAutoDiscount).HasDefaultValue(1);
-            entity.Property(e => e.RewardItem).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasPrecision(0);
             entity.Property(e => e.Summary)
                 .IsRequired()
@@ -197,6 +196,10 @@ public partial class EatTogetherDBContext : DbContext
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.HasOne(d => d.RewardDish).WithMany(p => p.Events)
+                .HasForeignKey(d => d.RewardDishId)
+                .HasConstraintName("FK_Events_Dishes");
         });
 
         modelBuilder.Entity<Function>(entity =>

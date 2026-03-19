@@ -10,7 +10,8 @@ namespace EatTogether.Models.DTOs
         public string Summary { get; set; }
         public string DiscountType { get; set; }   // FixedAmount | Percent | Gift
         public decimal DiscountValue { get; set; }
-        public string? RewardItem { get; set; }
+        public int? RewardDishId { get; set; }
+        public string? RewardDishName { get; set; }
         public int MinSpend { get; set; }
 
         /// <summary>折抵金額（Gift 類型為 0）</summary>

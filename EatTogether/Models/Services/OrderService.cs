@@ -76,12 +76,12 @@ namespace EatTogether.Models.Services
 
             // 自動加入所有符合金額條件的贈品活動（Gift 類型全部生效，不限只套一個）
             var allGiftEvents = await _eventRepo.GetApplicableEventsAsync((int)originalAmount);
-            foreach (var giftEv in allGiftEvents.Where(e => e.DiscountType == "Gift" && !string.IsNullOrEmpty(e.RewardItem)))
+            foreach (var giftEv in allGiftEvents.Where(e => e.DiscountType == "Gift" && !string.IsNullOrEmpty(e.RewardDishName)))
             {
                 dto.Items.Add(new PreOrderDetailDto
                 {
                     ProductId   = 0,
-                    ProductName = $"🎁 {giftEv.RewardItem}（活動贈品）",
+                    ProductName = $"🎁 {giftEv.RewardDishName}（活動贈品）",
                     Qty         = 1,
                     UnitPrice   = 0,
                     IsSetMeal   = false,
@@ -690,8 +690,8 @@ namespace EatTogether.Models.Services
             // 沒有任何未結餐點就回 null
             if (!allItems.Any()) return null;
 
-            // 判斷是否還有可結帳的餐點
-            var billableItems = allItems.Where(d => !d.IsBilled && d.Status != 2).ToList();
+            // 判斷是否還有可結帳的餐點（NT$0 贈品不計入金額門檻）
+            var billableItems = allItems.Where(d => !d.IsBilled && d.Status != 2 && d.SubTotal > 0).ToList();
             if (!billableItems.Any()) return null;  // 全部結完或取消才回 null
 
             var servedItems = tableOrders.SelectMany(p => p.PreOrderDetails.Where(d => d.DoneOrCancel != 2));
@@ -829,6 +829,13 @@ namespace EatTogether.Models.Services
             await _orderRepo.AddWithPaymentAsync(order, payment);
 
             foreach (var d in selected)
+                await _preOrderRepo.UpdateDetailBilledAsync(d.Id);
+
+            // 自動將 NT$0 贈品一起標為已結帳（贈品不需獨立拆單）
+            var giftItems = allDetails
+                .Where(d => d.UnitPrice == 0 && d.SubTotal == 0 && !d.IsBilled && d.DoneOrCancel != 2)
+                .ToList();
+            foreach (var d in giftItems)
                 await _preOrderRepo.UpdateDetailBilledAsync(d.Id);
 
             // 檢查每筆 PreOrder 是否所有非取消餐點都已結帳

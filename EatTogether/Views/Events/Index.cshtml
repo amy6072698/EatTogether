@@ -73,7 +73,7 @@
                             @Html.DisplayNameFor(model => model.EndDate)
                         </th>
                         <th>
-                            @Html.DisplayNameFor(model => model.RewardItem)
+                            贈品
                         </th>
                         <th>
                             @Html.DisplayNameFor(model => model.DiscountType)
@@ -110,14 +110,7 @@
                                 @Html.DisplayFor(modelItem => item.EndDate)
                             </td>
                             <td>
-                                @{
-                                    // 如果類別不是 Gift，或是 Gift 但內容是空的，就顯示 "-"
-                                    string rewardDisplay = (item.DiscountType == "Gift" && !string.IsNullOrEmpty(item.RewardItem))
-                                    ? item.RewardItem
-                                    : "-";
-                                }
-                                @rewardDisplay
-
+                                @(item.RewardDishName ?? "-")
                             </td>
                             <td>
                                 @{

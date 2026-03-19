@@ -1,4 +1,5 @@
 ﻿using EatTogether.Models.EfModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
@@ -40,9 +41,12 @@ namespace EatTogether.Models.ViewModels
 		}
 
 
+		public int? RewardDishId { get; set; }
+
 		[Display(Name = "贈品")]
-		[StringLength(100)]
-		public string? RewardItem { get; set; }
+		public string RewardDishName { get; set; }
+
+		public List<SelectListItem> DishOptions { get; set; }
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]

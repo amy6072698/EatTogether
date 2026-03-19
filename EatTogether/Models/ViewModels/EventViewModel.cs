@@ -24,8 +24,10 @@ namespace EatTogether.Models.ViewModels
 		[DisplayFormat(DataFormatString = "{0:yyyy/MM/dd}")]
 		public DateTime EndDate { get; set; }
 
+		public int? RewardDishId { get; set; }
+
 		[Display(Name = "贈品")]
-		public string? RewardItem { get; set; }
+		public string RewardDishName { get; set; }
 
 		[Display(Name = "折扣類別")]
 		public string? DiscountType { get; set; }

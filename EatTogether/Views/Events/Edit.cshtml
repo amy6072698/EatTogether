@@ -60,9 +60,25 @@
                             <span asp-validation-for="MinSpend" class="text-danger"></span>
                         </div>
                         <div class="form-group mb-3">
-                            <label asp-for="RewardItem" class="control-label"></label>    <span class="form-text">※非贈品活動可留白</span>
-                            <input asp-for="RewardItem" class="form-control" readonly="@(isEnded ? "readonly" : null)" />
-                            <span asp-validation-for="RewardItem" class="text-danger"></span>
+                            <label asp-for="RewardDishId" class="control-label"></label>
+                            <span class="form-text">※非贈品活動可留白</span>
+
+                            @if (isEnded)
+                            {
+                                @* 已結束：只顯示文字，不可編輯 *@
+                                <input type="text" class="form-control" value="@(Model.RewardDishName ?? "-")" readonly />
+                                <input asp-for="RewardDishId" type="hidden" />
+                            }
+                            else
+                            {
+                                @* 未開始 / 進行中：顯示下拉選單 *@
+                                <select asp-for="RewardDishId" class="form-control"
+                                        asp-items="Model.DishOptions">
+                                    <option value="">-- 無贈品 --</option>
+                                </select>
+                            }
+
+                            <span asp-validation-for="RewardDishId" class="text-danger"></span>
                         </div>
                         <div class="form-group mb-3">
                             <label asp-for="DiscountType" class="control-label"></label>

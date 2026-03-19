@@ -8,34 +8,34 @@ GO
 SET IDENTITY_INSERT [dbo].[Events] ON 
 GO
 
-INSERT [dbo].[Events] ([Id], [Title], [Summary], [MinSpend], [StartDate], [EndDate], [RewardItem], [DiscountType], [DiscountValue], [Status], [IsAutoDiscount]) 
+INSERT [dbo].[Events] ([Id], [Title], [Summary], [MinSpend], [StartDate], [EndDate], [RewardDishId], [DiscountType], [DiscountValue], [Status], [IsAutoDiscount]) 
 VALUES 
 -- 【過去的活動】(已結束，Status=2)
-(1, N'聖誕義式嘉年華', N'滿 1500 送聖誕限定甜點', 1500, '2025-12-01', '2025-12-26 23:59:59', N'聖誕水果麵包帕尼托內', N'Gift', 0, 2, 1),
+(1, N'聖誕義式嘉年華', N'滿 1500 送聖誕限定甜點', 1500, '2025-12-01', '2025-12-26 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'草莓千層蛋糕'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'草莓千層蛋糕'), 2, 1),
 (2, N'2026 跨年夜折扣', N'全單滿 2026 現折 200 元', 2026, '2025-12-31', '2026-01-01 23:59:59', NULL, N'FixedAmount', 200, 2, 1),
 (3, N'聖誕前週末狂歡', N'12/20–12/24 全單享 88 折', 800, '2025-12-20', '2025-12-24 23:59:59', NULL, N'Percent', 0.88, 2, 1),
-(4, N'農曆新年主廚招待', N'滿 1000 送紅醬肉丸', 1000, '2026-01-20', '2026-02-10 23:59:59', N'拿坡里番茄燉肉丸', N'Gift', 0, 2, 1),
+(4, N'農曆新年主廚招待', N'滿 1000 送酥炸墨魚圈', 1000, '2026-01-20', '2026-02-10 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'酥炸墨魚圈'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'酥炸墨魚圈'), 2, 1),
 (5, N'新年新胃口', N'1/2–1/19 全單滿 1000 現折 100', 1000, '2026-01-02', '2026-01-19 23:59:59', NULL, N'FixedAmount', 100, 2, 1),
-(6, N'二月情人節浪漫贈禮', N'滿 1314 送巧克力塔', 1314, '2026-02-10', '2026-02-16 23:59:59', N'70% 苦甜巧克力塔', N'Gift', 0, 2, 1),
+(6, N'二月情人節浪漫贈禮', N'滿 1314 送巧克力熔岩蛋糕', 1314, '2026-02-10', '2026-02-16 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'巧克力熔岩蛋糕'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'巧克力熔岩蛋糕'), 2, 1),
 (7, N'冬末暖心折扣', N'2/17–2/28 全單享 9 折', 600, '2026-02-17', '2026-02-28 23:59:59', NULL, N'Percent', 0.90, 2, 1),
 
 -- 【現在的活動】(進行中，Status=1)
-(8, N'午間快閃禮', N'週一至週五滿 500 送咖啡', 500, '2026-03-01', '2026-03-31 23:59:59', N'義式濃縮咖啡', N'Gift', 0, 1, 1),
-(9, N'初夏海鮮祭', N'滿 1800 送香煎干貝一份', 1800, '2026-03-10', '2026-03-17 23:59:59', N'北海道干貝配檸檬奶油', N'Gift', 0, 1, 1),
-(10, N'學生小確幸', N'憑學生證滿 350 送提拉米蘇', 350, '2026-03-16', '2026-04-30 23:59:59', N'經典提拉米蘇', N'Gift', 0, 1, 0),
+(8, N'午間快閃禮', N'週一至週五滿 500 送卡布奇諾', 500, '2026-03-01', '2026-03-31 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'卡布奇諾'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'卡布奇諾'), 1, 1),
+(9, N'初夏海鮮祭', N'滿 1800 送香煎鮭魚排一份', 1800, '2026-03-10', '2026-03-17 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'香煎鮭魚排'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'香煎鮭魚排'), 1, 1),
+(10, N'學生小確幸', N'憑學生證滿 350 送提拉米蘇', 350, '2026-03-16', '2026-04-30 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'提拉米蘇'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'提拉米蘇'), 1, 0),
 (11, N'義起吃週年慶', N'3/18–4/10 全單滿 1200 現折 150', 1200, '2026-03-18', '2026-04-10 23:59:59', NULL, N'FixedAmount', 150, 1, 1),
 
 -- 【未來的活動】(預約中或草稿，Status=0)
 (12, N'復活節義式假期', N'3/29–4/06 全單享 85 折', 1000, '2026-03-29', '2026-04-06 23:59:59', NULL, N'Percent', 0.85, 0, 1),
-(13, N'春末松露慶典', N'滿 1200 送松露薯條', 1200, '2026-04-15', '2026-05-15 23:59:59', N'松露瑞可塔起司薯條', N'Gift', 0, 0, 1),
+(13, N'春末松露慶典', N'滿 1200 送松露起司薯條', 1200, '2026-04-15', '2026-05-15 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'松露起司薯條'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'松露起司薯條'), 0, 1),
 (14, N'五月寵愛母親節', N'全桌滿 2000 享 85 折', 2000, '2026-05-01', '2026-05-11 23:59:59', NULL, N'Percent', 0.85, 0, 1),
 (15, N'五一連假微放鬆', N'5/1–5/4 全單滿 800 現折 80', 800, '2026-05-01', '2026-05-04 23:59:59', NULL, N'FixedAmount', 80, 0, 1),
 (16, N'春末假日饗宴', N'5/16–5/31 週六日全單享 9 折', 800, '2026-05-16', '2026-05-31 23:59:59', NULL, N'Percent', 0.90, 0, 1),
 (17, N'端午義式連假祭', N'5/28–6/01 全單滿 1000 現折 120', 1000, '2026-05-28', '2026-06-01 23:59:59', NULL, N'FixedAmount', 120, 0, 1),
 (18, N'六月謝師宴專案', N'10人以上消費滿 5000 現折 500', 5000, '2026-06-01', '2026-06-30 23:59:59', NULL, N'FixedAmount', 500, 0, 1),
-(19, N'盛夏沁涼微醺', N'滿 800 送白酒一杯', 800, '2026-07-01', '2026-08-31 23:59:59', N'精選義大利白葡萄酒', N'Gift', 0, 0, 1),
+(19, N'盛夏沁涼消暑', N'滿 400 送西瓜汁一杯', 400, '2026-07-01', '2026-08-31 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'西瓜汁'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'西瓜汁'), 0, 1),
 (20, N'暑假全家樂', N'7月四人同行全單享 88 折', 1600, '2026-07-01', '2026-07-31 23:59:59', NULL, N'Percent', 0.88, 0, 1),
-(21, N'七夕浪漫燭光週', N'預約雙人套餐送紅酒燉牛肉', 2000, '2026-08-10', '2026-08-20 23:59:59', N'微醺紅酒燉牛肉', N'Gift', 0, 0, 1),
+(21, N'七夕浪漫燭光週', N'預約雙人套餐送羅宋牛腩湯', 2000, '2026-08-10', '2026-08-20 23:59:59', (SELECT Id FROM dbo.Dishes WHERE DishName = N'羅宋牛腩湯'), N'Gift', (SELECT Price FROM dbo.Dishes WHERE DishName = N'羅宋牛腩湯'), 0, 1),
 (22, N'週二義式之夜', N'8/4–9/01 每週二全單現折 100', 700, '2026-08-04', '2026-09-01 23:59:59', NULL, N'FixedAmount', 100, 0, 1);
 
 GO

@@ -228,7 +228,7 @@ CREATE TABLE [dbo].[Events](
 	[MinSpend] [int] NOT NULL,
 	[StartDate] [datetime2](0) NOT NULL,
 	[EndDate] [datetime2](0) NOT NULL,
-	[RewardItem] [nvarchar](100) NULL,
+	[RewardDishId] [int] NULL,
 	[DiscountType] [nvarchar](20) NOT NULL,
 	[DiscountValue] [decimal](10, 2) NOT NULL,
 	[Status] [int] NOT NULL,
@@ -922,7 +922,7 @@ ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [DiscountValue]
 GO
 ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [Status]
 GO
-ALTER TABLE [dbo].[Events] ADD  DEFAULT ((1)) FOR [IsAutoDiscount]
+--ALTER TABLE [dbo].[Events] ADD  DEFAULT ((1)) FOR [IsAutoDiscount]
 GO
 ALTER TABLE [dbo].[Functions] ADD  CONSTRAINT [DF_Functions_IsOwnerOnly]  DEFAULT ((0)) FOR [IsOwnerOnly]
 GO
@@ -1029,6 +1029,11 @@ ALTER TABLE [dbo].[Articles]  WITH CHECK ADD  CONSTRAINT [FK_Articles_Events] FO
 REFERENCES [dbo].[Events] ([Id])
 GO
 ALTER TABLE [dbo].[Articles] CHECK CONSTRAINT [FK_Articles_Events]
+GO
+ALTER TABLE [dbo].[Events]  WITH CHECK ADD  CONSTRAINT [FK_Events_Dishes] FOREIGN KEY([RewardDishId])
+REFERENCES [dbo].[Dishes] ([Id])
+GO
+ALTER TABLE [dbo].[Events] CHECK CONSTRAINT [FK_Events_Dishes]
 GO
 ALTER TABLE [dbo].[Categories]  WITH CHECK ADD  CONSTRAINT [FK_Categories_Parent] FOREIGN KEY([ParentCategoryId])
 REFERENCES [dbo].[Categories] ([Id])
