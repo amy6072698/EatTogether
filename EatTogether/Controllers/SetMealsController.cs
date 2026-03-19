@@ -59,6 +59,37 @@ namespace EatTogether.Controllers
                 }
                 return vm;
             }).ToList();
+
+            ViewBag.SetMealsJson = System.Text.Json.JsonSerializer.Serialize(
+                vms.Select(vm => new {
+                    id = vm.Id,
+                    setMealName = vm.SetMealName,
+                    imageUrl = vm.ImageUrl,
+                    setPrice = vm.SetPrice,
+                    discountType = vm.DiscountType,
+                    discountValue = vm.DiscountValue,
+                    startDate = vm.StartDate,
+                    endDate = vm.EndDate,
+                    startTime = vm.StartTime,
+                    endTime = vm.EndTime,
+                    isActive = vm.IsActive,
+                    isPopular = vm.IsPopular,
+                    isRecommended = vm.IsRecommended,
+                    displayOrder = vm.DisplayOrder,
+                    items = vm.Items.Select(i => new {
+                        dishId = i.DishId,
+                        dishName = i.DishName,
+                        dishPrice = i.DishPrice,
+                        categoryName = i.CategoryName,
+                        quantity = i.Quantity,
+                        isOptional = i.IsOptional,
+                        optionGroupNo = i.OptionGroupNo,
+                        pickLimit = i.PickLimit,
+                        displayOrder = i.DisplayOrder
+                    })
+                })
+            );
+
             return View(vms);
         }
 
@@ -87,9 +118,9 @@ namespace EatTogether.Controllers
             if (!string.IsNullOrEmpty(vm.CroppedImageData))
                 vm.ImageUrl = await SaveBase64ImageAsync(vm.CroppedImageData, vm.SetMealName);
 
-            // New logic to set DisplayOrder
+            // New logic to set DisplayOrder: Max + 1 (stable logic)
             var allSetMeals = await _setMealService.GetAllAsync();
-            vm.DisplayOrder = allSetMeals.Any() ? allSetMeals.Min(s => s.DisplayOrder) - 1 : 1;
+            vm.DisplayOrder = allSetMeals.Any() ? allSetMeals.Max(s => s.DisplayOrder) + 1 : 1;
 
             await _setMealService.CreateAsync(vm.ToDto());
             return RedirectToAction(nameof(Index));
@@ -104,6 +135,27 @@ namespace EatTogether.Controllers
 
             // Populate CategoriesWithDishes for the new UI
             await PopulateCategoriesWithDishes(vm);
+
+            ViewBag.CategoriesWithDishesJson = System.Text.Json.JsonSerializer.Serialize(
+                vm.CategoriesWithDishes.Select(c => new {
+                    categoryId = c.CategoryId,
+                    categoryName = c.CategoryName,
+                    isCategoryOptional = c.IsCategoryOptional,
+                    optionGroupNoForCategory = c.OptionGroupNoForCategory,
+                    pickLimitForCategory = c.PickLimitForCategory,
+                    dishesInThisCategory = c.DishesInThisCategory.Select(d => new {
+                        value = d.Value,
+                        text = d.Text
+                    }),
+                    selectedItemsForCategory = c.SelectedItemsForCategory.Select(i => new {
+                        dishId = i.DishId,
+                        dishName = i.DishName,
+                        dishPrice = i.DishPrice,
+                        quantity = i.Quantity,
+                        displayOrder = i.DisplayOrder
+                    })
+                })
+            );
 
 			if (string.IsNullOrEmpty(vm.ImageUrl))
 			{
@@ -122,9 +174,19 @@ namespace EatTogether.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [FromForm] SetMealViewModel vm)
+        public async Task<IActionResult> Edit(int id, [FromForm] SetMealViewModel vm, [FromForm] string itemsJson)
         {
             if (id != vm.Id) return BadRequest();
+            
+            // 解析前端傳來的餐點資料，確保儲存基本資料時不會清空明細
+            if (!string.IsNullOrEmpty(itemsJson))
+            {
+                try {
+                    var items = System.Text.Json.JsonSerializer.Deserialize<List<SetMealItemViewModel>>(itemsJson);
+                    if (items != null) vm.Items = items;
+                } catch { /* 忽略解析錯誤 */ }
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateCategoriesWithDishes(vm); // Repopulate if validation fails
@@ -145,32 +207,45 @@ namespace EatTogether.Controllers
         private async Task PopulateCategoriesWithDishes(SetMealViewModel vm)
         {
             var allCategories = await _categoryService.GetAllAsync();
-            var allActiveDishes = await _dishService.GetAllAsync(); // This already filters for IsActive
+            // 抓取「所有」餐點，確保已在套餐中的餐點即使下架了也能顯示
+            var allDishes = await _dishService.GetAllAsync(); 
 
             var categoriesWithDishes = new List<CategoryWithDishesViewModel>();
 
-            foreach (var category in allCategories.OrderBy(c => c.DisplayOrder)) // Assuming categories have DisplayOrder
+            foreach (var category in allCategories.OrderBy(c => c.DisplayOrder))
             {
                 var categoryVm = new CategoryWithDishesViewModel
                 {
                     CategoryId = category.Id,
                     CategoryName = category.CategoryName,
-                    DishesInThisCategory = allActiveDishes
-                        .Where(d => d.CategoryId == category.Id)
+                    DishesInThisCategory = allDishes
+                        .Where(d => d.CategoryId == category.Id && (d.IsActive || vm.Items.Any(item => item.DishId == d.Id)))
                         .Select(d => new SelectListItem
                         {
                             Value = d.Id.ToString(),
-                            Text = $"{d.DishName} (${d.Price})",
-                            Selected = vm.Items.Any(item => item.DishId == d.Id) // Pre-select in dropdown if already in set meal
+                            Text = $"{(d.IsActive ? "" : "[已下架] ")}{d.DishName} (${d.Price})",
+                            Selected = vm.Items.Any(item => item.DishId == d.Id)
                         }).ToList()
                 };
 
                 // Populate SelectedItemsForCategory for rendering existing items
+                // 這裡必須確保所有套餐內的項目都被加入，不論是否 Active
                 categoryVm.SelectedItemsForCategory = vm.Items
-                    .Where(item => allActiveDishes.Any(d => d.Id == item.DishId && d.CategoryId == category.Id))
+                    .Where(item => allDishes.Any(d => d.Id == item.DishId && d.CategoryId == category.Id))
                     .ToList();
                 
-                // Set category-level optionality based on the first optional item in this category (if any)
+                // 補足 SelectedItemsForCategory 中遺失的名稱與價格資訊 (因為 ToViewModel 時可能只有 ID)
+                foreach(var item in categoryVm.SelectedItemsForCategory)
+                {
+                    var dish = allDishes.FirstOrDefault(d => d.Id == item.DishId);
+                    if (dish != null)
+                    {
+                        item.DishName = dish.DishName;
+                        item.DishPrice = dish.Price;
+                        item.CategoryName = category.CategoryName;
+                    }
+                }
+
                 var firstOptionalItem = categoryVm.SelectedItemsForCategory.FirstOrDefault(i => i.IsOptional);
                 if (firstOptionalItem != null)
                 {

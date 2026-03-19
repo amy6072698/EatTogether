@@ -450,7 +450,7 @@
         let isSortMode  = false;
         let isBatchMode = false;
 
-        const allSetMeals = @Html.Raw(Json.Serialize(Model));
+        const allSetMeals = @Html.Raw(ViewBag.SetMealsJson);
 
         /* ════════════════════════════════════════
            搜尋 / 篩選 / 分頁（原有功能）
@@ -472,7 +472,8 @@
                 return matchSearch && matchStatus;
             });
 
-            filteredCards.sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
+            // 預設按 ID 倒序，讓最新新增的在最前面 (與分類管理邏輯一致)
+            filteredCards.sort((a, b) => parseInt(b.dataset.id) - parseInt(a.dataset.id));
             if (resetPage) currentPage = 1;
             renderPage();
         }
@@ -491,6 +492,7 @@
         }
 
         function renderPage() {
+            const container = document.getElementById("setmeal-card-container");
             const allCards = Array.from(document.querySelectorAll(".setmeal-card"));
             allCards.forEach(c => c.style.display = "none");
 
@@ -498,7 +500,12 @@
 
             const start = (currentPage - 1) * PAGE_SIZE;
             const end   = start + PAGE_SIZE;
-            filteredCards.slice(start, end).forEach(c => c.style.display = "");
+            const pagedCards = filteredCards.slice(start, end);
+
+            pagedCards.forEach(c => {
+                c.style.display = "";
+                container.appendChild(c); // 重新附加以反映 JS 排序結果
+            });
 
             const total      = filteredCards.length;
             const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
@@ -798,13 +805,7 @@
            【新功能③】詳情 Modal：圖片即時預覽 + 基本資訊
         ════════════════════════════════════════ */
         function formatItemForDisplay(item) {
-            let text = `${item.dishName} ($${item.dishPrice}) x${item.quantity}`;
-            if (item.isOptional) {
-                text += ` <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">限選 ${item.pickLimit ?? ''}</span>`;
-            } else {
-                text += ` <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1">固定</span>`;
-            }
-            return text;
+            return `${item.dishName} ($${item.dishPrice}) x${item.quantity}`;
         }
 
         document.addEventListener("DOMContentLoaded", function () {

@@ -91,6 +91,7 @@ namespace EatTogether.Models.Repositories
                      .Include(p => p.Table)
                      .Include(p => p.Member)
                      .Include(p => p.Coupon)
+                     .Include(p => p.Event)
                      .OrderByDescending(p => p.OrderAt)
                      .ToListAsync();
         public async Task<int> GetPreOrderIdByDetailIdAsync(int detailId)
@@ -123,7 +124,9 @@ namespace EatTogether.Models.Repositories
                      .Include(p => p.PreOrderDetails)
                      .Include(p => p.Table)
                      .Include(p => p.User)
+                     .Include(p => p.Member)
                      .Include(p => p.Coupon)
+                     .Include(p => p.Event)
                      .Include(p => p.Payments)
                      .FirstOrDefaultAsync(p => p.Id == id);
 

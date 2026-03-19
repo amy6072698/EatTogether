@@ -660,7 +660,6 @@
                                                 @item.ProductName
                                                 <span class="setmeal-badge">套餐</span>
                                             </div>
-                                            <div class="detail-qty">× @item.Qty 份</div>
                                         </div>
                                     </div>
                                     <div class="action-btns" id="actions-@item.DetailId">
@@ -676,7 +675,7 @@
                                              data-parent-id="@item.DetailId"
                                              onclick="selectChild(this)">
                                             <span id="child-icon-@child.DetailId">@(child.Status == 1 ? "✅" : child.Status == 2 ? "❌" : "•")</span>
-                                            <span>@child.ProductName × @child.Qty</span>
+                                            <span>@child.ProductName</span>
                                         </div>
                                         <div class="child-actions" id="child-actions-@child.DetailId">
                                             <button class="btn-done-sm" onclick="doneChild(event, @child.DetailId, @item.DetailId, @order.PreOrderId)">✓ 已完成</button>
@@ -783,8 +782,7 @@
                                                     @item.ProductName
                                                     <span class="setmeal-badge">套餐</span>
                                                 </div>
-                                                <div class="detail-qty">× @item.Qty 份</div>
-                                            </div>
+                                                </div>
                                         </div>
                                         <div class="action-btns" id="actions-@item.DetailId">
                                             <button class="btn-cancel" onclick="cancelSetMeal(event, @item.DetailId, @order.PreOrderId)">✕ 取消套餐</button>
@@ -799,7 +797,7 @@
                                                  data-parent-id="@item.DetailId"
                                                  onclick="selectChild(this)">
                                                 <span id="child-icon-@child.DetailId">@(child.Status == 1 ? "✅" : child.Status == 2 ? "❌" : "•")</span>
-                                                <span>@child.ProductName × @child.Qty</span>
+                                                <span>@child.ProductName</span>
                                             </div>
                                             <div class="child-actions" id="child-actions-@child.DetailId">
                                                 <button class="btn-done-sm" onclick="doneChild(event, @child.DetailId, @item.DetailId, @order.PreOrderId)">✓ 已完成</button>
@@ -818,7 +816,6 @@
                                         <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
                                         <div>
                                             <div class="detail-name">@item.ProductName</div>
-                                            <div class="detail-qty">× @item.Qty 份</div>
                                         </div>
                                     </div>
                                     <div class="action-btns" id="actions-@item.DetailId">

@@ -5479,4 +5479,34 @@ INSERT INTO [dbo].[Payments] ([PreOrderId], [OrderId], [Method], [PaidAt], [Done
 (5340, NULL, N'Cash', '2026-02-28 20:16:08', 1),
 (5341, NULL, N'Credit Card', '2026-02-28 20:31:32', 1),
 (5342, NULL, N'Credit Card', '2026-02-28 20:45:22', 0);
+
+-- =============================================
+-- 補充：對應新增 PreOrders（Id 2930~2939）的 Payments
+-- =============================================
+INSERT INTO [dbo].[Payments] ([PreOrderId], [OrderId], [Method], [PaidAt], [DoneOrCancel]) VALUES
+(2930, NULL, N'Cash', '2025-12-24 17:12:00', 1),
+(2931, NULL, N'Credit Card', '2025-12-24 19:56:00', 1),
+(2932, NULL, N'Credit Card', '2025-12-31 19:38:00', 1),
+(2933, NULL, N'Line Pay', '2026-02-14 17:09:00', 1),
+(2934, NULL, N'Cash', '2026-02-14 19:08:00', 1),
+(2935, NULL, N'Credit Card', '2026-02-23 17:11:00', 1),
+(2936, NULL, N'Cash', '2026-02-24 19:13:00', 1),
+(2937, NULL, N'Credit Card', '2026-02-25 11:08:00', 1),
+(2938, NULL, N'Cash', '2026-02-26 17:43:00', 1),
+(2939, NULL, N'Line Pay', '2026-02-28 17:25:00', 1);
+GO
+
+-- =============================================
+-- 補充（第二批）：PreOrderId 2940~2948
+-- =============================================
+INSERT INTO [dbo].[Payments] ([PreOrderId], [OrderId], [Method], [PaidAt], [DoneOrCancel]) VALUES
+(2940, NULL, N'Line Pay', '2025-08-08 18:02:00', 1),
+(2941, NULL, N'Cash', '2025-10-10 11:04:00', 1),
+(2942, NULL, N'Cash', '2026-01-01 11:35:00', 1),
+(2943, NULL, N'Credit Card', '2026-01-01 17:02:00', 1),
+(2944, NULL, N'Credit Card', '2026-01-15 17:53:00', 1),
+(2945, NULL, N'Cash', '2026-01-25 13:23:00', 1),
+(2946, NULL, N'Cash', '2026-03-17 17:48:00', 1),
+(2947, NULL, N'Cash', '2026-03-17 19:38:00', 1),
+(2948, NULL, N'Credit Card', '2026-03-19 12:02:00', 1);
 GO

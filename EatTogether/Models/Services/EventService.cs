@@ -1,6 +1,7 @@
 ﻿using EatTogether.Models.DTOs;
 using EatTogether.Models.Repositories;
 using EatTogether.Models.ViewModels;
+using System.Collections.Generic;
 
 namespace EatTogether.Models.Services
 {
@@ -67,6 +68,10 @@ namespace EatTogether.Models.Services
 			ev.Status = 2;
 			await _repo.EditAsync(ev);
 		}
+
+		/// <summary>取得符合金額條件的進行中活動</summary>
+		public async Task<List<EventApplicableDto>> GetApplicableEventsAsync(int amount)
+			=> await _repo.GetApplicableEventsAsync(amount);
 
 		//複製為新活動
 		public async Task<EventCreateViewModel> GetCopyCreateVm(int id)

@@ -95,16 +95,16 @@
 
                         <!-- 預覽區 -->
                         <div id="imagePreviewWrap"
-                             class="border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center mb-3"
-                             style="aspect-ratio:4/3;">
+                             class="border rounded-4 bg-light overflow-hidden shadow-sm d-flex align-items-center justify-content-center mb-1"
+                             style="aspect-ratio:4/3; cursor: pointer;" onclick="editOrUploadImage()">
                             @if (!string.IsNullOrEmpty(Model.ImageUrl))
                             {
                                 <img id="previewImg" src="@Model.ImageUrl" alt="分類圖片"
                                      class="w-100 h-100" style="object-fit:cover;"
                                      onerror="showPlaceholder()" />
                                 <div id="previewPlaceholder" class="text-center d-none">
-                                    <i class="fas fa-image fa-3x text-muted opacity-25 mb-2"></i>
-                                    <p class="text-muted small mb-0">圖片無法載入</p>
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="text-muted fw-bold">點擊更換或裁切圖片</p>
                                 </div>
                             }
                             else
@@ -112,11 +112,38 @@
                                 <img id="previewImg" src="" alt="" class="w-100 h-100 d-none" style="object-fit:cover;"
                                      onerror="showPlaceholder()" />
                                 <div id="previewPlaceholder" class="text-center">
-                                    <i class="fas fa-image fa-3x text-muted opacity-25 mb-2"></i>
-                                    <p class="text-muted small mb-0">輸入網址後自動預覽</p>
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="text-muted fw-bold">拖曳圖片至此裁切</p>
                                 </div>
                             }
+
+                            <div id="cropperArea" class="w-100 h-100 d-none" style="background-color: #eee;">
+                                <img id="cropperImg" src="" style="display: block; max-width: 100%;">
+                            </div>
                         </div>
+
+                        <div class="mb-3 text-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('realInput').click()">
+                                <i class="fas fa-upload me-1"></i> 更換圖片
+                            </button>
+                        </div>
+
+                        <div id="cropControls" class="mt-2 mb-3 d-none">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-primary btn-sm w-100 fw-bold shadow-sm" onclick="saveCrop()">
+                                        <i class="fas fa-check-circle me-1"></i> 確定位置
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100 fw-bold shadow-sm" onclick="cancelCrop()">
+                                        取消
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="file" id="realInput" class="d-none" accept="image/*" onchange="onFileChange(this)" />
 
                         <!-- 網址輸入框 -->
                         <div class="input-group shadow-sm mb-2">
@@ -164,6 +191,7 @@
 </div>
 
 @section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <style>
         #imagePreviewWrap {
             transition: border-color .2s;
@@ -174,11 +202,132 @@
                 border-color: #dc3545 !important;
                 background-color: #fff5f5 !important;
             }
+
+        #imagePreviewWrap.drag-over {
+            border-color: #0d6efd !important;
+            background: #f8fbff;
+        }
+
+        /* 隱藏裁切框的四個角控制點，讓它看起來不能縮放 */
+        .cropper-line, .cropper-point {
+            display: none !important;
+        }
+
+        .cropper-view-box {
+            outline: 2px solid #0d6efd;
+            outline-opacity: 0.7;
+        }
     </style>
 }
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script>
+        let myCropper = null;
+        const realInput = document.getElementById("realInput");
+        const previewImg = document.getElementById("previewImg");
+        const previewPlaceholder = document.getElementById("previewPlaceholder");
+        const cropperArea = document.getElementById("cropperArea");
+        const cropperImg = document.getElementById("cropperImg");
+        const cropControls = document.getElementById("cropControls");
+        const imageWrap = document.getElementById("imagePreviewWrap");
+        const imageUrlInput = document.getElementById("ImageUrl");
+
+        /* ── Cropper Logic ── */
+
+        function editOrUploadImage() {
+            const hasExistingImage = previewImg.src && !previewImg.src.includes('no-image.png') && !previewImg.classList.contains('d-none');
+            if (hasExistingImage) {
+                openCropperWithUrl(previewImg.src);
+            } else {
+                realInput.click();
+            }
+        }
+
+        function openCropperWithUrl(url) {
+            previewImg.classList.add("d-none");
+            previewPlaceholder.classList.add("d-none");
+            cropperArea.classList.remove("d-none");
+            cropControls.classList.remove("d-none");
+
+            cropperImg.src = url;
+            cropperImg.onload = function() {
+                if (myCropper) myCropper.destroy();
+                myCropper = new Cropper(cropperImg, {
+                    aspectRatio: 4 / 3,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    background: false,
+                    responsive: true,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+                cropperImg.onload = null;
+            };
+            if (cropperImg.complete) cropperImg.onload();
+        }
+
+        function processFile(file) {
+            if (!file || !file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = (e) => openCropperWithUrl(e.target.result);
+            reader.readAsDataURL(file);
+        }
+
+        function onFileChange(input) {
+            if (input.files && input.files[0]) {
+                processFile(input.files[0]);
+            }
+        }
+
+        function saveCrop() {
+            if (!myCropper) return;
+            const canvas = myCropper.getCroppedCanvas({ width: 800, height: 600, imageSmoothingQuality: 'high' });
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+            
+            // 將結果填入網址輸入框並觸發預覽
+            imageUrlInput.value = dataUrl;
+            previewImg.src = dataUrl;
+            
+            exitCropper();
+            previewImg.classList.remove("d-none");
+        }
+
+        function cancelCrop() {
+            exitCropper();
+            if (imageUrlInput.value) {
+                previewImg.classList.remove("d-none");
+            } else {
+                previewPlaceholder.classList.remove("d-none");
+            }
+        }
+
+        function exitCropper() {
+            if (myCropper) {
+                myCropper.destroy();
+                myCropper = null;
+            }
+            cropperArea.classList.add("d-none");
+            cropControls.classList.add("d-none");
+        }
+
+        // --- Drag and Drop ---
+        imageWrap.addEventListener("dragover", e => { e.preventDefault(); imageWrap.classList.add("drag-over"); });
+        imageWrap.addEventListener("dragleave", () => { imageWrap.classList.remove("drag-over"); });
+        imageWrap.addEventListener("drop", e => {
+            e.preventDefault();
+            imageWrap.classList.remove("drag-over");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
         /* ── 圖片 URL 即時預覽 ── */
         let previewTimer = null;
 

@@ -11,5 +11,6 @@
         public bool IsBilled { get; set; }
         public bool IsSetMeal { get; set; }
         public int? ParentDetailId { get; set; }
+        public bool IsInvalidGift { get; set; }  // 贈品已出餐但活動門檻不再符合
     }
 }
