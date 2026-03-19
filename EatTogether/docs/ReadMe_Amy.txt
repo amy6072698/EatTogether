@@ -797,7 +797,7 @@
 =========
 [RequirePermission("Member_Manage")] 套用於所有 Member Actions
 
-[working] add 會員列表功能
+[V] add 會員列表功能
 	url: GET /Member/Index
 
 	[V] DTO（Models/DTOs/MemberListDto.cs）
@@ -861,20 +861,20 @@
 			黑名單 → 解除黑名單（綠，可點）
 			已刪除 → 加入黑名單（灰，Disabled）；解除黑名單不顯示
 
-[] add 會員詳情功能
+[working] add 會員詳情功能
 	url: GET /Member/Detail/{id}
 
 	[V] DTO（Models/DTOs/MemberDetailDto.cs）
 		MemberDetailDto
 			// 同 MemberListDto + BirthDate, AvatarFileName, DeletedAt
 
-	[] Extension（Models/Extensions/MemberDtoExtension.cs）（modify）
-		MemberDetailViewModel ToDetailViewModel(this MemberDetailDto dto)
+	[V] Extension（Models/Extensions/MemberDtoExtension.cs）（modify）
+		MemberDetailViewModel ToDetailVm(this MemberDetailDto dto)
 
-	[] MemberRepository（modify）
+	[V] MemberRepository（modify）
 		Task<MemberDetailDto?> GetByIdAsync(int id)
 
-	[] MemberService（modify）
+	[V] MemberService（modify）
 		Task<MemberDetailDto?> GetDetailAsync(int id)
 
 	[V] ViewModel（Models/ViewModels/MemberDetailViewModel.cs）
@@ -882,7 +882,7 @@
 			// 對應 MemberDetailDto
 			// 黑名單原因：黑名單狀態顯示；未填寫顯示「（未填寫）」
 
-	[] MemberController（modify）
+	[V] MemberController（modify）
 		GET /Member/Detail/{id}（JSON，供 Modal AJAX 呼叫）
 
 	[V] 會員詳情 Modal（嵌入 Members/Index.cshtml）

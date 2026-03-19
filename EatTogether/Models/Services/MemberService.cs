@@ -6,6 +6,7 @@ namespace EatTogether.Models.Services
 	public interface IMemberService
 	{
 		Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto search);
+		Task<MemberDetailDto?> GetDetailAsync(int id);
 	}
 
 	public class MemberService : IMemberService
@@ -20,6 +21,11 @@ namespace EatTogether.Models.Services
 		public async Task<IEnumerable<MemberListDto>> GetAllAsync(MemberSearchDto search)
 		{
 			return await _repo.GetAllAsync(search);
+		}
+
+		public async Task<MemberDetailDto?> GetDetailAsync(int id)
+		{
+			return await _repo.GetByIdAsync(id);
 		}
 	}
 }
