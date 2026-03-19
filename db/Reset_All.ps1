@@ -49,7 +49,6 @@ $files = @(
     "07_Tables.sql",
     "08_Coupons.sql",
     "09_Reservations.sql",
-    "10_Events.sql",
     "11_ArticleCategories.sql",
     "12_EmailQueue.sql",
 
@@ -57,6 +56,7 @@ $files = @(
     "13_UserRoles.sql",
     "14_RoleFunctions.sql",
     "15_Dishes.sql",
+    "10_Events.sql",
     "16_Articles.sql",
     "17_SubscriptionPreferences.sql",
 

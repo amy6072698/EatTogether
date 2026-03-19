@@ -1,6 +1,9 @@
 ﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.EfModels;
 using EatTogether.Models.Repositories;
 using EatTogether.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace EatTogether.Models.Services
@@ -8,10 +11,12 @@ namespace EatTogether.Models.Services
 	public class EventService
 	{
 		private readonly IEventRepository _repo;
+		private readonly EatTogetherDBContext _context;
 
-		public EventService(IEventRepository repo)
+		public EventService(IEventRepository repo, EatTogetherDBContext context)
 		{
 			_repo = repo;
+			_context = context;
 		}
 
 		// 新增活動
@@ -27,6 +32,19 @@ namespace EatTogether.Models.Services
 				return Event_Article_ServiceResult<bool>.Fail($"新增失敗：{ex.Message}");
 			}
 		}
+
+		public async Task<List<SelectListItem>> GetDishOptionsAsync()
+		{
+			return await _context.Dishes
+				.Where(d => d.IsActive)
+				.Select(d => new SelectListItem
+				{
+					Value = d.Id.ToString(),
+					Text = d.DishName
+				})
+				.ToListAsync();
+		}
+
 
 		// 取得首頁列表
 		public async Task<List<EventDto>> GetAllForIndexAsync()
@@ -84,7 +102,8 @@ namespace EatTogether.Models.Services
 				Title = source.Title,
 				Summary = source.Summary,
 				MinSpend = source.MinSpend,
-				RewardItem = source.RewardItem,
+				RewardDishId = source.RewardDishId,
+				RewardDishName = source.RewardDishName,
 				DiscountType = source.DiscountType,
 				DiscountValue = source.DiscountValue,
 				StartDate = DateTime.Today,
