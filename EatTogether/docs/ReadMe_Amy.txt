@@ -504,7 +504,7 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[working] add 編輯員工功能
+[V] add 編輯員工功能
 	url: GET  /User/Edit/{id}
 	url: PUT  /User/Edit/{id}
 
@@ -599,10 +599,10 @@
 =========
 [RequirePermission("Staff_Manage")] 套用於所有 Role Actions
 
-[] add 角色列表功能
+[V] add 角色列表功能
 	url: GET /Role/Index
 
-	[] DTO（Models/DTOs/RoleListDto.cs）
+	[V] DTO（Models/DTOs/RoleListDto.cs）
 		RoleListDto
 			int Id
 			string RoleName, Description
@@ -610,30 +610,37 @@
 			List<string> FunctionDisplayNames
 			int UserCount
 
-	[] IFunctionRepository / FunctionRepository（Models/Repositories/FunctionRepository.cs）
+	[V] DTO（Models/DTOs/FunctionDto.cs）
+		FunctionDto
+			int Id
+			string Category, FunctionName, DisplayName
+			string? Description
+			bool IsOwnerOnly
+
+	[V] IFunctionRepository / FunctionRepository（Models/Repositories/FunctionRepository.cs）
 		Task<IEnumerable<Function>> GetAllAsync()
 
-	[] IRoleRepository / RoleRepository（Models/Repositories/RoleRepository.cs）
+	[V] IRoleRepository / RoleRepository（Models/Repositories/RoleRepository.cs）
 		Task<IEnumerable<RoleListDto>> GetAllAsync()
 
-	[] IRoleService / RoleService（Models/Services/RoleService.cs）
+	[V] IRoleService / RoleService（Models/Services/RoleService.cs）
 		ctor(IRoleRepository repo, IFunctionRepository funcRepo)
 		Task<IEnumerable<RoleListDto>> GetAllAsync()
 
-	[] ViewModel（Models/ViewModels/RoleIndexViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleIndexViewModel.cs）
 		RoleIndexViewModel
 			IEnumerable<RoleRowViewModel> Rows
 
-	[] ViewModel（Models/ViewModels/RoleRowViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleRowViewModel.cs）
 		RoleRowViewModel
 			// 對應 RoleListDto
 			bool CanDelete   // 預設 6 個角色 = false
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）
-		RoleRowViewModel ToRowViewModel(this RoleListDto dto)
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）
+		RoleRowViewModel ToRowVm(this RoleListDto dto)
 
-	[] RoleController（Controllers/RoleController.cs）
-		GET /Role/Index
+	[V] RolesController（Controllers/RolesController.cs）
+		GET /Roles/Index
 
 	[V] Role/Index.cshtml（Views/Role/Index.cshtml）
 		DataTables + zh-HANT.json 中文化 + 支援分頁
@@ -644,56 +651,58 @@
 		「+ 新增角色」按鈕
 		表格欄位：角色名稱 / 角色描述 / 已擁有的權限（綠色標籤）/ 員工數 / 操作
 
-	[] roles-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .roles-index { } 命名空間外
-		改用 #roles-table_wrapper 選取器
-			#roles-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#roles-table_wrapper .dataTables_paginate { text-align: right; }
-			#roles-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
-
-[] add 權限總覽功能
+[working] add 權限總覽功能
 	url: GET /Role/Overview
 
-	[] DTO（Models/DTOs/RoleOverviewDto.cs）
+	[V] DTO（Models/DTOs/RoleOverviewDto.cs）
 		RoleOverviewDto
 			List<string> RoleNames
 			List<string> FunctionDisplayNames
 			bool[,] Matrix   // Matrix[functionIndex, roleIndex]
 
-	[] RoleRepository（modify）
+	[V] RoleRepository（modify）
 		Task<RoleOverviewDto> GetOverviewAsync()
 
-	[] RoleService（modify）
+	[V] RoleService（modify）
 		Task<RoleOverviewDto> GetOverviewAsync()
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET /Role/Overview（JSON，供 Modal AJAX 呼叫）
 
 	[V] 權限總覽 Modal（嵌入 Role/Index.cshtml）
 		標題：「權限總覽」
 		13 項 × 所有角色矩陣（✓ / —），唯讀
 
-[] add 新增角色功能
+[V] add 新增角色功能
 	url: POST /Role/Create
 
-	[] DTO（Models/DTOs/RoleCreateDto.cs）
+	[V] DTO（Models/DTOs/RoleCreateDto.cs）
 		RoleCreateDto
 			string RoleName
 			string? Description
 			List<int> FunctionIds   // 排除 IsOwnerOnly=1 的項目
 			List<int> UserIds
 
-	[] RoleRepository（modify）
-		Task CreateAsync(RoleCreateDto dto)
-		Task SetRoleFunctionsAsync(int roleId, List<int> functionIds)
-		Task SetUsersByRoleIdAsync(int roleId, List<int> userIds)
+	[V] DTO（Models/DTOs/RoleCreateDto.cs）
+		UserForRoleDto
+			int Id
+			string Name
+			string EmployeeNumber
+			string Account
+			bool IsActive
 
-	[] RoleService（modify）
-		Task<Result> CreateAsync(RoleCreateDto dto)
+	[V] RoleRepository（modify）
+		Task CreateAsync(RoleCreateDto dto);
+		Task<IEnumerable<UserForRoleDto>> GetActiveUsersAsync();
+		Task<bool> IsNameDuplicateAsync(string roleName, int? excludeId = null);
+
+	[V] RoleService（modify）
+		Task<Result> CreateAsync(RoleCreateDto dto);
+		Task<RoleCreateViewModel_Data> GetCreateFormDataAsync();
 			// BatchInsert RoleFunctions（排除 IsOwnerOnly=1）
 			// BatchInsert UserRoles
 
-	[] ViewModel（Models/ViewModels/RoleCreateViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleCreateViewModel.cs）
 		RoleCreateViewModel
 			string RoleName
 			string? Description
@@ -702,10 +711,10 @@
 			List<Function> AllFunctions    // 供 Checkbox 卡片渲染
 			List<UserListDto> AllUsers     // 供員工指派清單渲染
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
-		RoleCreateViewModel ToCreateViewModel(IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
+		RoleCreateViewModel ToCreateVm(IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET  /Role/Create → 回傳 RoleCreateViewModel（含全部 Functions + 全部在職員工）
 		POST /Role/Create
 
@@ -719,11 +728,11 @@
 		按鈕：「取消」、「新增」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 編輯角色功能
+[V] add 編輯角色功能
 	url: GET /Role/Edit/{id}
 	url: PUT /Role/Edit/{id}
 
-	[] DTO（Models/DTOs/RoleEditDto.cs）
+	[V] DTO（Models/DTOs/RoleEditDto.cs）
 		RoleEditDto
 			int Id
 			string RoleName
@@ -731,25 +740,26 @@
 			List<int> FunctionIds
 			List<int> UserIds
 
-	[] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
+	[V] Extension（Models/Extensions/RoleDtoExtension.cs）（modify）
 		RoleEditViewModel ToEditViewModel(this RoleEditDto dto, IEnumerable<Function> allFunctions, IEnumerable<UserListDto> allUsers)
 
-	[] RoleRepository（modify）
-		Task<RoleEditDto?> GetForEditAsync(int id)
-		Task UpdateAsync(RoleEditDto dto)
+	[V] RoleRepository（modify）
+		Task<RoleEditDto?> GetForEditAsync(int id);
+		Task UpdateAsync(RoleEditDto dto);
 			// 更新 RoleName、Description
 			// 同步更新 RoleFunctions（先刪後插）
 			// 同步更新 UserRoles（先刪後插）
 
-	[] RoleService（modify）
-		Task<RoleEditDto?> GetForEditAsync(int id)
-		Task<Result> UpdateAsync(int id, RoleEditDto dto)
+	[V] RoleService（modify）
+		Task<RoleEditViewModel_Data?> GetEditFormDataAsync(int id);
+		Task<RoleEditDto?> GetForEditAsync(int id);
+		Task<Result> UpdateAsync(int id, RoleEditDto dto);
 
-	[] ViewModel（Models/ViewModels/RoleEditViewModel.cs）
+	[V] ViewModel（Models/ViewModels/RoleEditViewModel.cs）
 		RoleEditViewModel
 			// 同 RoleCreateViewModel + Id
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		GET /Role/Edit/{id} → 回傳 RoleEditViewModel（預填現有資料）
 		PUT /Role/Edit/{id}
 
@@ -760,18 +770,20 @@
 		按鈕：「取消」、「儲存變更」
 		成功 → SweetAlert2 success，關閉後重新整理列表
 
-[] add 刪除角色功能
+	[V] 補上驗證 RoleCreateDto、RoleEditDto
+
+[working] add 刪除角色功能
 	url: DELETE /Role/Delete/{id}
 
-	[] RoleRepository（modify）
+	[V] RoleRepository（modify）
 		Task DeleteAsync(int id)
 			// Delete RoleFunctions → Delete UserRoles → Delete Role
 
-	[] RoleService（modify）
+	[V] RoleService（modify）
 		Task<Result> DeleteAsync(int id)
 			// 預設 6 個角色不可刪除 → 回傳錯誤訊息
 
-	[] RoleController（modify）
+	[V] RoleController（modify）
 		DELETE /Role/Delete/{id}
 
 	[V] 刪除角色（Role/Index.cshtml JS）
@@ -843,13 +855,6 @@
 			啟用中 / 未驗證 → 加入黑名單（紅，可點）
 			黑名單 → 解除黑名單（綠，可點）
 			已刪除 → 加入黑名單（灰，Disabled）；解除黑名單不顯示
-
-	[] members-index.css（CSS 修正）
-		DataTables 分頁樣式移至 .members-index { } 命名空間外
-		改用 #members-table_wrapper 選取器
-			#members-table_wrapper .dataTables_info { font-size: 1rem; color: #6c757d; }
-			#members-table_wrapper .dataTables_paginate { text-align: right; }
-			#members-table_wrapper .dataTables_paginate .pagination { justify-content: flex-end; margin-bottom: 0; font-size: 1rem; }
 
 [] add 會員詳情功能
 	url: GET /Member/Detail/{id}

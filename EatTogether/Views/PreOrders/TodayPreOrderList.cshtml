@@ -26,8 +26,8 @@
     }
 
     /* ════════════════════════════════
-                   整體佈局：全螢幕，不留白
-                ════════════════════════════════ */
+                       整體佈局：全螢幕，不留白
+                    ════════════════════════════════ */
     .board {
         display: flex;
         flex-direction: column;
@@ -70,8 +70,8 @@
     }
 
     /* ════════════════════════════════
-                   右側：前3筆展開卡片
-                ════════════════════════════════ */
+                       右側：前3筆展開卡片
+                    ════════════════════════════════ */
     .expanded-area {
         display: flex;
         flex-direction: row-reverse; /* 第1筆最右，第3筆最左 */
@@ -243,6 +243,91 @@
         font-size: 0.8rem;
     }
 
+    /* ── 套餐子項目 ── */
+    .detail-item.is-setmeal {
+        border-color: #e67e22;
+        background: #fef9f0;
+    }
+
+    .setmeal-badge {
+        font-size: 0.68rem;
+        background: #e67e22;
+        color: #fff;
+        padding: 1px 6px;
+        border-radius: 10px;
+        margin-left: 6px;
+        font-weight: 700;
+        vertical-align: middle;
+    }
+
+    .child-item {
+        margin-left: 12px;
+        padding: 10px 14px;
+        border-left: 4px solid #e67e22;
+        border-radius: 0 10px 10px 0;
+        background: #fef9f0;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #555;
+        cursor: pointer;
+        transition: background 0.2s;
+        min-height: 48px;
+    }
+
+        .child-item:hover {
+            background: #fdebd0;
+        }
+
+        .child-item.status-done {
+            opacity: 0.4;
+            background: #f0fff4;
+            border-color: #a9dfbf;
+            text-decoration: line-through;
+            cursor: default;
+        }
+
+        .child-item.status-cancel {
+            opacity: 0.4;
+            background: #fdf2f2;
+            border-color: #f5c6cb;
+            text-decoration: line-through;
+            cursor: default;
+        }
+
+    .child-actions {
+        display: none;
+        gap: 10px;
+        padding: 4px 4px 6px 20px;
+        justify-content: flex-end;
+        margin-top: 2px;
+    }
+
+        .child-actions.show {
+            display: flex;
+        }
+
+    .btn-done-sm {
+        padding: 9px 20px;
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+        min-height: 44px;
+    }
+
+        .btn-done-sm:hover {
+            background: #219a52;
+        }
+
     .action-btns {
         display: none;
         gap: 8px;
@@ -389,8 +474,8 @@
         }
 
     /* ════════════════════════════════
-                   左側：其餘訂單 List（可捲動）
-                ════════════════════════════════ */
+                       左側：其餘訂單 List（可捲動）
+                    ════════════════════════════════ */
     .list-area {
         flex: 1;
         overflow-y: auto;
@@ -539,7 +624,7 @@
             @for (int i = 0; i < expanded.Count; i++)
             {
                 var order = expanded[i];
-                int pendingCount = order.Items.Count(x => x.Status == 0);
+                int pendingCount = order.Items.Count(x => x.Status == 0 && !x.ParentDetailId.HasValue);
 
                 <div class="exp-card" id="card-@order.PreOrderId" data-preorder-id="@order.PreOrderId" data-pending="@pendingCount">
                     <div class="card-header" style="cursor:pointer;" onclick="toggleCardSelected(@order.PreOrderId, event)">
@@ -569,27 +654,73 @@
                         {
                             <div class="note-box">⚠️ @order.Note</div>
                         }
-                        @foreach (var item in order.Items)
+                        @{
+                            var parentItems2 = order.Items.Where(i => !i.ParentDetailId.HasValue).ToList();
+                        }
+                        @foreach (var item in parentItems2)
                         {
                             string sc = item.Status == 1 ? "status-done" : item.Status == 2 ? "status-cancel" : "";
                             string icon = item.Status == 1 ? "✅" : item.Status == 2 ? "❌" : "⏳";
+                            var childItems2 = order.Items.Where(c => c.ParentDetailId == item.DetailId).ToList();
 
-                            <div class="detail-item @sc"
-                                 id="item-@item.DetailId"
-                                 data-detail-id="@item.DetailId"
-                                 data-status="@item.Status"
-                                 data-preorder-id="@order.PreOrderId"
-                                 onclick="selectItem(this)">
-                                <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
-                                <div>
-                                    <div class="detail-name">@item.ProductName</div>
-                                    <div class="detail-qty">× @item.Qty 份</div>
+                            if (item.IsSetMeal)
+                            {
+                                <div class="setmeal-group" id="smgroup-@item.DetailId">
+                                    <div class="detail-item @sc is-setmeal"
+                                         id="item-@item.DetailId"
+                                         data-detail-id="@item.DetailId"
+                                         data-status="@item.Status"
+                                         data-preorder-id="@order.PreOrderId"
+                                         onclick="selectSetMeal(this)">
+                                        <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                        <div>
+                                            <div class="detail-name">
+                                                @item.ProductName
+                                                <span class="setmeal-badge">套餐</span>
+                                            </div>
+                                            <div class="detail-qty">× @item.Qty 份</div>
+                                        </div>
+                                    </div>
+                                    <div class="action-btns" id="actions-@item.DetailId">
+                                        <button class="btn-cancel" onclick="cancelSetMeal(event, @item.DetailId, @order.PreOrderId)">✕ 取消套餐</button>
+                                    </div>
+                                    @foreach (var child in childItems2)
+                                    {
+                                        string csc = child.Status == 1 ? "status-done" : child.Status == 2 ? "status-cancel" : "";
+                                        <div class="child-item @csc" id="item-@child.DetailId"
+                                             data-detail-id="@child.DetailId"
+                                             data-status="@child.Status"
+                                             data-preorder-id="@order.PreOrderId"
+                                             data-parent-id="@item.DetailId"
+                                             onclick="selectChild(this)">
+                                            <span id="child-icon-@child.DetailId">@(child.Status == 1 ? "✅" : child.Status == 2 ? "❌" : "•")</span>
+                                            <span>@child.ProductName × @child.Qty</span>
+                                        </div>
+                                        <div class="child-actions" id="child-actions-@child.DetailId">
+                                            <button class="btn-done-sm" onclick="doneChild(event, @child.DetailId, @item.DetailId, @order.PreOrderId)">✓ 已完成</button>
+                                        </div>
+                                    }
                                 </div>
-                            </div>
-                            <div class="action-btns" id="actions-@item.DetailId">
-                                <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
-                                <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
-                            </div>
+                            }
+                            else
+                            {
+                                <div class="detail-item @sc"
+                                     id="item-@item.DetailId"
+                                     data-detail-id="@item.DetailId"
+                                     data-status="@item.Status"
+                                     data-preorder-id="@order.PreOrderId"
+                                     onclick="selectItem(this)">
+                                    <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                    <div>
+                                        <div class="detail-name">@item.ProductName</div>
+                                        <div class="detail-qty">× @item.Qty 份</div>
+                                    </div>
+                                </div>
+                                <div class="action-btns" id="actions-@item.DetailId">
+                                    <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
+                                    <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
+                                </div>
+                            }
                         }
                     </div>
                     <div class="card-cancel-bar">
@@ -615,7 +746,7 @@
                 @for (int i = 0; i < listed.Count; i++)
                 {
                     var order = listed[i];
-                    int pendingCount = order.Items.Count(x => x.Status == 0);
+                    int pendingCount = order.Items.Count(x => x.Status == 0 && !x.ParentDetailId.HasValue);
 
                     <div class="list-card" id="lcard-@order.PreOrderId" data-preorder-id="@order.PreOrderId" data-pending="@pendingCount">
                         <div class="list-header" onclick="toggleListCard(@order.PreOrderId)">
@@ -646,27 +777,73 @@
                             {
                                 <div class="note-box" style="margin-top:10px;">⚠️ @order.Note</div>
                             }
-                            @foreach (var item in order.Items)
+                            @{
+                                var listParents = order.Items.Where(i => !i.ParentDetailId.HasValue).ToList();
+                            }
+                            @foreach (var item in listParents)
                             {
                                 string sc = item.Status == 1 ? "status-done" : item.Status == 2 ? "status-cancel" : "";
                                 string icon = item.Status == 1 ? "✅" : item.Status == 2 ? "❌" : "⏳";
+                                var listChildren = order.Items.Where(c => c.ParentDetailId == item.DetailId).ToList();
 
-                                <div class="detail-item @sc"
-                                     id="item-@item.DetailId"
-                                     data-detail-id="@item.DetailId"
-                                     data-status="@item.Status"
-                                     data-preorder-id="@order.PreOrderId"
-                                     onclick="selectItem(this)">
-                                    <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
-                                    <div>
-                                        <div class="detail-name">@item.ProductName</div>
-                                        <div class="detail-qty">× @item.Qty 份</div>
+                                if (item.IsSetMeal)
+                                {
+                                    <div class="setmeal-group" id="smgroup-@item.DetailId">
+                                        <div class="detail-item @sc is-setmeal"
+                                             id="item-@item.DetailId"
+                                             data-detail-id="@item.DetailId"
+                                             data-status="@item.Status"
+                                             data-preorder-id="@order.PreOrderId"
+                                             onclick="selectSetMeal(this)">
+                                            <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                            <div>
+                                                <div class="detail-name">
+                                                    @item.ProductName
+                                                    <span class="setmeal-badge">套餐</span>
+                                                </div>
+                                                <div class="detail-qty">× @item.Qty 份</div>
+                                            </div>
+                                        </div>
+                                        <div class="action-btns" id="actions-@item.DetailId">
+                                            <button class="btn-cancel" onclick="cancelSetMeal(event, @item.DetailId, @order.PreOrderId)">✕ 取消套餐</button>
+                                        </div>
+                                        @foreach (var child in listChildren)
+                                        {
+                                            string csc = child.Status == 1 ? "status-done" : child.Status == 2 ? "status-cancel" : "";
+                                            <div class="child-item @csc" id="item-@child.DetailId"
+                                                 data-detail-id="@child.DetailId"
+                                                 data-status="@child.Status"
+                                                 data-preorder-id="@order.PreOrderId"
+                                                 data-parent-id="@item.DetailId"
+                                                 onclick="selectChild(this)">
+                                                <span id="child-icon-@child.DetailId">@(child.Status == 1 ? "✅" : child.Status == 2 ? "❌" : "•")</span>
+                                                <span>@child.ProductName × @child.Qty</span>
+                                            </div>
+                                            <div class="child-actions" id="child-actions-@child.DetailId">
+                                                <button class="btn-done-sm" onclick="doneChild(event, @child.DetailId, @item.DetailId, @order.PreOrderId)">✓ 已完成</button>
+                                            </div>
+                                        }
                                     </div>
-                                </div>
-                                <div class="action-btns" id="actions-@item.DetailId">
-                                    <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
-                                    <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
-                                </div>
+                                }
+                                else
+                                {
+                                    <div class="detail-item @sc"
+                                         id="item-@item.DetailId"
+                                         data-detail-id="@item.DetailId"
+                                         data-status="@item.Status"
+                                         data-preorder-id="@order.PreOrderId"
+                                         onclick="selectItem(this)">
+                                        <span class="detail-icon" id="icon-@item.DetailId">@icon</span>
+                                        <div>
+                                            <div class="detail-name">@item.ProductName</div>
+                                            <div class="detail-qty">× @item.Qty 份</div>
+                                        </div>
+                                    </div>
+                                    <div class="action-btns" id="actions-@item.DetailId">
+                                        <button class="btn-cancel" onclick="updateStatus(event, @item.DetailId, 2, @order.PreOrderId)">✕ 取消</button>
+                                        <button class="btn-done" onclick="updateStatus(event, @item.DetailId, 1, @order.PreOrderId)">✓ 已完成</button>
+                                    </div>
+                                }
                             }
                         </div>
                     </div>
@@ -692,28 +869,77 @@
 @Html.AntiForgeryToken()
 
 <script>
-    let selectedDetailId = null;
+    let selectedDetailId = null;  // 目前選取的一般餐點
+    let selectedChildId = null;   // 目前選取的套餐子項目
+    let selectedSetMealId = null; // 目前選取的套餐標題
 
     function toggleListCard(preOrderId) {
         const card = document.getElementById('lcard-' + preOrderId);
         card.classList.toggle('list-expanded');
     }
 
+    // ── 一般餐點（取消 + 完成）──
     function selectItem(el) {
         const detailId = el.dataset.detailId;
-        const status   = parseInt(el.dataset.status);
+        const status = parseInt(el.dataset.status);
         if (status === 1 || status === 2) return;
+
+        if (selectedChildId) { hideChildActions(selectedChildId); selectedChildId = null; }
+        if (selectedSetMealId) { hideActions(selectedSetMealId); selectedSetMealId = null; }
 
         if (selectedDetailId === detailId) {
             hideActions(detailId);
             selectedDetailId = null;
             return;
         }
-
         if (selectedDetailId) hideActions(selectedDetailId);
         selectedDetailId = detailId;
 
         const actions = document.getElementById('actions-' + detailId);
+        actions.classList.add('show');
+        setTimeout(() => actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    // ── 套餐標題（只取消）──
+    function selectSetMeal(el) {
+        const detailId = el.dataset.detailId;
+        const status = parseInt(el.dataset.status);
+        if (status === 1 || status === 2) return;
+
+        if (selectedDetailId) { hideActions(selectedDetailId); selectedDetailId = null; }
+        if (selectedChildId) { hideChildActions(selectedChildId); selectedChildId = null; }
+
+        if (selectedSetMealId === detailId) {
+            hideActions(detailId);
+            selectedSetMealId = null;
+            return;
+        }
+        if (selectedSetMealId) hideActions(selectedSetMealId);
+        selectedSetMealId = detailId;
+
+        const actions = document.getElementById('actions-' + detailId);
+        actions.classList.add('show');
+        setTimeout(() => actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    // ── 套餐子項目（只完成）──
+    function selectChild(el) {
+        const detailId = el.dataset.detailId;
+        const status = parseInt(el.dataset.status);
+        if (status === 1 || status === 2) return;
+
+        if (selectedDetailId) { hideActions(selectedDetailId); selectedDetailId = null; }
+        if (selectedSetMealId) { hideActions(selectedSetMealId); selectedSetMealId = null; }
+
+        if (selectedChildId === detailId) {
+            hideChildActions(detailId);
+            selectedChildId = null;
+            return;
+        }
+        if (selectedChildId) hideChildActions(selectedChildId);
+        selectedChildId = detailId;
+
+        const actions = document.getElementById('child-actions-' + detailId);
         actions.classList.add('show');
         setTimeout(() => actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     }
@@ -723,19 +949,20 @@
         if (el) el.classList.remove('show');
     }
 
+    function hideChildActions(detailId) {
+        const el = document.getElementById('child-actions-' + detailId);
+        if (el) el.classList.remove('show');
+    }
+
+    // ── 一般餐點更新狀態 ──
     async function updateStatus(event, detailId, status, preOrderId) {
         event.stopPropagation();
-
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         const res = await fetch('/PreOrders/UpdateDetailStatus', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'RequestVerificationToken': token ?? ''
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token ?? '' },
             body: `detailId=${detailId}&status=${status}`
         });
-
         const data = await res.json();
         if (!data.success) return;
 
@@ -762,9 +989,98 @@
         updatePendingCount(preOrderId);
     }
 
-        function updatePendingCount(preOrderId) {
+    // ── 取消整個套餐（標題 + 所有子項目）──
+    async function cancelSetMeal(event, setMealDetailId, preOrderId) {
+        event.stopPropagation();
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const area = document.getElementById('item-' + setMealDetailId).closest('.card-body, .list-detail-area');
+        const children = area.querySelectorAll('.child-item[data-parent-id="' + setMealDetailId + '"]');
+
+        for (const child of children) {
+            const childId = child.dataset.detailId;
+            await fetch('/PreOrders/UpdateDetailStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token ?? '' },
+                body: `detailId=${childId}&status=2`
+            });
+            child.dataset.status = 2;
+            child.classList.remove('status-done');
+            child.classList.add('status-cancel');
+            const icon = document.getElementById('child-icon-' + childId);
+            if (icon) icon.textContent = '❌';
+        }
+
+        await fetch('/PreOrders/UpdateDetailStatus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token ?? '' },
+            body: `detailId=${setMealDetailId}&status=2`
+        });
+        const headerEl = document.getElementById('item-' + setMealDetailId);
+        headerEl.dataset.status = 2;
+        headerEl.classList.remove('status-done');
+        headerEl.classList.add('status-cancel');
+        document.getElementById('icon-' + setMealDetailId).textContent = '❌';
+
+        hideActions(setMealDetailId);
+        selectedSetMealId = null;
+
+        const group = document.getElementById('smgroup-' + setMealDetailId);
+        if (group) area.appendChild(group);
+
+        updatePendingCount(preOrderId);
+    }
+
+    // ── 套餐子項目完成 ──
+    async function doneChild(event, childDetailId, setMealDetailId, preOrderId) {
+        event.stopPropagation();
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const res = await fetch('/PreOrders/UpdateDetailStatus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token ?? '' },
+            body: `detailId=${childDetailId}&status=1`
+        });
+        const data = await res.json();
+        if (!data.success) return;
+
+        const child = document.getElementById('item-' + childDetailId);
+        child.dataset.status = 1;
+        child.classList.remove('status-cancel');
+        child.classList.add('status-done');
+        const icon = document.getElementById('child-icon-' + childDetailId);
+        if (icon) icon.textContent = '✅';
+
+        hideChildActions(childDetailId);
+        selectedChildId = null;
+
+        // 檢查此套餐的所有子項目是否都完成
+        const area = child.closest('.card-body, .list-detail-area');
+        const allChildren = area.querySelectorAll('.child-item[data-parent-id="' + setMealDetailId + '"]');
+        const allDone = [...allChildren].every(c => parseInt(c.dataset.status) === 1);
+
+        if (allDone) {
+            await fetch('/PreOrders/UpdateDetailStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token ?? '' },
+                body: `detailId=${setMealDetailId}&status=1`
+            });
+            const headerEl = document.getElementById('item-' + setMealDetailId);
+            headerEl.dataset.status = 1;
+            headerEl.classList.remove('status-cancel');
+            headerEl.classList.add('status-done');
+            document.getElementById('icon-' + setMealDetailId).textContent = '✅';
+
+            // 整組移到最下面
+            const group = document.getElementById('smgroup-' + setMealDetailId);
+            if (group) area.appendChild(group);
+        }
+
+        updatePendingCount(preOrderId);
+    }
+
+    function updatePendingCount(preOrderId) {
         const card = document.getElementById('card-' + preOrderId)
                   || document.getElementById('lcard-' + preOrderId);
+        // 計算所有頂層餐點（一般餐點 + 套餐標題）的待處理數量
         const items = card.querySelectorAll('.detail-item');
         let pending = 0;
         items.forEach(item => { if (parseInt(item.dataset.status) === 0) pending++; });
@@ -780,7 +1096,6 @@
                 setTimeout(() => {
                     card.remove();
                     updateTotalBadge();
-                    // ← 補上這段
                     const expCards = document.querySelectorAll('.exp-card');
                     if (expCards.length < 3 && document.querySelector('.list-card')) {
                         location.reload();
@@ -802,7 +1117,7 @@
     let pendingCancelId = null;
 
     function toggleCardSelected(preOrderId, event) {
-        if (event.target.closest('.detail-item, .action-btns, .btn-cancel-order')) return;
+        if (event.target.closest('.detail-item, .action-btns, .btn-cancel-order, .child-item, .child-actions')) return;
         const card = document.getElementById('card-' + preOrderId);
         if (!card) return;
         if (selectedCardId && selectedCardId !== preOrderId)
@@ -823,10 +1138,10 @@
         pendingCancelId = null;
     }
 
-        async function confirmCancel() {
+    async function confirmCancel() {
         if (!pendingCancelId) return;
-        const preOrderId = pendingCancelId;  // ← 先存起來
-        closeConfirm();                       // ← 再關閉（會清掉 pendingCancelId）
+        const preOrderId = pendingCancelId;
+        closeConfirm();
 
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         const res = await fetch('/PreOrders/CancelOrder', {
@@ -848,37 +1163,39 @@
             const icon = document.getElementById('icon-' + item.dataset.detailId);
             if (icon) icon.textContent = '❌';
         });
+        card.querySelectorAll('.child-item').forEach(child => {
+            child.dataset.status = 2;
+            child.classList.remove('status-done');
+            child.classList.add('status-cancel');
+            const icon = document.getElementById('child-icon-' + child.dataset.detailId);
+            if (icon) icon.textContent = '❌';
+        });
 
-            card.classList.remove('card-selected');
-    setTimeout(() => {
-        card.classList.add('all-done');
+        card.classList.remove('card-selected');
         setTimeout(() => {
-            card.remove();
-            updateTotalBadge();
-            // 右側不足3筆才 reload
-            const expCards = document.querySelectorAll('.exp-card');
-            if (expCards.length < 3 && document.querySelector('.list-card')) {
-                location.reload();
-            }
+            card.classList.add('all-done');
+            setTimeout(() => {
+                card.remove();
+                updateTotalBadge();
+                const expCards = document.querySelectorAll('.exp-card');
+                if (expCards.length < 3 && document.querySelector('.list-card')) {
+                    location.reload();
+                }
+            }, 600);
         }, 600);
-    }, 600);
     }
-        function promoteListCard() {
+
+    function promoteListCard() {
         const expandedArea = document.getElementById('expandedArea');
         const expCards = expandedArea.querySelectorAll('.exp-card');
-
-        // 右側不足3筆才補
         if (expCards.length >= 3) return;
-
         const listArea = document.getElementById('listArea');
         const firstListCard = listArea.querySelector('.list-card');
         if (!firstListCard) return;
-
-        // 直接 reload 補上最簡單
         location.reload();
     }
 
-        let lastCount = @Model.Count;
+    let lastCount = @Model.Count;
 
     setInterval(async () => {
         try {
@@ -888,15 +1205,21 @@
         } catch {}
     }, 3000);
 
-        document.addEventListener('DOMContentLoaded', () => {
-        // 已完成/取消的餐點移到最下面
+    document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.card-body, .list-detail-area').forEach(area => {
-            const done = [...area.querySelectorAll('.detail-item.status-done, .detail-item.status-cancel')];
+            // 一般餐點：已完成/取消移到最下面
+            const done = [...area.querySelectorAll('.detail-item:not(.is-setmeal).status-done, .detail-item:not(.is-setmeal).status-cancel')];
             done.forEach(item => {
                 const actionDiv = document.getElementById('actions-' + item.dataset.detailId);
                 area.appendChild(item);
                 if (actionDiv) area.appendChild(actionDiv);
             });
+            // 套餐群組：全部完成或取消的移到最下面
+            const doneGroups = [...area.querySelectorAll('.setmeal-group')].filter(g => {
+                const header = g.querySelector('.detail-item.is-setmeal');
+                return header && (header.classList.contains('status-done') || header.classList.contains('status-cancel'));
+            });
+            doneGroups.forEach(g => area.appendChild(g));
         });
     });
 </script>

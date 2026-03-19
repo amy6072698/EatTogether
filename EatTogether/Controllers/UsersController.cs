@@ -22,13 +22,13 @@ namespace EatTogether.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Index(UserIndexViewModel vm)
 		{
-			// // ±q JWT ¨ú±o¥Ø«eµn¤JªÌ¸ê°T
+			// // ï¿½q JWT ï¿½ï¿½ï¿½oï¿½Ø«eï¿½nï¿½Jï¿½Ì¸ï¿½T
 			var currentUserId = int.Parse(User.FindFirstValue("UserId") ?? "0");
 
-			// ÀË¬d¥Ø«eµn¤JªÌ¬O§_¾Ö¦³¡uºÞ²z­û¤u¡vªºÅv­­¼Ð°O (Claim)
+			// ï¿½Ë¬dï¿½Ø«eï¿½nï¿½Jï¿½Ì¬Oï¿½_ï¿½Ö¦ï¿½ï¿½uï¿½Þ²zï¿½ï¿½ï¿½uï¿½vï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Ð°O (Claim)
 			var canManage = User.HasClaim("Permission", "Staff_Manage");
 
-			// ¬d¸ß±ø¥ó
+			// ï¿½dï¿½ß±ï¿½ï¿½ï¿½
 			var searchDto = new UserSearchDto
 			{
 				EmployeeNumber = vm.EmployeeNumber,
@@ -56,7 +56,7 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/NextEmployeeNumber
-		// ¹w²£­û¤u½s¸¹¡]«eºÝ¶} Modal ®É©I¥s¡^
+		// ï¿½wï¿½ï¿½ï¿½ï¿½ï¿½uï¿½sï¿½ï¿½ï¿½]ï¿½eï¿½Ý¶} Modal ï¿½É©Iï¿½sï¿½^
 		//[RequirePermission("Staff_Manage")]
 		[HttpGet]
 		public async Task<IActionResult> NextEmployeeNumber()
@@ -67,7 +67,7 @@ namespace EatTogether.Controllers
 
 
 		// POST /Users/Create
-		// ·s¼W­û¤u
+		// ï¿½sï¿½Wï¿½ï¿½ï¿½u
 		//[RequirePermission("Staff_Manage")]
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
@@ -77,7 +77,7 @@ namespace EatTogether.Controllers
 				var errors = ModelState.Values
 					.SelectMany(v => v.Errors)
 					.Select(e => e.ErrorMessage);
-				return BadRequest(new { message = string.Join("¡B", errors) });
+				return BadRequest(new { message = string.Join("ï¿½B", errors) });
 			}
 
 			var result = await _userService.CreateAsync(dto);
@@ -88,7 +88,7 @@ namespace EatTogether.Controllers
 		}
 
 		// GET /Users/Edit/{id}
-		// «eºÝ¶}½s¿è Modal ®É©I¥s¡A¨ú±o¹w¶ñ¸ê®Æ
+		// ï¿½eï¿½Ý¶}ï¿½sï¿½ï¿½ Modal ï¿½É©Iï¿½sï¿½Aï¿½ï¿½ï¿½oï¿½wï¿½ï¿½ï¿½ï¿½
 		//[RequirePermission("Staff_Manage")]
 		[HttpGet]
 		public async Task<IActionResult> Edit(int id)
@@ -96,14 +96,14 @@ namespace EatTogether.Controllers
 			var dto = await _userService.GetForEditAsync(id);
 			if(dto == null)
 			{
-				return NotFound(new { message = "§ä¤£¨ì¦¹­û¤u" });
+				return NotFound(new { message = "ï¿½ä¤£ï¿½ì¦¹ï¿½ï¿½ï¿½u" });
 			}
 
 			return Ok(dto.ToEditVm());
 		}
 
 		// PUT /Users/Edit/{id}
-		// Àx¦s½s¿è
+		// ï¿½xï¿½sï¿½sï¿½ï¿½
 		//[RequirePermission("Staff_Manage")]
 		[HttpPut]
 		public async Task<IActionResult> Edit(int id, [FromBody] UserEditViewModel vm)
@@ -113,7 +113,7 @@ namespace EatTogether.Controllers
 				var errors = ModelState.Values
 					.SelectMany(v => v.Errors)
 					.Select(e => e.ErrorMessage);
-				return BadRequest(new { message = string.Join("¡B", errors) });
+				return BadRequest(new { message = string.Join("ï¿½B", errors) });
 			}
 
 			var result = await _userService.UpdateAsync(id, vm);

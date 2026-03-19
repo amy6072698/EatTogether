@@ -373,51 +373,78 @@
         <!-- 餐點清單 -->
         <div class="card">
             <div class="section-title">餐點明細</div>
-            @for (int i = 0; i < Model.Items.Count; i++)
+            @{
+                // 只顯示主項目（非子項目），子項目緊跟在父項目後面顯示
+                var parentItems = Model.Items
+                .Select((item, idx) => new { item, idx })
+                .Where(x => !x.item.ParentIndex.HasValue)
+                .ToList();
+            }
+            @foreach (var p in parentItems)
             {
-                bool isChild = Model.Items[i].ParentIndex.HasValue;
-                bool isSetMeal = Model.Items[i].IsSetMeal;
-                <div class="item-row" id="row-@i"
-                     style="@(isChild ? "padding-left:24px;background:#fafafa;border-left:3px solid #e67e22;margin-left:8px;border-radius:0 8px 8px 0;" : "")">
-                    <input type="hidden" name="Items[@i].ProductId" value="@Model.Items[i].ProductId" />
-                    <input type="hidden" name="Items[@i].ProductName" value="@Model.Items[i].ProductName" />
-                    <input type="hidden" name="Items[@i].UnitPrice" value="@Model.Items[i].UnitPrice" />
-                    <input type="hidden" id="qty-hidden-@i" name="Items[@i].Qty" value="@Model.Items[i].Qty" />
+                var i = p.idx;
+                var item = p.item;
+                bool isSetMeal = item.IsSetMeal;
+
+                // 找屬於這個父項目的子項目
+                var children = Model.Items
+                .Select((c, ci) => new { c, ci })
+                .Where(x => x.c.ParentIndex.HasValue && x.c.ParentIndex.Value == i)
+                .ToList();
+
+                <div class="item-row" id="row-@i">
+                    <input type="hidden" name="Items[@i].ProductId" value="@item.ProductId" />
+                    <input type="hidden" name="Items[@i].ProductName" value="@item.ProductName" />
+                    <input type="hidden" name="Items[@i].UnitPrice" value="@item.UnitPrice" />
+                    <input type="hidden" id="qty-hidden-@i" name="Items[@i].Qty" value="@item.Qty" />
                     <input type="hidden" name="Items[@i].IsSetMeal" value="@isSetMeal.ToString().ToLower()" />
-                    <input type="hidden" name="Items[@i].ParentIndex" value="@(Model.Items[i].ParentIndex?.ToString() ?? "")" />
+                    <input type="hidden" name="Items[@i].ParentIndex" value="" />
+                    <input type="hidden" name="Items[@i].CategoryName" value="@(item.CategoryName ?? "")" />
 
                     <div>
-                        <div class="item-name" style="@(isChild ? "font-size:0.88rem;color:#666;" : "")">
-                            @(isChild ? "　" : "")@Model.Items[i].ProductName
+                        <div class="item-name">
+                            @item.ProductName
                             @if (isSetMeal)
                             {
                                 <span style="font-size:0.72rem;background:#e67e22;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">套餐</span>
                             }
                         </div>
-                        @if (!isChild)
-                        {
-                            <div class="item-unit">NT$ @Model.Items[i].UnitPrice / 份</div>
-                        }
+                        <div class="item-unit">NT$ @item.UnitPrice / 份</div>
                     </div>
 
-                    @if (!isChild)
-                    {
-                        <div style="display:flex;align-items:center;gap:16px">
-                            <div class="qty-wrap">
-                                <button type="button" class="qty-btn minus" onclick="changeQty(@i, -1)">−</button>
-                                <div class="qty-display" id="qty-display-@i">@Model.Items[i].Qty</div>
-                                <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
-                            </div>
-                            <div class="item-price" id="subtotal-@i">
-                                NT$ @(Model.Items[i].Qty * Model.Items[i].UnitPrice)
-                            </div>
+                    <div style="display:flex;align-items:center;gap:16px">
+                        <div class="qty-wrap">
+                            <button type="button" class="qty-btn minus" onclick="changeQty(@i, -1)">−</button>
+                            <div class="qty-display" id="qty-display-@i">@item.Qty</div>
+                            <button type="button" class="qty-btn" onclick="changeQty(@i, 1)">＋</button>
                         </div>
-                    }
-                    else
-                    {
-                        <div style="font-size:0.82rem;color:#aaa;">× @Model.Items[i].Qty</div>
-                    }
+                        <div class="item-price" id="subtotal-@i">
+                            NT$ @(item.Qty* item.UnitPrice)
+                        </div>
+                    </div>
                 </div>
+
+                @* 子項目緊接在父項目下方 *@
+                @foreach (var ch in children)
+                {
+                    var ci = ch.ci;
+                    var child = ch.c;
+                    <div class="item-row" id="row-@ci"
+                         style="padding-left:24px;background:#fafafa;border-left:3px solid #e67e22;margin-left:8px;border-radius:0 8px 8px 0;margin-bottom:4px;">
+                        <input type="hidden" name="Items[@ci].ProductId" value="@child.ProductId" />
+                        <input type="hidden" name="Items[@ci].ProductName" value="@child.ProductName" />
+                        <input type="hidden" name="Items[@ci].UnitPrice" value="@child.UnitPrice" />
+                        <input type="hidden" name="Items[@ci].Qty" value="@child.Qty" />
+                        <input type="hidden" name="Items[@ci].IsSetMeal" value="false" />
+                        <input type="hidden" name="Items[@ci].ParentIndex" value="@i" />
+                        <input type="hidden" name="Items[@ci].CategoryName" value="" />
+
+                        <div class="item-name" style="font-size:0.88rem;color:#666;">
+                            @child.ProductName
+                        </div>
+                        <div style="font-size:0.82rem;color:#aaa;">× @child.Qty</div>
+                    </div>
+                }
             }
         </div>
 

@@ -9,5 +9,7 @@
         public int SubTotal { get; set; }
         public int Status { get; set; }  // 0:未完成 1:完成 2:取消
         public bool IsBilled { get; set; }
+        public bool IsSetMeal { get; set; }
+        public int? ParentDetailId { get; set; }
     }
 }

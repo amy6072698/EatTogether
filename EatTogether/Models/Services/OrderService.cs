@@ -70,7 +70,7 @@ namespace EatTogether.Models.Services
             // 第一階段：建立 detail 列表
             var details = dto.Items.Select(i => new PreOrderDetail
             {
-                ProductId = i.ProductId,
+                ProductId = i.ProductId > 0 ? i.ProductId : 1,
                 ProductName = i.ProductName,
                 Qty = i.Qty,
                 UnitPrice = (int)i.UnitPrice,
@@ -103,7 +103,11 @@ namespace EatTogether.Models.Services
             {
                 if (dto.Items[i].ParentIndex.HasValue)
                 {
-                    details[i].ParentDetailId = details[dto.Items[i].ParentIndex.Value].Id;
+                    var parentIdx = dto.Items[i].ParentIndex.Value;
+                    // 加這行看看
+                    var parentDetail = details.ElementAtOrDefault(parentIdx);
+                    // parentDetail 是不是 null？parentIdx 有沒有超出範圍？
+                    details[i].ParentDetailId = details[parentIdx].Id;
                     hasChildren = true;
                 }
             }
@@ -162,7 +166,8 @@ namespace EatTogether.Models.Services
                     ProductName = name,
                     UnitPrice = (int)(price ?? 0),
                     Qty = 0,
-                    IsSetMeal = p.ProductType == "SetMeal"
+                    IsSetMeal = p.ProductType == "SetMeal",
+                    CategoryName = p.ProductType == "Dish" ? p.DishCategoryName : null
                 });
             }
             return result;
@@ -234,7 +239,9 @@ namespace EatTogether.Models.Services
                         PreOrderId = p.Id,
                         ProductName = d.ProductName,
                         Qty = d.Qty,
-                        Status = d.DoneOrCancel
+                        Status = d.DoneOrCancel,
+                        IsSetMeal = d.IsSetMeal,
+                        ParentDetailId = d.ParentDetailId
                     }).ToList()
                 }).ToList();
         }
@@ -409,7 +416,9 @@ namespace EatTogether.Models.Services
                     Qty = d.Qty,
                     UnitPrice = d.UnitPrice,
                     SubTotal = d.SubTotal,
-                    Status = d.DoneOrCancel
+                    Status = d.DoneOrCancel,
+                    IsSetMeal = d.IsSetMeal,
+                    ParentDetailId = d.ParentDetailId
                 }).ToList()
             };
         }
@@ -550,7 +559,9 @@ namespace EatTogether.Models.Services
                     UnitPrice = d.UnitPrice,
                     SubTotal = d.SubTotal,
                     Status = d.DoneOrCancel,
-                    IsBilled = d.IsBilled
+                    IsBilled = d.IsBilled,
+                    IsSetMeal = d.IsSetMeal,
+                    ParentDetailId = d.ParentDetailId
                 }))
                 .ToList();
 
