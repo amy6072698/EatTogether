@@ -35,5 +35,16 @@ namespace EatTogether.Controllers
 
 			return View(vm);
 		}
+
+		// GET /Members/Detail/{id}  — JSON，供詳情 Modal AJAX 呼叫
+		[HttpGet]
+		public async Task<IActionResult> Detail(int id)
+		{
+			var dto = await _memberService.GetDetailAsync(id);
+			if (dto is null)
+				return NotFound(new { message = "找不到該會員。" });
+
+			return Json(dto.ToDetailVm());
+		}
 	}
 }
