@@ -5,10 +5,6 @@
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">套餐管理</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item active">套餐管理</li>
-    </ol>
 
     <!-- 統計卡片 -->
     <div class="row mb-4">
@@ -519,7 +515,7 @@
 
             renderPaginationButtons("pagination", totalPages);
             renderPaginationButtons("topPagination", totalPages);
-            
+
             // 如果只有一頁且是第一頁，隱藏上方分頁以節省空間
             document.getElementById("topPaginationWrapper").classList.toggle("d-none", totalPages <= 1);
         }
@@ -527,9 +523,9 @@
         function renderPaginationButtons(elementId, totalPages) {
             const container = document.getElementById(elementId);
             if (!container) return;
-            
+
             container.innerHTML = "";
-            
+
             const prevLi = document.createElement("li");
             prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
             prevLi.innerHTML = `<button type="button" class="page-link shadow-none" onclick="goToPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;

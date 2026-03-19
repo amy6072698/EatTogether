@@ -13,7 +13,7 @@
     </div>
 }
 
-@section Styles{
+@section Styles {
 
     <style>
         /* 讓 DataTables 的長度選擇器與我們的篩選按鈕排在同一行 */
@@ -33,13 +33,9 @@
     </style>
 }
 
-<div class="container-fluid mt-4" style="max-width: 90%;">
-    <h1>活動管理</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item active">活動管理</li>
-    </ol>
-    
+<div class="container-fluid px-4">
+    <h1 class="mt-4">活動管理</h1>
+
     <div class="card shadow-sm">
 
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -200,50 +196,50 @@
                     }
                 </tbody>
             </table>
-            
-        </div>  
-</div>
+
+        </div>
+    </div>
 
 
 @section Scripts {
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    <script>
+        <script>
 
-        $(document).ready(function () {
-            var table = $('#indexList').DataTable({
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/zh-HANT.json" // 中文化
-                },
-                "pageLength": 10, 
-                "order": [[ 0, "desc" ]], 
-                //將篩選狀態標籤移進dataTables格式裡
-                "retrieve": true,
-                "initComplete": function(settings, json) {
-                   $("#filter-container").prependTo($(".dataTables_filter"));
-                }
+            $(document).ready(function () {
+                var table = $('#indexList').DataTable({
+                    "language": {
+                        "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/zh-HANT.json" // 中文化
+                    },
+                    "pageLength": 10,
+                    "order": [[ 0, "desc" ]],
+                    //將篩選狀態標籤移進dataTables格式裡
+                    "retrieve": true,
+                    "initComplete": function(settings, json) {
+                       $("#filter-container").prependTo($(".dataTables_filter"));
+                    }
+                });
+
+
+                // 監聽篩選按鈕點擊事件
+                $('.filter-btn').on('click', function () {
+                    var status = $(this).data('status');
+
+                    // 「狀態」那一欄.search(status) 進行搜尋，.draw() 重新繪製表格
+                    table.column(8).search(status).draw();
+
+                    //切換按鈕樣式
+                    $('.filter-btn').removeClass('active btn-dark').addClass('btn-outline-dark');
+                    $(this).addClass('active btn-dark').removeClass('btn-outline-dark');
+                });
+
+
+
             });
 
 
-            // 監聽篩選按鈕點擊事件
-            $('.filter-btn').on('click', function () {
-                var status = $(this).data('status');
 
-                // 「狀態」那一欄.search(status) 進行搜尋，.draw() 重新繪製表格
-                table.column(8).search(status).draw();
-
-                //切換按鈕樣式
-                $('.filter-btn').removeClass('active btn-dark').addClass('btn-outline-dark');
-                $(this).addClass('active btn-dark').removeClass('btn-outline-dark');
-            });
-
-
-
-        });
-
-
-
-    </script>
+        </script>
 }

@@ -5,13 +5,8 @@
 }
 
 
-<div class="container-fluid mt-4" style="max-width: 90%;">
-    <h1>新增活動</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">活動管理</a></li>
-        <li class="breadcrumb-item active">新增活動</li>
-    </ol>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">新增活動</h1>
 
     <div class="card shadow-sm">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -23,7 +18,7 @@
             <form asp-action="Create">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="row">
-                    <div class="col-md-6">                        
+                    <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label asp-for="Title" class="control-label"></label><span class="text-danger">*</span>
                             <input asp-for="Title" class="form-control" />
@@ -38,7 +33,7 @@
                             <label asp-for="MinSpend" class="control-label"></label><span class="text-danger">*</span>
                             <input asp-for="MinSpend" class="form-control" />
                             <span asp-validation-for="MinSpend" class="text-danger"></span>
-                        </div>                           
+                        </div>
                         <div class="form-group mb-3">
                             <label asp-for="RewardItem" class="control-label"></label>    <span class="form-text">※非贈品活動可留白</span>
                             <input asp-for="RewardItem" class="form-control" />
@@ -61,8 +56,8 @@
                         </div>
                     </div>
 
-                        @* --!活動日期區塊-- *@
-                    <div class="col-md-6">  
+                    @* --!活動日期區塊-- *@
+                    <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label asp-for="StartDate" class="control-label"></label><span class="text-danger">*</span>
                             <input type="date" asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
@@ -75,23 +70,25 @@
                         </div>
                     </div>
 
-                    
+
                     <div class="form-group mt-3 d-flex align-items-center">
                         <input type="submit" value="新增" class="btn btn-primary me-2" />
 
                         <a asp-action="Index" class="btn btn-light">返回列表</a>
-                    </div>                    
-                    
+                    </div>
+
                 </div>
             </form>
-        </div> 
+        </div>
 
-    </div>  
+    </div>
 
 </div>
 
 
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

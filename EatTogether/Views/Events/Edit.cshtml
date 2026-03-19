@@ -15,7 +15,7 @@
 }
 
 
-@section Styles{
+@section Styles {
     <style>
         /* 當 input 有 readonly 屬性時，改變背景顏色 */
         input[readonly] {
@@ -23,16 +23,11 @@
             cursor: not-allowed;
             border: 1px solid #ced4da;
         }
-    </style>        
+    </style>
 }
 
-<div class="container-fluid mt-4" style="max-width: 90%;">
-    <h1>活動編輯</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">活動管理</a></li>
-        <li class="breadcrumb-item active">活動編輯</li>
-    </ol>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">活動編輯</h1>
 
     <div class="card shadow-sm">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -105,9 +100,9 @@
                             <button type="button" id="EventDeactivate" class="btn btn-danger">停用活動</button>
 
                         }
-                        else if (isEnded)                        
-                        {                           
-                            <a asp-action="CopyCreate" asp-route-id="@Model.Id"class="btn btn-success">
+                        else if (isEnded)
+                        {
+                            <a asp-action="CopyCreate" asp-route-id="@Model.Id" class="btn btn-success">
                                 複製並建立新活動
                             </a>
                         }
@@ -178,16 +173,18 @@
 
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
     <script>
-        $(document).ready(function () {  
+        $(document).ready(function () {
             var status = @Model.Status;
 
             if (status === 2) {
                 // 禁用所有輸入框、選單、按鈕（除了取消按鈕）
                 $('input, select, textarea').prop('readonly', true);
-                $('select').prop('disabled', true); 
+                $('select').prop('disabled', true);
             }
 
             if (status === 1) {

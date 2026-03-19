@@ -7,7 +7,7 @@
 <div class="container-fluid px-4 user-index">
 
     <!-- 頁面標題列 -->
-    <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
+    <div class="d-flex align-items-start justify-content-between mt-2 mb-4">
         <div>
             <h1 class="page-header-title">員工管理</h1>
             <p class="page-header-subtitle">管理餐廳員工資訊</p>
@@ -121,24 +121,24 @@
                                 <div class="action-btn-group">
                                     @* @if (row.CanEdit)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-primary btn-edit-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="編輯">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-primary btn-edit-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="編輯">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
                                     @* }
                                     @if (row.CanResign)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-danger btn-resign-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="離職">
-                                            <i class="fa-solid fa-user-minus"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-resign-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="離職">
+                                        <i class="fa-solid fa-user-minus"></i>
+                                    </button>
                                     @* }
                                     @if (row.CanReinstate)
                                     { *@
-                                        <button class="btn btn-sm btn-outline-success btn-reinstate-user"
-                                                data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="復職">
-                                            <i class="fa-solid fa-user-plus"></i>
-                                        </button>
+                                    <button class="btn btn-sm btn-outline-success btn-reinstate-user"
+                                            data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="復職">
+                                        <i class="fa-solid fa-user-plus"></i>
+                                    </button>
                                     @* } *@
                                 </div>
                             </td>

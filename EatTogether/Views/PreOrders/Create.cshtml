@@ -4,20 +4,7 @@
     ViewData["Title"] = "Create";
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
-
 <style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        font-family: 'Noto Sans TC', sans-serif;
-        background: #f5f0eb;
-    }
-
     .order-wrap {
         max-width: 100%;
         margin: 40px auto;
@@ -994,10 +981,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         @for (int i = 0; i < Model.Items.Count; i++)
         {
-                if (Model.Items[i].Qty > 0)
-                {
-                        @:document.getElementById('card-@i').classList.add('selected');
-                }
+                    if (Model.Items[i].Qty > 0)
+                    {
+                                @:document.getElementById('card-@i').classList.add('selected');
+                    }
         }
     });
 </script>
