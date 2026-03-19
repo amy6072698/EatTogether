@@ -891,7 +891,7 @@
 		黑名單原因：僅「黑名單」狀態顯示；未填寫顯示「（未填寫）」
 		底部按鈕：「關閉」
 
-[working] add 黑名單管理功能
+[V] add 黑名單管理功能
 	url: PATCH /Member/Blacklist/{id}
 	url: PATCH /Member/Unblacklist/{id}
 
@@ -923,7 +923,7 @@
 =========
 共用版面（_Layout.cshtml）
 =========
-[V] 已完成
+[V] Logo 及顏色
 	<head> 加入 favicon（favicon.svg 主要，favicon-32x32.png 備用）
 	Navbar Logo 改用 <img src="/images/logo-full.svg" alt="義起吃" />
 	全站 CSS 品牌色票變數（9 色）
@@ -937,7 +937,48 @@
 		--eat-sidebar-sub   #4E2A17（Sidebar 子項目 active 底色）
 		--eat-sidebar-hover #2C1610（Sidebar 項目 hover 底色）
 
-[] 待完成
+[] 登入狀態與權限導向 RequirePermission
+	[V] UsersController
+		Staff_View → GET /Users/Index
+		Staff_Manage → 
+			NextEmployeeNumber, Create,
+			GET Edit, PUT Edit, 
+			PATCH Resign, PATCH Reinstate
+
+	[V] RolesController
+		Staff_Manage → class（所有 Actions）
+
+	[V] MembersController
+		Staff_Manage → class（所有 Actions）
+
+	[V] CategoriesController / DishesController / SetMealsController
+		Menu_Manage → class（所有 Actions）
+
+	[V] PreOrdersController
+		Order_StatusUpdate → GET Create, POST Create,
+			Confirm, Submit, TodayPreOrderList, UpdateDetailStatus
+			Success, PendingCount, ValidateCoupon, GetSetMealItems
+		Order_Manage → CancelOrder, AllOrders, Detail, CancelAllByTable
+
+	[V] PaymentsController
+		Order_Manage → class（所有 Actions）
+
+	[V] TablesController
+		Table_Manage → class（所有 Actions）
+
+	[V] ReservationsController
+		Reservation_Manage → class（所有 Actions）
+
+	[V] CouponsController
+		Coupon_Manage → class（所有 Actions）
+
+	[V] EventsController
+		Event_Manage → class（所有 Actions）
+
+	[V] ReportController
+		Report_Manage → class（所有 Actions）
+
+[] 登入狀態與權限導向 UI
 	Navbar 右側：從 JWT Payload 動態顯示「登入者姓名 + 角色」與「登出」按鈕
 	Sidebar：從 JWT Payload 角色聯集動態顯示/隱藏選單項目（含分組標題）
 	頁面內操作按鈕依權限動態隱藏，無權限者不渲染至 DOM

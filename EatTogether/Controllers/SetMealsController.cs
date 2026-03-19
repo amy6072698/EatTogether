@@ -1,4 +1,5 @@
 ﻿using EatTogether.Models.DTOs;
+using EatTogether.Models.Infra;
 using EatTogether.Models.Services;       
 using EatTogether.Models.ViewModels;     
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace EatTogether.Controllers        
 {
-    public class SetMealsController : Controller
+	[RequirePermission("Menu_Manage")]
+	public class SetMealsController : Controller
     {
         private readonly SetMealService _setMealService;
         private readonly DishService _dishService;

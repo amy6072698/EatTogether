@@ -1,22 +1,16 @@
-using System.Diagnostics;
 using EatTogether.Models;
+using EatTogether.Models.Infra;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace EatTogether.Controllers
 {
-    //[Authorize]
-    public class HomeController : Controller
+	[RequireLogin]
+	public class HomeController : Controller
     {
-        //private readonly ILogger<HomeController> _logger;
-
-        //public HomeController(ILogger<HomeController> logger)
-        //{
-        //    _logger = logger;
-        //}
-
-        // GET /Home/Index
-        [HttpGet]
+		// GET /Home/Index
+		[HttpGet]
         public IActionResult Index()
         {
             return View();

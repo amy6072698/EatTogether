@@ -36,6 +36,14 @@ async function apiFetch(url, options = {}) {
     }
 }
 
+// 在填入 createdAt 之前，加入此格式化函式
+function formatDateTime(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 /* ============================================================
    全域變數
    ============================================================ */
@@ -410,7 +418,7 @@ function initEditModal() {
             document.querySelector('#edit-email').value = data.email;
             document.querySelector('#edit-phone').value = data.phone;
             document.querySelector('#edit-hire-date').value = data.hireDate;
-            document.querySelector('#edit-created-at').value = data.createdAt;
+            document.querySelector('#edit-created-at').value = formatDateTime(data.createdAt);
 
             // 角色預填
             document.querySelectorAll('#modal-edit-user .role-checkbox').forEach(cb => {
