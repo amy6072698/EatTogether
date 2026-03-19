@@ -1,6 +1,10 @@
+@model EatTogether.Models.ViewModels.RoleIndexViewModel
+@using EatTogether.Models.ViewModels
+
 @{
     ViewData["Title"] = "角色與權限管理";
 }
+
 
 <div class="container-fluid px-4 roles-index">
 
@@ -35,216 +39,36 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @*
-                        TODO（後端連線後）：替換為 @foreach (var role in Model) { ... }
-                        每列 <tr> 需包含以下 data 屬性：
-                        data-id, data-name, data-description,
-                        data-is-default（true = 系統預設角色，不可刪除）,
-                        data-functions（逗號分隔的 FunctionName 識別碼清單）,
-                        data-employee-ids（逗號分隔的員工 Id 清單）
-                    *@
-
-                    <!-- Demo 資料 — 後端連線後移除 -->
-
-                    <!-- 店長 -->
-                    <tr data-id="1"
-                        data-name="店長"
-                        data-description="最高權限，可使用所有後台功能"
-                        data-is-default="true"
-                        data-functions="Staff_Manage,Staff_View,Member_Manage,Order_Manage,Order_Update,Menu_Manage,Reservation_Manage,Table_Manage,Coupon_Manage,Event_Manage,Article_Manage,Report_Manage,Notification_Manage"
-                        data-employee-ids="1">
-                        <td>店長</td>
-                        <td>最高權限，可使用所有後台功能</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">員工管理</span>
-                                <span class="perm-badge">員工查看</span>
-                                <span class="perm-badge">會員管理</span>
-                                <span class="perm-badge">訂單管理（含結帳）</span>
-                                <span class="perm-badge">更新訂單狀態</span>
-                                <span class="perm-badge">菜單管理</span>
-                                <span class="perm-badge">訂位管理</span>
-                                <span class="perm-badge">桌位設定</span>
-                                <span class="perm-badge">優惠券管理</span>
-                                <span class="perm-badge">活動管理</span>
-                                <span class="perm-badge">文章管理</span>
-                                <span class="perm-badge">報表管理</span>
-                                <span class="perm-badge">通知管理</span>
-                            </div>
-                        </td>
-                        <td class="text-center">1</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="1" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="1" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- 副店長 -->
-                    <tr data-id="2"
-                        data-name="副店長"
-                        data-description="協助店長管理，可使用大部分後台功能"
-                        data-is-default="true"
-                        data-functions="Staff_View,Member_Manage,Order_Manage,Order_Update,Menu_Manage,Reservation_Manage,Table_Manage,Coupon_Manage,Event_Manage,Article_Manage,Notification_Manage"
-                        data-employee-ids="2">
-                        <td>副店長</td>
-                        <td>協助店長管理，可使用大部分後台功能</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">員工查看</span>
-                                <span class="perm-badge">會員管理</span>
-                                <span class="perm-badge">訂單管理（含結帳）</span>
-                                <span class="perm-badge">更新訂單狀態</span>
-                                <span class="perm-badge">菜單管理</span>
-                                <span class="perm-badge">訂位管理</span>
-                                <span class="perm-badge">桌位設定</span>
-                                <span class="perm-badge">優惠券管理</span>
-                                <span class="perm-badge">活動管理</span>
-                                <span class="perm-badge">文章管理</span>
-                                <span class="perm-badge">通知管理</span>
-                            </div>
-                        </td>
-                        <td class="text-center">1</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="2" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="2" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- 收銀員 -->
-                    <tr data-id="3"
-                        data-name="收銀員"
-                        data-description="負責結帳，可核驗優惠券及查看會員"
-                        data-is-default="true"
-                        data-functions="Member_Manage,Order_Manage"
-                        data-employee-ids="3">
-                        <td>收銀員</td>
-                        <td>負責結帳，可核驗優惠券及查看會員</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">會員管理</span>
-                                <span class="perm-badge">訂單管理（含結帳）</span>
-                            </div>
-                        </td>
-                        <td class="text-center">2</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="3" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="3" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- 外場服務生 -->
-                    <tr data-id="4"
-                        data-name="外場服務生"
-                        data-description="負責外場服務，可處理訂位及更新訂單狀態"
-                        data-is-default="true"
-                        data-functions="Order_Update,Reservation_Manage"
-                        data-employee-ids="4">
-                        <td>外場服務生</td>
-                        <td>負責外場服務，可處理訂位及更新訂單狀態</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">更新訂單狀態</span>
-                                <span class="perm-badge">訂位管理</span>
-                            </div>
-                        </td>
-                        <td class="text-center">2</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="4" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="4" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- 內場廚師 -->
-                    <tr data-id="5"
-                        data-name="內場廚師"
-                        data-description="負責備餐，可查看並更新訂單狀態"
-                        data-is-default="true"
-                        data-functions="Order_Update"
-                        data-employee-ids="5">
-                        <td>內場廚師</td>
-                        <td>負責備餐，可查看並更新訂單狀態</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">更新訂單狀態</span>
-                            </div>
-                        </td>
-                        <td class="text-center">2</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="5" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="5" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- 工讀生 -->
-                    <tr data-id="6"
-                        data-name="工讀生"
-                        data-description="基層人員，僅可更新訂單狀態"
-                        data-is-default="true"
-                        data-functions="Order_Update"
-                        data-employee-ids="6">
-                        <td>工讀生</td>
-                        <td>基層人員，僅可更新訂單狀態</td>
-                        <td>
-                            <div class="perm-badge-group">
-                                <span class="perm-badge">更新訂單狀態</span>
-                            </div>
-                        </td>
-                        <td class="text-center">3</td>
-                        <td>
-                            <div class="action-btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit-role"
-                                        data-id="6" title="編輯">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-role"
-                                        data-id="6" title="刪除">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- /Demo 資料 -->
-
+                    @foreach (var role in Model.Rows)
+                    {
+                        <tr data-id="@role.Id"
+                            data-name="@role.RoleName"
+                            data-description="@(role.Description ?? "")"
+                            data-is-default="@(!role.CanDelete).ToString().ToLower()"
+                            data-functions="@string.Join(",", role.FunctionDisplayNames)">
+                            <td>@role.RoleName</td>
+                            <td>@(role.Description ?? "—")</td>
+                            <td>
+                                <div class="perm-badge-group">
+                                    @foreach (var name in role.FunctionDisplayNames)
+                                    {
+                                        <span class="perm-badge">@name</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-center">@role.UserCount</td>
+                            <td class="text-center">
+                                <div class="action-btn-group">
+                                    <button class="btn btn-sm btn-outline-primary btn-edit-role">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-role">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
