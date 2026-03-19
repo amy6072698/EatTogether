@@ -675,6 +675,42 @@
     </div>
 </div>
 
+<!-- Event Selection Modal -->
+<div class="modal-overlay" id="eventSelectModal">
+    <div class="modal-box" style="width:420px;max-height:80vh;overflow-y:auto;">
+        <div class="modal-title">🎉 選擇活動</div>
+        <div id="eventListArea" style="margin:16px 0;text-align:left;"></div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="document.getElementById('eventSelectModal').classList.remove('show')">關閉</button>
+            <button class="modal-btn-confirm" id="clearEventBtn" style="background:#888;" onclick="doApplyEvent(null)">清除活動</button>
+        </div>
+    </div>
+</div>
+
+<!-- Coupon Input Modal -->
+<div class="modal-overlay" id="couponInputModal">
+    <div class="modal-box" style="width:380px;">
+        <div class="modal-title">🎫 輸入優惠券</div>
+        <div style="margin:16px 0;text-align:left;">
+            <div style="font-size:0.82rem;color:#888;margin-bottom:6px;">優惠券代碼</div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="couponCodeInput"
+                       style="flex:1;padding:10px 12px;border:2px solid #ddd;border-radius:8px;
+                              font-family:inherit;font-size:0.95rem;outline:none;"
+                       placeholder="請輸入折扣碼"
+                       onfocus="this.style.borderColor='#c0392b'"
+                       onblur="this.style.borderColor='#ddd'"
+                       onkeydown="if(event.key==='Enter')doApplyCoupon()" />
+            </div>
+            <div id="couponInputMsg" style="margin-top:8px;font-size:0.85rem;display:none;"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="document.getElementById('couponInputModal').classList.remove('show')">關閉</button>
+            <button class="modal-btn-confirm" onclick="doApplyCoupon()">套用</button>
+        </div>
+    </div>
+</div>
+
 <!-- Alert Modal (單一確定) -->
 <div class="modal-overlay" id="customAlertModal">
     <div class="modal-box">
@@ -829,37 +865,50 @@
             </div>
 
             <div class="amount-section">
-                <div id="splitBillSection" style="display:none; margin-bottom:12px;
-                        padding:12px 14px; background:#f0f7ff; border:1px solid #b3d4f5;
-                        border-radius:10px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-size:0.85rem;color:#1a5c99;font-weight:700;">
-                            已選小計：NT$ <span id="splitSubtotal">0</span>
-                        </span>
-                        <button type="button"
-                                style="padding:6px 16px;background:#1a77c9;color:#fff;border:none;
-                       border-radius:8px;font-family:inherit;font-weight:700;
-                       font-size:0.85rem;cursor:pointer;"
-                                onclick="doSplitCheckout()">
-                            結這張 ✓
-                        </button>
-                    </div>
-                </div>
                 <div id="couponTag" style="display:none; margin-bottom:10px; padding:10px 14px;
                                 background:#fff8e1; border:1px solid #f0c040;
                                 border-radius:10px;">
                     <div style="font-size:0.75rem;color:#b7770d;font-weight:700;margin-bottom:4px;">優惠券</div>
-                    <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#b7770d;">
-                        🎫 <span id="couponTagName"></span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#b7770d;">
+                            🎫 <span id="couponTagName"></span>
+                        </div>
+                        <button type="button" onclick="doApplyCouponClear()"
+                                style="border:none;background:none;color:#b7770d;cursor:pointer;font-size:1rem;padding:0 4px;"
+                                title="移除優惠券">✕</button>
                     </div>
                 </div>
-                <div id="eventTag" style="display:none; margin-bottom:14px; padding:10px 14px;
+                <div id="eventTag" style="display:none; margin-bottom:10px; padding:10px 14px;
                                 background:#f0fff4; border:1px solid #52c788;
                                 border-radius:10px;">
                     <div style="font-size:0.75rem;color:#27ae60;font-weight:700;margin-bottom:4px;">🎉 活動優惠</div>
-                    <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#27ae60;">
-                        <span id="eventTagName"></span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#27ae60;">
+                            <span id="eventTagName"></span>
+                        </div>
+                        <button type="button" onclick="doApplyEvent(null)"
+                                style="border:none;background:none;color:#27ae60;cursor:pointer;font-size:1rem;padding:0 4px;"
+                                title="移除活動">✕</button>
                     </div>
+                </div>
+                <!-- 結帳頁手動選擇活動/優惠券 -->
+                <div id="discountBtnRow" style="display:none;gap:8px;margin-bottom:12px;">
+                    <button type="button" onclick="openEventModal()"
+                            style="flex:1;padding:7px 0;border:1.5px solid #27ae60;border-radius:8px;
+                                   background:#fff;color:#27ae60;font-family:inherit;font-weight:600;
+                                   font-size:0.82rem;cursor:pointer;transition:all 0.15s;"
+                            onmouseover="this.style.background='#f0fff4'"
+                            onmouseout="this.style.background='#fff'">
+                        🎉 選擇活動
+                    </button>
+                    <button type="button" onclick="openCouponModal()"
+                            style="flex:1;padding:7px 0;border:1.5px solid #b7770d;border-radius:8px;
+                                   background:#fff;color:#b7770d;font-family:inherit;font-weight:600;
+                                   font-size:0.82rem;cursor:pointer;transition:all 0.15s;"
+                            onmouseover="this.style.background='#fff8e1'"
+                            onmouseout="this.style.background='#fff'">
+                        🎫 輸入優惠券
+                    </button>
                 </div>
                 <div class="amount-row">
                     <span>總計</span>
@@ -975,6 +1024,9 @@
             return;
         }
 
+        // 切換訂單時若拆單模式仍開啟，先關閉
+        if (splitMode) toggleSplitMode();
+
         // 2. 切換右側顯示狀態（隱藏空狀態，顯示結帳內容）
         document.getElementById('emptyRight').style.display = 'none';
         document.getElementById('checkoutContent').style.display = 'flex';
@@ -1036,8 +1088,8 @@
 
         const splitModeBtn = document.getElementById('splitModeBtn');
         if (splitModeBtn) {
-            // 有待處理餐點時隱藏拆單結帳
-            splitModeBtn.style.display = data.hasUnserved ? 'none' : '';
+            // 外帶不顯示拆單，內用且無待處理餐點才顯示
+            splitModeBtn.style.display = (data.inOrOut && !data.hasUnserved) ? '' : 'none';
         }
 
         // 6. 渲染餐點明細表格
@@ -1500,6 +1552,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // 拆單模式下攔截結帳表單，改呼叫 doSplitCheckout
+        document.getElementById('checkoutForm').addEventListener('submit', function (e) {
+            if (splitMode) {
+                e.preventDefault();
+                doSplitCheckout();
+            }
+        });
+
         const defaultTableId = @(ViewBag.DefaultTableId ?? 0);
 
             if (defaultTableId > 0) {
@@ -1533,18 +1593,25 @@
 
     function toggleSplitMode() {
         splitMode = !splitMode;
-        const btn      = document.getElementById('splitModeBtn');
-        const splitSec = document.getElementById('splitBillSection');
+        const btn = document.getElementById('splitModeBtn');
 
-        btn.textContent  = splitMode ? '取消拆單' : '拆單結帳';
+        btn.textContent       = splitMode ? '取消拆單' : '拆單結帳';
         btn.style.background  = splitMode ? '#fff5f5' : '#fff';
         btn.style.color       = splitMode ? '#c0392b' : '#1a77c9';
         btn.style.borderColor = splitMode ? '#c0392b' : '#1a77c9';
 
-        splitSec.style.display = splitMode ? 'block' : 'none';
-
-        if (!splitMode) {
-            document.getElementById('splitSubtotal').textContent = '0';
+        if (!splitMode && currentData) {
+            // 退出拆單：還原完整金額
+            document.getElementById('amtOriginal').textContent = currentData.originalAmount.toLocaleString();
+            document.getElementById('amtDiscount').textContent = currentData.discountAmount.toLocaleString();
+            document.getElementById('amtTotal').textContent    = currentData.totalAmount.toLocaleString();
+            currentTotal = currentData.totalAmount;
+        } else if (splitMode) {
+            // 進入拆單：重設為 0（尚未勾選）
+            document.getElementById('amtOriginal').textContent = '0';
+            document.getElementById('amtDiscount').textContent = '0';
+            document.getElementById('amtTotal').textContent    = '0';
+            currentTotal = 0;
         }
 
         // 重新渲染明細（切換合併/拆開顯示）
@@ -1562,7 +1629,14 @@
         document.querySelectorAll('.detail-check:checked').forEach(c => {
             total += parseInt(c.dataset.subtotal || 0);
         });
-        document.getElementById('splitSubtotal').textContent = total;
+
+        // 拆單模式下直接更新下方金額區塊
+        if (splitMode) {
+            document.getElementById('amtOriginal').textContent = total.toLocaleString();
+            document.getElementById('amtDiscount').textContent = '0';
+            document.getElementById('amtTotal').textContent    = total.toLocaleString();
+            currentTotal = total;
+        }
 
         // 全選時同步 master checkbox
         const all     = document.querySelectorAll('.detail-check');
@@ -1572,7 +1646,124 @@
         if (master) master.checked = checked.length === all.length;
     }
 
-        async function doSplitCheckout() {
+        // ── 結帳頁活動／優惠券選擇 ──────────────────────────────────────────────
+    function getDiscountContext() {
+        return currentTableId
+            ? `tableId=${currentTableId}`
+            : `preOrderId=${currentPreOrderId}`;
+    }
+
+    async function openEventModal() {
+        const listArea = document.getElementById('eventListArea');
+        listArea.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">載入中...</div>';
+        document.getElementById('eventSelectModal').classList.add('show');
+
+        try {
+            const res = await fetch(`/Payments/GetManualEvents?${getDiscountContext()}`);
+            const events = await res.json();
+
+            if (!events || events.length === 0) {
+                listArea.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">目前消費金額無可套用的手動活動</div>';
+                return;
+            }
+
+            listArea.innerHTML = events.map(ev => `
+                <div onclick="doApplyEvent(${ev.id})"
+                     style="padding:12px 14px;border:2px solid #e8e8e8;border-radius:10px;
+                            margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
+                     onmouseover="this.style.borderColor='#27ae60';this.style.background='#f0fff4'"
+                     onmouseout="this.style.borderColor='#e8e8e8';this.style.background='#fff'">
+                    <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;">${ev.title}</div>
+                    <div style="font-size:0.82rem;color:#27ae60;font-weight:600;">${ev.discountDescription}</div>
+                    ${ev.summary ? `<div style="font-size:0.78rem;color:#888;margin-top:2px;">${ev.summary}</div>` : ''}
+                    <div style="font-size:0.75rem;color:#bbb;margin-top:2px;">最低消費 NT$ ${ev.minSpend}</div>
+                </div>`).join('');
+        } catch {
+            listArea.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;">載入失敗，請重試</div>';
+        }
+    }
+
+    async function doApplyEvent(eventId) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const body = `${getDiscountContext()}&eventId=${eventId ?? ''}`;
+        try {
+            const res = await fetch('/Payments/ApplyEvent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body
+            });
+            const result = await res.json();
+            document.getElementById('eventSelectModal').classList.remove('show');
+            if (result.success) {
+                currentData = result.data;
+                renderDetail(result.data);
+            } else {
+                showAlert(result.error || '套用失敗', '❌ 錯誤');
+            }
+        } catch {
+            showAlert('套用失敗，請重試', '❌ 錯誤');
+        }
+    }
+
+    function openCouponModal() {
+        document.getElementById('couponCodeInput').value = '';
+        const msg = document.getElementById('couponInputMsg');
+        msg.style.display = 'none';
+        msg.textContent = '';
+        document.getElementById('couponInputModal').classList.add('show');
+        setTimeout(() => document.getElementById('couponCodeInput').focus(), 100);
+    }
+
+    async function doApplyCoupon() {
+        const code = document.getElementById('couponCodeInput').value.trim();
+        const msg  = document.getElementById('couponInputMsg');
+        if (!code) { msg.style.display='block'; msg.style.color='#c0392b'; msg.textContent='請輸入優惠券代碼'; return; }
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const body = `${getDiscountContext()}&couponCode=${encodeURIComponent(code)}`;
+        try {
+            const res = await fetch('/Payments/ApplyCoupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body
+            });
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('couponInputModal').classList.remove('show');
+                currentData = result.data;
+                renderDetail(result.data);
+            } else {
+                msg.style.display = 'block';
+                msg.style.color   = '#c0392b';
+                msg.textContent   = result.error || '套用失敗';
+            }
+        } catch {
+            msg.style.display = 'block';
+            msg.style.color   = '#c0392b';
+            msg.textContent   = '套用失敗，請重試';
+        }
+    }
+
+    async function doApplyCouponClear() {
+        // Remove coupon by re-applying with empty code? No — use a separate clear mechanism.
+        // We preserve the event and clear the coupon by calling ApplyEvent with current eventId.
+        // Get the current eventId from currentData (stored in renderDetail).
+        const currentEventId = currentData?.eventTitle ? null : null; // We need eventId not title
+        // Simpler: call a dedicated clear by passing eventId=currentEventId, couponId=null
+        // Since we don't have eventId from the VM directly, we re-apply event to clear coupon.
+        // Best approach: server-side clear coupon = ApplyCoupon with code="" won't work.
+        // Let's just reload and clear via ApplyEvent with preserving nothing for coupon.
+        // We'll handle this by having the server clear only the coupon:
+        // POST /Payments/ClearCoupon → calls ApplyEventToOrderAsync with existing eventId
+        // Actually, the simplest: call ApplyEvent(currentEventId) - but we need the eventId.
+        // For now, let's store eventId in a data attribute when rendering.
+        const eventId = document.getElementById('eventTag').dataset.eventId || null;
+        await doApplyEvent(eventId ? parseInt(eventId) : null);
+    }
+
+    async function doSplitCheckout() {
+        if (!splitMode) return;  // 非拆單模式不應呼叫
+
         const checked = [...document.querySelectorAll('.detail-check:checked')];
         const detailIds = [...checked.map(c => parseInt(c.dataset.detailId))];
 
@@ -1604,13 +1795,14 @@
 
     const result = await res.json();
     if (result.success) {
-        splitMode = true;
-        toggleSplitMode();
-
         if (!result.isFullyPaid && result.remaining) {
-            // 還有剩餘，直接更新右側明細
+            // 還有剩餘：重新渲染（保持拆單模式），金額歸零等待下次勾選
             renderDetail(result.remaining);
-            // 更新左側金額顯示
+            document.getElementById('amtOriginal').textContent = '0';
+            document.getElementById('amtDiscount').textContent = '0';
+            document.getElementById('amtTotal').textContent    = '0';
+            currentTotal = 0;
+            // 更新左側桌位金額
             const targetBtn = document.querySelector(`[data-table-id="${currentTableId}"]`);
             if (targetBtn) {
                 const amtSpan = targetBtn.querySelector('.table-amount');
@@ -1625,7 +1817,7 @@
                 </td></tr>`;
             document.getElementById('amtOriginal').textContent = '-';
             document.getElementById('amtDiscount').textContent = '-';
-            document.getElementById('amtTotal').textContent = '-';
+            document.getElementById('amtTotal').textContent    = '-';
             document.getElementById('checkoutBtn').classList.remove('show');
             document.getElementById('unservedWarning').style.display = 'none';
             document.getElementById('couponTag').style.display = 'none';

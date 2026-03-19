@@ -146,5 +146,62 @@ namespace EatTogether.Models.Repositories
 
             return result;
         }
+
+        public async Task<List<EventApplicableDto>> GetManualEventsAsync(int amount)
+        {
+            var today    = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            var events = await _context.Events
+                .AsNoTracking()
+                .Include(e => e.RewardDish)
+                .Where(e => e.Status == 1
+                         && e.IsAutoDiscount == 0
+                         && e.StartDate < tomorrow
+                         && e.EndDate   >= today
+                         && e.MinSpend  <= amount)
+                .OrderByDescending(e => e.MinSpend)
+                .ToListAsync();
+
+            var result = new List<EventApplicableDto>();
+
+            foreach (var e in events)
+            {
+                int calculated = 0;
+                string desc    = string.Empty;
+                var dishName   = e.RewardDish?.DishName ?? "";
+
+                if (e.DiscountType == "FixedAmount")
+                {
+                    calculated = (int)e.DiscountValue;
+                    desc = $"折抵 NT${calculated}";
+                }
+                else if (e.DiscountType == "Percent")
+                {
+                    calculated = (int)(amount * e.DiscountValue / 100m);
+                    desc = $"折扣 {e.DiscountValue}%，省 NT${calculated}";
+                }
+                else
+                {
+                    desc = $"贈送：{dishName}";
+                }
+
+                result.Add(new EventApplicableDto
+                {
+                    Id                  = e.Id,
+                    Title               = e.Title,
+                    Summary             = e.Summary ?? string.Empty,
+                    DiscountType        = e.DiscountType,
+                    DiscountValue       = e.DiscountValue,
+                    RewardDishId        = e.RewardDishId,
+                    RewardDishName      = string.IsNullOrEmpty(dishName) ? null : dishName,
+                    MinSpend            = e.MinSpend,
+                    CalculatedDiscount  = calculated,
+                    DiscountDescription = desc
+                });
+            }
+
+            return result;
+        }
     }
 }

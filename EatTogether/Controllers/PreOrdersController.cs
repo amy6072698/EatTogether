@@ -17,11 +17,13 @@ namespace EatTogether.Controllers
 		[RequirePermission("Order_StatusUpdate")]
 		public async Task<IActionResult> Create(int? tableId)
         {
+            var isAdd = tableId.HasValue && await _service.HasActiveOrderForTableAsync(tableId.Value);
             var vm = new CreatePreOrderViewModel
             {
-                TableId = tableId ?? 0,
-                TableOptions = await _service.GetTableOptionsAsync(tableId),  // ← 傳入 tableId
-                Items = await _service.GetMenuItemsAsync()
+                TableId      = tableId ?? 0,
+                IsAddOrder   = isAdd,
+                TableOptions = await _service.GetTableOptionsAsync(tableId),
+                Items        = await _service.GetMenuItemsAsync()
             };
             return View(vm);
         }
@@ -91,10 +93,12 @@ namespace EatTogether.Controllers
 
             var confirmVm = new ConfirmPreOrderViewModel
             {
-                TableId = vm.TableId,
-                InOrOut = vm.InOrOut,
-                Note = vm.Note,
-                Items = allItems
+                TableId    = vm.TableId,
+                InOrOut    = vm.InOrOut,
+                PeopleNum  = vm.PeopleNum,
+                IsAddOrder = vm.IsAddOrder,
+                Note       = vm.Note,
+                Items      = allItems
             };
 
             if (!confirmVm.Items.Any())
@@ -105,8 +109,9 @@ namespace EatTogether.Controllers
                 return View("Create", vm);
             }
 
-            // 伺服器端預先查詢符合金額的活動
-            confirmVm.ApplicableEvents = await _service.GetApplicableEventsAsync(confirmVm.OriginalAmount);
+            // 加點不重複套用活動；一般點餐才查詢可用活動
+            if (!confirmVm.IsAddOrder)
+                confirmVm.ApplicableEvents = await _service.GetApplicableEventsAsync(confirmVm.OriginalAmount);
 
             return View(confirmVm);
         }
@@ -119,13 +124,16 @@ namespace EatTogether.Controllers
         {
             var dto = new CreatePreOrderDto
             {
-                TableId = vm.TableId,
-                InOrOut = vm.InOrOut,
-                PayMethod = vm.PayMethod,
-                Note = vm.Note,
-                CouponId = vm.CouponId,
-                EventId = vm.EventId,
-                DiscountAmount = vm.DiscountAmount,
+                TableId    = vm.TableId,
+                InOrOut    = vm.InOrOut,
+                PeopleNum  = vm.PeopleNum,
+                IsAddOrder = vm.IsAddOrder,
+                PayMethod  = vm.PayMethod,
+                Note       = vm.Note,
+                // 加點不套優惠
+                CouponId       = vm.IsAddOrder ? null : vm.CouponId,
+                EventId        = vm.IsAddOrder ? null : vm.EventId,
+                DiscountAmount = vm.IsAddOrder ? 0    : vm.DiscountAmount,
                 Items = vm.Items
                     .Where(i => i.Qty > 0 || i.ParentIndex.HasValue)
                     .Select(i => new PreOrderDetailDto
