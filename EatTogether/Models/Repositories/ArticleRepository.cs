@@ -50,13 +50,16 @@ namespace EatTogether.Models.Repositories
 
 		public async Task<ArticleEditDto> GetEditByIdAsync(int id)
 		{
-			var entity = await _context.Articles.FindAsync(id);
+			var entity = await _context.Articles
+				.Include(a => a.Category)
+				.Include(a => a.Event)       // EventId 可為 null，所以用 left join 沒問題
+				.FirstOrDefaultAsync(a => a.Id == id);
 
 			if (entity == null) return null;
 
 			return new ArticleEditDto
 			{
-				Id = id,
+				Id = entity.Id,
 				CategoryId = entity.CategoryId,
 				EventId = entity.EventId,
 				Title = entity.Title,
@@ -66,8 +69,8 @@ namespace EatTogether.Models.Repositories
 				ExpiryDate = entity.ExpiryDate,
 				IsPinned = entity.IsPinned,
 				Status = entity.Status,
-				CategoryName = entity.Category.Name,
-				EventName = entity.Event.Title
+				CategoryName = entity.Category?.Name,   // 加 ?. 保險
+				EventName = entity.Event?.Title         // Event 可能為 null
 			};
 
 		}
@@ -75,21 +78,28 @@ namespace EatTogether.Models.Repositories
 		public async Task EditAsync(ArticleEditDto dto)
 		{
 			var entity = await _context.Articles.FindAsync(dto.Id);
-			if (entity == null)
-			{
-				return;
-			}
+			if (entity == null) return;
 
-			entity.Id = dto.Id;
 			entity.CategoryId = dto.CategoryId.GetValueOrDefault();
 			entity.EventId = dto.EventId;
 			entity.Title = dto.Title;
 			entity.Description = dto.Description;
 			entity.CoverImageUrl = dto.CoverImageUrl;
 			entity.PublishDate = dto.PublishDate;
-
+			entity.ExpiryDate = dto.ExpiryDate;   
+			entity.IsPinned = dto.IsPinned;       
+			entity.Status = dto.Status;           
 
 			await _context.SaveChangesAsync();
 		}
+
+		public async Task DeleteAsync(int id)
+		{
+			var entity = await _context.Articles.FindAsync(id);
+			if (entity == null) return;
+			_context.Articles.Remove(entity);
+			await _context.SaveChangesAsync();
+		}
+
 	}
 }

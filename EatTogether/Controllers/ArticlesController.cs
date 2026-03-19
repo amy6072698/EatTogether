@@ -55,8 +55,6 @@ namespace EatTogether.Controllers
 
 			if (ModelState.IsValid)
 			{
-				// 先印出來確認值
-				Console.WriteLine($"CategoryId = {vm.CategoryId}");
 
 				// 檔案處理邏輯
 				if (vm.CoverImageFile != null && vm.CoverImageFile.Length > 0)
@@ -127,11 +125,91 @@ namespace EatTogether.Controllers
 			var dto = await _service.GetByIdAsync(id);
 			if (dto == null) return NotFound();
 			var vm = dto.ToArticleEditVm();
+
+			vm.CategorySelectList = await _service.GetCategorySelectListAsync();
+			vm.EventSelectList = await _service.GetEventSelectListAsync();
+
 			return View(vm);
 		}
 
 
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(ArticleEditViewModel vm)
+		{
+			if (ModelState.IsValid)
+			{
+				// 圖片處理
+				if (vm.CoverImageFile != null && vm.CoverImageFile.Length > 0)
+				{
+					var supportedTypes = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+					var fileExt = Path.GetExtension(vm.CoverImageFile.FileName).ToLower();
+					if (!supportedTypes.Contains(fileExt))
+					{
+						ModelState.AddModelError("CoverImageFile", "僅支援 JPG, PNG, WEBP 格式圖片");
+						await PopulateEditSelectListsAsync(vm);
+						return View(vm);
+					}
 
+					string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "articles");
+					if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+					string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(vm.CoverImageFile.FileName);
+					string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+					using (var fileStream = new FileStream(filePath, FileMode.Create))
+					{
+						await vm.CoverImageFile.CopyToAsync(fileStream);
+					}
+					vm.CoverImageUrl = "/uploads/articles/" + uniqueFileName;
+				}
+				else
+				{
+					// 沒有上傳新圖片，保留原本的
+					vm.CoverImageUrl = vm.ExistingCoverImageUrl;
+				}
+
+				try
+				{
+					var dto = vm.ToEditDto();
+					await _service.EditAsync(dto);
+
+					TempData["SuccessMessage"] = vm.Status == 1 ? "文章更新成功！" : "草稿已儲存";
+					return RedirectToAction(nameof(Index));
+				}
+				catch (Exception ex)
+				{
+					ModelState.AddModelError("", "存檔失敗：" + ex.Message);
+					await PopulateEditSelectListsAsync(vm);
+					return View(vm);
+				}
+			}
+
+			await PopulateEditSelectListsAsync(vm);
+			return View(vm);
+		}
+
+		// Unpublish action
+		[HttpGet]
+		public async Task<IActionResult> Unpublish(int id)
+		{
+			await _service.UnpublishAsync(id);
+			TempData["SuccessMessage"] = "文章已下架";
+			return RedirectToAction(nameof(Index));
+		}
+
+		// DeleteDraft action
+		[HttpGet]
+		public async Task<IActionResult> DeleteDraft(int id)
+		{
+			await _service.DeleteDraftAsync(id);
+			TempData["SuccessMessage"] = "草稿已刪除";
+			return RedirectToAction(nameof(Index));
+		}
+
+		private async Task PopulateEditSelectListsAsync(ArticleEditViewModel vm)
+		{
+			vm.CategorySelectList = await _service.GetCategorySelectListAsync();
+			vm.EventSelectList = await _service.GetEventSelectListAsync();
+		}
 
 
 

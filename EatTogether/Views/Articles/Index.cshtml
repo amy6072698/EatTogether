@@ -4,10 +4,26 @@
 }
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    <!-- 成功 Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-check-circle-fill text-success fs-1 d-block mb-3"></i>
+                    <p class="fs-5 mb-0">@TempData["SuccessMessage"]</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">確定</button>
+                </div>
+            </div>
+        </div>
     </div>
+    }
+
 }
 <div class="container-fluid mt-4" style="max-width: 90%;">
     <h1>文章列表</h1>
@@ -47,6 +63,12 @@
 
     <script>
             $(document).ready(function() {
+                        var el = document.getElementById('successModal');
+                        if (el) {
+                            new bootstrap.Modal(el).show();
+                        }
+
+
                     $('#ArticleTable').DataTable({
                         ajax: {
                             type: "GET",
@@ -62,15 +84,17 @@
                                 data: "isPinned",
                                 width: "8%",
                                 className: "text-center", // 讓圖示居中
-                                render: function(data) {
-                                    // 啟用：黑底方框 + 打勾
+                                render: function(data, type) {
+
+                                    if (type === 'sort' || type === 'filter') {
+                                        return data ? 1 : 0;
+                                    }
                                     if (data) {
-                                        return '<span class="p-1 px-2 rounded text-dark fs-4" title="啟用">' +'<i class="fa-solid fa-square-check"></i></span>';
+                                     return '<span class="p-1 px-2 rounded text-dark fs-4" title="啟用">' +'<i class="fa-solid fa-square-check"></i></span>';
+                                    } else {
+                                     return '<span class="p-1 px-2 rounded text-secondary fs-4" title="停用">' +'<i class="fa-solid fa-square"></i></span>';
                                     }
-                                    // 停用：灰底方框 (無打勾)
-                                    else {
-                                        return '<span class="p-1 px-2 rounded text-secondary fs-4" title="停用">' +'<i class="fa-solid fa-square"></i></span>';
-                                    }
+
                                 }
                             },
                             { data: "publishDate", width: "12%",
@@ -83,9 +107,9 @@
                                 data: "status",
                                 width: "8%",
                                 render: function(data) {
-                                    return data === 1
-                                        ? '<span class="badge bg-success">已發布</span>'
-                                        : '<span class="badge bg-secondary">草稿</span>';
+                                    if (data === 1) return '<span class="badge bg-success">已發佈</span>';
+                                    if (data === 2) return '<span class="badge bg-dark">已下架</span>';
+                                    return '<span class="badge bg-secondary">草稿</span>';
                                 }
                             },
                             {

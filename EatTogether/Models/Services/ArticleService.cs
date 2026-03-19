@@ -70,6 +70,27 @@ namespace EatTogether.Models.Services
 			return result;
 		}
 
+		public async Task EditAsync(ArticleEditDto dto)
+		{
+			await _repo.EditAsync(dto);
+		}
+
+
+		// 強制下架
+		public async Task UnpublishAsync(int id)
+		{
+			var dto = await _repo.GetEditByIdAsync(id);
+			if (dto == null) return;
+			dto.Status = 2; // 2 = 已結束/已下架
+			await _repo.EditAsync(dto);
+		}
+
+		// 刪除草稿
+		public async Task DeleteDraftAsync(int id)
+		{
+			await _repo.DeleteAsync(id);
+		}
+
 
 	}
 }

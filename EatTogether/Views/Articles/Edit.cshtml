@@ -38,7 +38,6 @@
     <h1>文章編輯</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">首頁</a></li>
-        <li class="breadcrumb-item">文章管理</li>
         <li class="breadcrumb-item"><a asp-action="Index">文章列表</a></li>
         <li class="breadcrumb-item active">文章編輯</li>
     </ol>
@@ -48,7 +47,6 @@
         <input type="hidden" id="Status" name="Status" value="@Model.Status" />
 
         <div class="card shadow-sm">
-            {{!-- ===== Card Header ===== --}}
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="m-0 font-weight-bold text-dark">
                     <i class="bi bi-pencil-square me-2"></i>編輯文章
@@ -68,18 +66,16 @@
 
                 @if (isPublished)
                 {
-                    <a asp-action="Unpublish" asp-route-id="@Model.Id"
-                       class="text-danger text-decoration-none"
-                       onclick="return confirm('確定要將此文章立即下架嗎？')">
+                    <a href="#" class="text-danger text-decoration-none"
+                       id="btnUnpublish"
+                       data-url="@Url.Action("Unpublish", new { id = Model.Id })">
                         <i class="bi bi-arrow-down-circle me-1"></i>立即下架
                     </a>
                 }
             </div>
 
-            {{!-- ===== Card Body ===== --}}
             <div class="card-body">
 
-                {{!-- 類別 / 活動 / 置頂 --}}
                 <div class="row mb-3 align-items-start">
                     <div class="col-md-4">
                         <label asp-for="CategoryId" class="form-label">類別</label>
@@ -103,14 +99,12 @@
                     </div>
                 </div>
 
-                {{!-- 標題 --}}
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label">標題</label>
                     <input asp-for="Title" class="form-control" placeholder="請輸入文章標題" />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
-                {{!-- 內文 --}}
                 <div class="mb-3">
                     <label class="form-label">內文</label>
                     <input type="hidden" asp-for="Description" id="hiddenDescription" data-val="false" />
@@ -120,7 +114,6 @@
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
-                {{!-- 封面圖片 --}}
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label asp-for="CoverImageFile" class="form-label">上傳封面圖片</label>
@@ -150,7 +143,6 @@
                         </div>
                     </div>
 
-                    {{!-- 上架日期：已發佈時唯讀，草稿時可編輯 --}}
                     <div class="col-md-3">
                         <label asp-for="PublishDate" class="form-label">上架日期</label>
                         @if (isPublished)
@@ -177,16 +169,10 @@
 
             </div>
 
-            {{!-- ===== Card Footer：依狀態切換按鈕 ===== --}}
             <div class="card-footer bg-light d-flex justify-content-end gap-2 py-3">
 
                 @if (isDraft)
-                {
-                    <a asp-action="DeleteDraft" asp-route-id="@Model.Id"
-                       class="btn btn-outline-danger px-4"
-                       onclick="return confirm('確定要刪除這篇草稿嗎？此操作無法復原。')">
-                        <i class="bi bi-trash me-1"></i>刪除草稿
-                    </a>
+                {                                   
 
                     <div class="btn-group">
                         <button type="button" id="btnSaveDraft" class="btn btn-secondary px-4">
@@ -204,18 +190,48 @@
                             </li>
                         </ul>
                     </div>
+
+                    <button type="button" class="btn btn-outline-danger px-4"
+                            id="btnDeleteDraft"
+                            data-url="@Url.Action("DeleteDraft", new { id = Model.Id })">
+                        <i class="bi bi-trash me-1"></i>刪除草稿
+                    </button>
+
+
                 }
                 else
                 {
-                    <a asp-action="Index" class="btn btn-secondary px-4">取消</a>
-
                     <button type="button" id="btnSavePublished" class="btn btn-primary px-4">
                         <i class="bi bi-check-lg me-1"></i>完成更改
                     </button>
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">取消</a>
+
                 }
 
             </div>
         </div>
+
+        <!-- 確認操作 Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title" id="confirmModalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-3">
+                        <i id="confirmModalIcon" class="fs-1 d-block mb-3"></i>
+                        <p id="confirmModalMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pt-0">
+                        <a id="confirmModalBtn" href="#" class="btn px-4">確定</a>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </form>
 </div>
 
@@ -298,6 +314,31 @@
             $('input[name="CoverImageFile"]').on('change', function () {
                 previewImage(this);
             });
+
+
+            // 立即下架
+            $('#btnUnpublish').on('click', function (e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                $('#confirmModalTitle').text('立即下架');
+                $('#confirmModalIcon').attr('class', 'fs-1 d-block mb-3 bi bi-arrow-down-circle text-warning');
+                $('#confirmModalMessage').text('確定要將此文章立即下架嗎？');
+                $('#confirmModalBtn').attr('href', url).removeClass('btn-danger').addClass('btn-warning');
+                new bootstrap.Modal(document.getElementById('confirmModal')).show();
+            });
+
+            // 刪除草稿
+            $('#btnDeleteDraft').on('click', function () {
+                var url = $(this).data('url');
+                $('#confirmModalTitle').text('刪除草稿');
+                $('#confirmModalIcon').attr('class', 'fs-1 d-block mb-3 bi bi-trash text-danger');
+                $('#confirmModalMessage').text('確定要刪除這篇草稿嗎？此操作無法復原。');
+                $('#confirmModalBtn').attr('href', url).removeClass('btn-warning').addClass('btn-danger');
+                new bootstrap.Modal(document.getElementById('confirmModal')).show();
+            });
+
+
+
         });
     </script>
 }

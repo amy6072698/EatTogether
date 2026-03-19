@@ -350,7 +350,7 @@
 	[working]頁面美化
 
 
-[working]add 文章編輯頁面
+[V]add 文章編輯頁面
 	url: /Articles/Edit?articleId=00
 	[V]add ViewModel, Dto , 擴充方法
 		ArticleEditViewModel class
@@ -381,24 +381,24 @@ IEventService.GetSelectList())
 	[V]modify 	ArticleService
 			void Edit(ArticleEditDto dto)
 
-	[working]modify ArticlesController
+	[V]modify ArticlesController
 		add IActionResult Edit action[Authorize]
 			Edit.cshtml
 		HttpGet Edit(int id)[Authorize]
 
 		HttpPost Edit(ArticleEditViewModel vm)[Authorize]
 
-	[working]頁面美化
+	[V]頁面美化
 
 		
-[]文章軟刪除(下架)
-	[]modify IArticleRepository interface
+[working]文章軟刪除(下架)
+	[working]modify IArticleRepository interface
     		add void UpdateStatus(int id, int status)
 
-	[]modify  ArticleService
+	[working]modify  ArticleService
     		add void Unpublish(int id) 
 
-	[]modify ArticlesController  (這邊再思考該如何處理)
+	[working]modify ArticlesController  (這邊再思考該如何處理)
 	// Index 頁面上的下架按鈕
 	[HttpPost]
 	[Authorize]
