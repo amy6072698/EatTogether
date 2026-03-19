@@ -387,6 +387,9 @@ IEventService.GetSelectList())
 		HttpGet Edit(int id)[Authorize]
 
 		HttpPost Edit(ArticleEditViewModel vm)[Authorize]
+
+	[working]頁面美化
+
 		
 []文章軟刪除(下架)
 	[]modify IArticleRepository interface
