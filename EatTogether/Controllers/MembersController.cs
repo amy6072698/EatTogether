@@ -31,13 +31,13 @@ namespace EatTogether.Controllers
 			return View(vm);
 		}
 
-		// GET /Members/Detail/{id}  ¡X JSON¡A¨Ñ¸Ô±¡ Modal AJAX ©I¥s
+		// GET /Members/Detail/{id}  ï¿½X JSONï¿½Aï¿½Ñ¸Ô±ï¿½ Modal AJAX ï¿½Iï¿½s
 		[HttpGet]
 		public async Task<IActionResult> Detail(int id)
 		{
 			var dto = await _memberService.GetDetailAsync(id);
 			if (dto is null)
-				return NotFound(new { message = "§ä¤£¨ì¸Ó·|­û¡C" });
+				return NotFound(new { message = "ï¿½ä¤£ï¿½ï¿½Ó·|ï¿½ï¿½ï¿½C" });
 
 			return Json(dto.ToDetailVm());
 		}
@@ -48,7 +48,7 @@ namespace EatTogether.Controllers
 			var result = await _memberService.BlacklistAsync(id, request?.Reason);
 
 			return result.IsSuccess
-				? Ok(new { message = "¤w¦¨¥\¥[¤J¶Â¦W³æ¡C" })
+				? Ok(new { message = "ï¿½wï¿½ï¿½ï¿½\ï¿½[ï¿½Jï¿½Â¦Wï¿½ï¿½C" })
 				: BadRequest(new { message = result.ErrorMessage });
 		}
 
@@ -59,7 +59,7 @@ namespace EatTogether.Controllers
 			var result = await _memberService.UnblacklistAsync(id);
 
 			return result.IsSuccess
-				? Ok(new { message = "¤w¦¨¥\¸Ñ°£¶Â¦W³æ¡C" })
+				? Ok(new { message = "ï¿½wï¿½ï¿½ï¿½\ï¿½Ñ°ï¿½ï¿½Â¦Wï¿½ï¿½C" })
 				: BadRequest(new { message = result.ErrorMessage });
 		}
 	}
