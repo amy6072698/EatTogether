@@ -132,6 +132,27 @@
             </div>
 
         </div>
+
+
+        <!-- 日期錯誤提示 Modal -->
+        <div class="modal fade" id="dateErrorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <i class="bi bi-exclamation-circle-fill text-warning fs-1 d-block mb-3"></i>
+                        <p class="fs-5 mb-0">下架日期不能早於上架日期</p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pt-0">
+                        <button type="button" class="btn btn-warning px-4" data-bs-dismiss="modal">確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </form>
 </div>
 
@@ -170,6 +191,16 @@
 
 
             function handleFormSubmit(statusValue) {
+
+                // 日期驗證（下架日期選填，但若有填則不能早於上架日期）
+                var publishDate = $('input[name="PublishDate"]').val();
+                var expiryDate = $('input[name="ExpiryDate"]').val();
+
+                if (publishDate && expiryDate && expiryDate < publishDate) {
+                    new bootstrap.Modal(document.getElementById('dateErrorModal')).show();
+                    return; // 阻止送出
+                }
+
                 $('#Status').val(statusValue);
                 syncQuill();
 

@@ -232,6 +232,7 @@ CREATE TABLE [dbo].[Events](
 	[DiscountType] [nvarchar](20) NOT NULL,
 	[DiscountValue] [decimal](10, 2) NOT NULL,
 	[Status] [int] NOT NULL,
+	[IsAutoDiscount] [int] NOT NULL DEFAULT 1,
  CONSTRAINT [PK_Events] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -917,6 +918,8 @@ GO
 ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [DiscountValue]
 GO
 ALTER TABLE [dbo].[Events] ADD  DEFAULT ((0)) FOR [Status]
+GO
+ALTER TABLE [dbo].[Events] ADD  DEFAULT ((1)) FOR [IsAutoDiscount]
 GO
 ALTER TABLE [dbo].[Functions] ADD  CONSTRAINT [DF_Functions_IsOwnerOnly]  DEFAULT ((0)) FOR [IsOwnerOnly]
 GO

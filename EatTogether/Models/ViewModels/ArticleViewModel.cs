@@ -43,6 +43,15 @@ namespace EatTogether.Models.ViewModels
 
 		public int Status { get; set; }
 
+		public string StatusLabel => Status switch
+		{
+			0 => "草稿",
+			1 => PublishDate.HasValue && PublishDate.Value.Date > DateTime.Today ? "待上架" : "已發佈",
+			2 => "已下架",
+			_ => "未知"
+		};
+
+
 		[ValidateNever]
 		public IEnumerable<SelectListItem> CategorySelectList { get; set; }
 

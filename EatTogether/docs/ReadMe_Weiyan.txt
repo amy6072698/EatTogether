@@ -1,6 +1,9 @@
 後台部分
 
 開發活動機制
+
+[V]活動表加上是否由系統自動帶入的判斷值，0為手工判定，1為系統帶入，作為訂單結帳用途
+
 [V]add 活動新增頁面 url:/Events/Create
 	[V]add ViewModel, Dto
 		EventCreateViewModel class
@@ -71,7 +74,7 @@
 	
 
 
-[working]add 活動編輯 url: /Events/Edit?eventsId=00
+[V]add 活動編輯 url: /Events/Edit?eventsId=00
 	[V]add ViewModel, Dto , VM轉Dto的擴充方法
 		EventEditViewModel class
 			Id, Title, Summary, MinSpend, StartDate, EndDate, RewardItem, DiscountType, DiscountValue, Status
@@ -137,7 +140,7 @@
 
 ********************文章分類********************
 
-[working]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
+[V]add 文章分類新增  url:/ArticleCategories/Create (不會用網址跳轉，像是接口，讓modal去連接)
 	[V]add ViewModel, Dto , 轉換擴充方法
 		ArticleCategoryCreateViewModel class
 			Name, SortOrder, IsEnabled
@@ -317,7 +320,7 @@
 		Create(ArticleCreateViewModel vm)[Authorize]
 
 
-[working]add 文章列表頁面
+[V]add 文章列表頁面
 	url: /Articles/Index
 	[V]add ViewModel, Dto , 擴充方法
 		ArticleViewModel class
@@ -347,7 +350,7 @@
 
 	**文章狀態:已發佈、草稿、已下架
 
-	[working]頁面美化
+	[V]頁面美化
 
 
 [V]add 文章編輯頁面
@@ -391,14 +394,14 @@ IEventService.GetSelectList())
 	[V]頁面美化
 
 		
-[working]文章軟刪除(下架)
-	[working]modify IArticleRepository interface
+[V]文章軟刪除(下架)
+	[V]modify IArticleRepository interface
     		add void UpdateStatus(int id, int status)
 
-	[working]modify  ArticleService
+	[V]modify  ArticleService
     		add void Unpublish(int id) 
 
-	[working]modify ArticlesController  (這邊再思考該如何處理)
+	[V]modify ArticlesController  (這邊再思考該如何處理)
 	// Index 頁面上的下架按鈕
 	[HttpPost]
 	[Authorize]
