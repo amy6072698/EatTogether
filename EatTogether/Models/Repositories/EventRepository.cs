@@ -89,6 +89,59 @@ namespace EatTogether.Models.Repositories
 			};
 		}
 
+		public async Task<List<EventApplicableDto>> GetApplicableEventsAsync(int amount)
+		{
+			var today    = DateTime.Today;
+			var tomorrow = today.AddDays(1);
+
+			var events = await _context.Events
+				.AsNoTracking()
+				.Where(e => e.Status == 1
+						 && e.StartDate < tomorrow
+						 && e.EndDate   >= today
+						 && e.MinSpend  <= amount)
+				.OrderByDescending(e => e.MinSpend)
+				.ToListAsync();
+
+			var result = new List<EventApplicableDto>();
+
+			foreach (var e in events)
+			{
+				int calculated = 0;
+				string desc    = string.Empty;
+
+				if (e.DiscountType == "FixedAmount")
+				{
+					calculated = (int)e.DiscountValue;
+					desc = $"折抵 NT${calculated}";
+				}
+				else if (e.DiscountType == "Percent")
+				{
+					calculated = (int)Math.Round(amount * (1 - (double)e.DiscountValue / 10));
+					desc = $"打 {e.DiscountValue} 折，省 NT${calculated}";
+				}
+				else
+				{
+					desc = $"贈送：{e.RewardItem ?? ""}";
+				}
+
+				result.Add(new EventApplicableDto
+				{
+					Id                  = e.Id,
+					Title               = e.Title,
+					Summary             = e.Summary ?? string.Empty,
+					DiscountType        = e.DiscountType,
+					DiscountValue       = e.DiscountValue,
+					RewardItem          = e.RewardItem,
+					MinSpend            = e.MinSpend,
+					CalculatedDiscount  = calculated,
+					DiscountDescription = desc
+				});
+			}
+
+			return result;
+		}
+
 
 	}
 }
