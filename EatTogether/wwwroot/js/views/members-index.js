@@ -39,29 +39,22 @@ async function apiFetch(url, options = {}) {
    全域變數
    ============================================================ */
 let membersTable = null;        // DataTables instance
-let currentStatusFilter = '';   // '' | 'active' | 'unverified' | 'blacklisted' | 'deleted'
-
-// 狀態值對應顯示文字（與 View 的 status-badge 文字一致）
-const STATUS_TEXT = {
-    active:      '啟用中',
-    unverified:  '未驗證',
-    blacklisted: '黑名單',
-    deleted:     '已刪除'
-};
 
 /* ============================================================
    DataTables 初始化
    ============================================================ */
 function initDataTable() {
+    const sortBy = new URLSearchParams(window.location.search).get('sortBy');
+    const sortDir = sortBy === 'CreatedAt_Asc' ? 'asc' : 'desc';
+
     membersTable = $('#members-table').DataTable({
         language: {
             url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/zh-HANT.json'
         },
         pageLength: 10,
         ordering: true,
-        order: [[5, 'desc']],       // 預設：註冊時間最新
-        searching: true,
-        //dom: 'tip',
+        order: [[5, sortDir]],
+        searching: false, 
         dom: "<'row'<'col-12'tr>>" +
             "<'row align-items-center mt-2'<'col-auto'i><'col'p>>",
         columnDefs: [
@@ -71,47 +64,47 @@ function initDataTable() {
             { orderable: true,  targets: [5] }
         ]
     });
-
-    // 狀態篩選自訂函式（data[7] = 狀態欄，index 7）
-    $.fn.dataTable.ext.search.push(function (settings, data) {
-        if (!currentStatusFilter) return true;
-        const statusText = STATUS_TEXT[currentStatusFilter] ?? '';
-        return data[7] && data[7].includes(statusText);
-    });
 }
 
 /* ============================================================
    搜尋列
    ============================================================ */
 function initSearch() {
-    const btnSearch   = document.querySelector('#btn-search');
+    const btnSearch = document.querySelector('#btn-search');
     const statusSelect = document.querySelector('#search-status');
 
-    // 狀態下拉：選單改變時立即篩選
+    // 狀態下拉：改變後立即送出
     if (statusSelect) {
-        statusSelect.addEventListener('change', function () {
-            currentStatusFilter = this.value;
-            if (membersTable) membersTable.draw();
-        });
+        statusSelect.addEventListener('change', () => submitSearch());
     }
 
-    if (!btnSearch) return;
+    // 查詢按鈕
+    if (btnSearch) {
+        btnSearch.addEventListener('click', () => submitSearch());
+    }
+}
 
-    btnSearch.addEventListener('click', function () {
-        const name      = document.querySelector('#search-name')?.value.trim()    ?? '';
-        const account   = document.querySelector('#search-account')?.value.trim() ?? '';
-        const email     = document.querySelector('#search-email')?.value.trim()   ?? '';
-        const phone     = document.querySelector('#search-phone')?.value.trim()   ?? '';
-        const statusVal = document.querySelector('#search-status')?.value         ?? '';
+function submitSearch() {
+    const statusRaw = document.querySelector('#search-status')?.value ?? '';
 
-        currentStatusFilter = statusVal;
+    const statusMap = {
+        '': 'All',
+        'active': 'Normal',
+        'unverified': 'Unconfirmed',
+        'blacklisted': 'Blacklisted',
+        'deleted': 'Deleted',
+    };
 
-        // 多欄位串接全文搜尋（後端連線後改為 apiFetch 送參數）
-        const combined = [name, account, email, phone].filter(v => v).join(' ');
-        if (membersTable) {
-            membersTable.search(combined).draw();
-        }
+    const params = new URLSearchParams({
+        name: document.querySelector('#search-name')?.value.trim() ?? '',
+        account: document.querySelector('#search-account')?.value.trim() ?? '',
+        email: document.querySelector('#search-email')?.value.trim() ?? '',
+        phone: document.querySelector('#search-phone')?.value.trim() ?? '',
+        status: statusMap[statusRaw] ?? 'All',
+        sortBy: document.querySelector('#sort-select')?.value === 'CreatedAtAsc'
+            ? 'CreatedAt_Asc' : 'CreatedAt_Desc',
     });
+    window.location.href = `/Members/Index?${params.toString()}`;
 }
 
 /* ============================================================
@@ -121,20 +114,14 @@ function initSortDropdown() {
     const sortSelect = document.querySelector('#sort-select');
     if (!sortSelect) return;
 
-    sortSelect.addEventListener('change', function () {
-        if (!membersTable) return;
-        switch (this.value) {
-            case 'CreatedAtDesc': membersTable.order([5, 'desc']).draw(); break;
-            case 'CreatedAtAsc':  membersTable.order([5, 'asc']).draw();  break;
-        }
-    });
+    sortSelect.addEventListener('change', () => submitSearch());
 }
 
 /* ============================================================
    加入黑名單（含選填原因）
    ============================================================ */
 function initBlacklistAction() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click',async function (e) {
         const btn = e.target.closest('.btn-blacklist-member');
         if (!btn) return;
 
@@ -184,7 +171,7 @@ function initBlacklistAction() {
    解除黑名單
    ============================================================ */
 function initUnblacklistAction() {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click',async function (e) {
         const btn = e.target.closest('.btn-unblacklist-member');
         if (!btn) return;
 

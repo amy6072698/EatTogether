@@ -8,10 +8,10 @@ namespace EatTogether.Models.Extensions
 		// 狀態判斷邏輯（集中於此），優先順序：IsDeleted → IsBlacklisted → !IsConfirmed → 啟用中
 		private static (string text, string color) ResolveStatus(MemberListDto dto)
 		{
-			if (dto.IsDeleted) return ("已刪除", "gray");
-			if (dto.IsBlacklisted) return ("黑名單", "red");
-			if (!dto.IsConfirmed) return ("未驗證", "yellow");
-			return ("啟用中", "green");
+			if (dto.IsDeleted) return ("已刪除", "deleted");
+			if (dto.IsBlacklisted) return ("黑名單", "blacklisted");
+			if (!dto.IsConfirmed) return ("未驗證", "unverified");
+			return ("啟用中", "active");
 		}
 
 
@@ -41,6 +41,7 @@ namespace EatTogether.Models.Extensions
 				Phone = dto.Phone,
 				CreatedAt = dto.CreatedAt,
 				DeletedAt = dto.DeletedAt,
+				BirthDate = dto.BirthDate,
 				BlacklistReason = dto.BlacklistReason,
 				StatusText = statusText,
 				StatusColor = statusColor,

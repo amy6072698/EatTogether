@@ -25,12 +25,7 @@ namespace EatTogether.Controllers
 			var vm = new MemberIndexViewModel
 			{
 				Rows = dtos.Select(d => d.ToRowVm()),
-				Name = search.Name,
-				Account = search.Account,
-				Email = search.Email,
-				Phone = search.Phone,
-				Status = search.Status,
-				SortBy = search.SortBy,
+				Search = search,
 			};
 
 			return View(vm);

@@ -1,4 +1,6 @@
-﻿namespace EatTogether.Models.ViewModels
+﻿using EatTogether.Models.DTOs;
+
+namespace EatTogether.Models.ViewModels
 {
 	
 	// 列表每一列所需的顯示欄位
@@ -9,6 +11,7 @@
 		public string Account { get; set; } = "";
 		public string Email { get; set; } = "";
 		public string? Phone { get; set; }
+		public DateOnly? BirthDate { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public DateTime? DeletedAt { get; set; }
 		public string? BlacklistReason { get; set; }
@@ -29,11 +32,6 @@
 		public IEnumerable<MemberRowViewModel> Rows { get; set; } = [];
 
 		// 搜尋條件（回填搜尋列用）
-		public string? Name { get; set; }
-		public string? Account { get; set; }
-		public string? Email { get; set; }
-		public string? Phone { get; set; }
-		public string Status { get; set; } = "All";
-		public string SortBy { get; set; } = "CreatedAt_Desc";
+		public MemberSearchDto Search { get; set; } = new();
 	}
 }
