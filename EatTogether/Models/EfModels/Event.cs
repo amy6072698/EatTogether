@@ -19,7 +19,7 @@ public partial class Event
 
     public DateTime EndDate { get; set; }
 
-    public string RewardItem { get; set; }
+    public int? RewardDishId { get; set; }
 
     public string DiscountType { get; set; }
 
@@ -32,4 +32,6 @@ public partial class Event
     public virtual ICollection<Article> Articles { get; set; } = new List<Article>();
 
     public virtual ICollection<PreOrder> PreOrders { get; set; } = new List<PreOrder>();
+
+    public virtual Dish RewardDish { get; set; }
 }

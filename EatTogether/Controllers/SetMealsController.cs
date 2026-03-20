@@ -297,6 +297,22 @@ namespace EatTogether.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Clone(int id)
+        {
+            var dto = await _setMealService.GetByIdAsync(id);
+            if (dto == null) return NotFound();
+
+            dto.Id = 0;
+            dto.SetMealName = dto.SetMealName + " - 複製";
+            dto.IsActive = false;
+            var allSetMeals = await _setMealService.GetAllAsync();
+            dto.DisplayOrder = allSetMeals.Any() ? allSetMeals.Min(s => s.DisplayOrder) - 1 : 1;
+
+            await _setMealService.CreateAsync(dto);
+            return Ok();
+        }
+
         private async Task<string> SaveBase64ImageAsync(string base64Data, string fileNamePrefix)
         {
             if (string.IsNullOrEmpty(base64Data)) return null;

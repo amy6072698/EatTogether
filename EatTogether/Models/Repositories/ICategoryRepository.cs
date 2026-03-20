@@ -16,6 +16,7 @@ namespace EatTogether.Models.Repositories
             Task BatchEnableAsync(IEnumerable<int> ids);
             Task DeleteAsync(int id);
             Task BatchDeleteAsync(IEnumerable<int> ids);
+            Task UpdateOrderAsync(IEnumerable<int> orderedIds);
         }
     
 }

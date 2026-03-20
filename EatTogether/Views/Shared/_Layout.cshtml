@@ -37,7 +37,7 @@
         bool inOrder = ctrl is "PreOrders" or "Payments";
         bool inCoupon = ctrl == "Coupons";
 
-        // ← 新增：從 JWT Claims 取出目前登入者的權限清單
+        // 從 JWT Claims 取出目前登入者的權限清單
         bool canStaffView = User.HasClaim("Permission", "Staff_View");
         bool canStaffManage = User.HasClaim("Permission", "Staff_Manage");
         bool canMemberManage = User.HasClaim("Permission", "Member_Manage");
@@ -74,7 +74,7 @@
             @* 頭像跟登入資訊設定不要覆蓋！ *@
             @{
                 var navName = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
-                var navRoleNames = User.Claims.FirstOrDefault(c => c.Type == "rolenames")?.Value ?? "";
+                var navRoleNames = User.Claims.FirstOrDefault(c => c.Type == "roleNames")?.Value ?? "";
                 var navAvatarColor = User.Claims.FirstOrDefault(c => c.Type == "avatarColor")?.Value ?? "#7986CB";
                 var navAvatarChar = navName.Length > 0 ? navName[0].ToString() : "?";
             }
@@ -85,17 +85,10 @@
                         <div class="navbar-user-initial" style="background-color: @navAvatarColor" data-name="@navName">@navAvatarChar</div>
                         <div class="d-flex flex-column lh-sm">
                             <span class="fw-semibold text-white small">@navName</span>
-                            <span class="text-white-50" style="font-size:0.75rem;">@navRoleNames</span>
+                            <span class="text-white-50 mt-1" style="font-size:0.75rem;">@navRoleNames</span>
                         </div>
                     </a>
                 </li>
-
-                @* <li class="nav-item">
-                    <a class="btn btn-outline-light"
-                       asp-controller="Auth" asp-action="Login" role="button">
-                        <i class="fa-solid fa-right-from-bracket me-1"></i>登出
-                    </a>
-                </li> *@
 
                 <li class="nav-item">
                     <form method="post" asp-controller="Auth" asp-action="Logout">
@@ -134,7 +127,7 @@
                                         }
                                         @if (canStaffManage)
                                         {
-                                            <a class="nav-link @(ctrl == "Roles" && action == "Index" ? "active" : "")" asp-controller="Roles" asp-action="Index">權限管理</a>
+                                            <a class="nav-link @(ctrl == "Roles" && action == "Index" ? "active" : "")" asp-controller="Roles" asp-action="Index">角色與權限管理</a>
                                         }
                                     </nav>
                                 </div>

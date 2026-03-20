@@ -146,15 +146,48 @@ namespace EatTogether.Models.Repositories
 
                 public async Task DeleteAsync(int id)
                 {
-                        var setMeal = await _context.SetMeals.FindAsync(id);
+                        var setMeal = await _context.SetMeals
+                                .Include(s => s.SetMealItems)
+                                .Include(s => s.Products)
+                                .FirstOrDefaultAsync(s => s.Id == id);
                         if (setMeal == null) return;
 
+                        // 1. 刪除相關的 SetMealItems
+                        if (setMeal.SetMealItems.Any())
+                        {
+                                _context.SetMealItems.RemoveRange(setMeal.SetMealItems);
+                        }
+
+                        // 2. 處理相關的 Products (將 SetMealId 設為 null)
+                        foreach (var p in setMeal.Products)
+                        {
+                                p.SetMealId = null;
+                        }
+
+                        // 3. 刪除 SetMeal
                         _context.SetMeals.Remove(setMeal);
                         await _context.SaveChangesAsync();
                 }
 
                 public async Task BatchDeleteAsync(IEnumerable<int> ids)
                 {
+                        // 1. 刪除相關的 SetMealItems
+                        var items = await _context.SetMealItems.Where(i => ids.Contains(i.SetMealId)).ToListAsync();
+                        if (items.Any())
+                        {
+                                _context.SetMealItems.RemoveRange(items);
+                                await _context.SaveChangesAsync();
+                        }
+
+                        // 2. 處理相關的 Products (將 SetMealId 設為 null)
+                        var products = await _context.Products.Where(p => p.SetMealId.HasValue && ids.Contains(p.SetMealId.Value)).ToListAsync();
+                        foreach (var p in products)
+                        {
+                                p.SetMealId = null;
+                        }
+                        await _context.SaveChangesAsync();
+
+                        // 3. 刪除 SetMeals
                         var setMeals = await _context.SetMeals.Where(s => ids.Contains(s.Id)).ToListAsync();
                         _context.SetMeals.RemoveRange(setMeals);
                         await _context.SaveChangesAsync();

@@ -1,4 +1,6 @@
-﻿namespace EatTogether.Models.DTOs
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace EatTogether.Models.DTOs
 {
 	public class EventEditDto
 	{
@@ -14,7 +16,10 @@
 
 		public DateTime EndDate { get; set; }
 
-		public string RewardItem { get; set; }
+		public int? RewardDishId { get; set; }
+		public string RewardDishName { get; set; }  // 顯示用，從 Dishes 帶過來
+
+		public List<SelectListItem> DishOptions { get; set; }
 
 		public string DiscountType { get; set; }
 

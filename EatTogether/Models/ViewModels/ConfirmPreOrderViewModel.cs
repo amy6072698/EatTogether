@@ -6,6 +6,8 @@ namespace EatTogether.Models.ViewModels
     {
         public int TableId { get; set; }
         public bool InOrOut { get; set; }
+        public int? PeopleNum { get; set; }
+        public bool IsAddOrder { get; set; }
         public string? Note { get; set; }
         public string PayMethod { get; set; }
         public int? CouponId { get; set; }

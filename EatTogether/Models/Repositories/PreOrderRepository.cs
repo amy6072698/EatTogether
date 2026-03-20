@@ -158,8 +158,13 @@ namespace EatTogether.Models.Repositories
         }
         public async Task<bool> HasUnbilledDetailsForTableAsync(int tableId)
         {
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
             return await _context.PreOrderDetails
                 .AnyAsync(d => d.PreOrder.TableId == tableId
+                            && d.PreOrder.DoneOrCancel == 0
+                            && d.PreOrder.OrderAt >= today
+                            && d.PreOrder.OrderAt < tomorrow
                             && !d.IsBilled
                             && d.DoneOrCancel != 2);
         }

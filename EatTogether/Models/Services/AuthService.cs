@@ -91,6 +91,7 @@ namespace EatTogether.Models.Services
 
 			// 組裝 LoginDto
 			var roleNames = await _roleRepo.GetRoleNamesByIdsAsync(user.RoleIds);
+			var functionNames = (await _roleFuncRepo.GetFunctionNamesByRoleIdsAsync(user.RoleIds)).ToList();
 
 			var loginDto = new LoginDto
 			{
@@ -99,6 +100,7 @@ namespace EatTogether.Models.Services
 				Name = user.Name,
 				RoleIds = user.RoleIds,
 				RoleNames = roleNames,
+				FunctionNames = functionNames,
 				MustChangePassword = false
 			};
 

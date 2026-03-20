@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
 {
@@ -37,10 +38,13 @@ namespace EatTogether.Models.ViewModels
 			set => _endDate = value?.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
 		}
 
+		public int? RewardDishId { get; set; }
+
+		public List<SelectListItem> DishOptions { get; set; }
+
 
 		[Display(Name = "贈品")]
-		[StringLength(100)]
-		public string? RewardItem { get; set; }
+		public string RewardDishName { get; set; }
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]

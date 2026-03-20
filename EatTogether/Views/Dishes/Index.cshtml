@@ -45,25 +45,34 @@
 
     <div id="alertBox"></div>
 
+    <!-- 分類 Tab 篩選 -->
+
+    <div class="mb-4">
+        <ul class="nav nav-pills flex-wrap gap-2" id="categoryTabs">
+            <li class="nav-item">
+                <button class="nav-link active rounded-pill shadow-sm" onclick="filterByCategory('', this)">
+                    <i class="fas fa-th me-1"></i>全部
+                </button>
+            </li>
+            @foreach (var cat in Model.Select(d => d.CategoryName).Where(c => !string.IsNullOrEmpty(c)).Distinct().OrderBy(c => c))
+            {
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill shadow-sm" onclick="filterByCategory('@cat', this)">@cat</button>
+                </li>
+            }
+        </ul>
+    </div>
+
     <!-- 搜尋與篩選區 -->
     <div class="card mb-3 shadow-sm border-0">
         <div class="card-body bg-light rounded">
             <div class="row g-3 align-items-center">
-                <div class="col-xl-3 col-lg-2 col-md-4">
+                <div class="col-xl-4 col-lg-3 col-md-4">
                     <div class="input-group shadow-sm">
                         <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" id="searchInput" class="form-control border-start-0"
                                placeholder="搜尋餐點名稱..." oninput="filterCards(true)" />
                     </div>
-                </div>
-                <div class="col-xl-2 col-lg-2 col-md-4">
-                    <select id="categoryFilter" class="form-select shadow-sm" onchange="filterCards(true)">
-                        <option value="">所有類別</option>
-                        @foreach (var cat in Model.Select(d => d.CategoryName).Distinct().OrderBy(c => c))
-                        {
-                            <option value="@cat">@cat</option>
-                        }
-                    </select>
                 </div>
                 <div class="col-xl-2 col-lg-2 col-md-4">
                     <select id="statusFilter" class="form-select shadow-sm" onchange="filterCards(true)">
@@ -72,15 +81,12 @@
                         <option value="已下架">已下架</option>
                     </select>
                 </div>
-                <div class="col-xl-2 col-lg-2 col-md-6">
+                <div class="col-xl-2 col-lg-2 col-md-4">
                     <button id="toggleSortBtn" class="btn btn-outline-secondary w-100 shadow-sm" onclick="toggleSortMode()">
                         <i class="fas fa-arrows-alt me-1"></i>調整排序
                     </button>
                 </div>
-                <div class="col-xl-3 col-lg-4 col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
-                    <nav id="topPaginationWrapper" class="d-none d-lg-block">
-                        <ul class="pagination pagination-sm mb-0 shadow-sm" id="topPagination"></ul>
-                    </nav>
+                <div class="col-xl-4 col-lg-5 col-md-12 text-end d-flex justify-content-end align-items-center gap-2">
                     <a asp-action="Create" class="btn btn-primary shadow-sm px-4 rounded-pill text-nowrap">
                         <i class="fas fa-plus me-1"></i>新增餐點
                     </a>
@@ -151,7 +157,7 @@
                          data-category="@item.CategoryName"
                          data-name="@item.DishName.ToLower()"
                          data-order="@item.DisplayOrder">
-                        <div class="card h-100 border-0 shadow-sm dish-card-inner position-relative">
+                        <div class="card h-100 border-0 shadow-sm dish-card-inner position-relative rounded-4 overflow-hidden">
 
                             <!-- 拖曳把手 -->
                             <div class="drag-handle position-absolute top-0 end-0 p-2 d-none" style="z-index:20; cursor:move;">
@@ -178,6 +184,35 @@
                                 {
                                     <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center;" class="bg-light text-muted">
                                         <i class="fas fa-image fa-3x opacity-25"></i>
+                                    </div>
+                                }
+
+                                <!-- 右上角：供應狀態標籤 -->
+                                @if (item.IsLimited)
+                                {
+                                    var today = DateOnly.FromDateTime(DateTime.Today);
+                                    bool isExpired = item.EndDate.HasValue && item.EndDate.Value < today;
+                                    bool notStarted = item.StartDate.HasValue && item.StartDate.Value > today;
+
+                                    <div class="position-absolute top-0 end-0 p-2" style="z-index:10;">
+                                        @if (isExpired)
+                                        {
+                                            <span class="badge rounded-pill bg-danger text-white shadow-sm border border-danger-subtle px-2 py-1" style="font-size:0.65rem; backdrop-filter: blur(4px);">
+                                                <i class="fas fa-calendar-times me-1"></i>供應結束
+                                            </span>
+                                        }
+                                        else if (notStarted)
+                                        {
+                                            <span class="badge rounded-pill bg-info text-white shadow-sm border border-info-subtle px-2 py-1" style="font-size:0.65rem; backdrop-filter: blur(4px);">
+                                                <i class="fas fa-calendar-plus me-1"></i>尚未開始
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark shadow-sm border border-warning-subtle px-2 py-1" style="font-size:0.65rem; backdrop-filter: blur(4px);">
+                                                <i class="fas fa-clock me-1"></i>限定供應
+                                            </span>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -218,20 +253,27 @@
                                     }
                                 </div>
                                 <div class="mb-3">
-                                    <span class="fw-bold text-danger fs-5">$@item.Price</span>
+                                    <span class="fw-bold text-danger fs-5">$@(item.Price?.ToString("N0") ?? "0")</span>
                                 </div>
-                                <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">
+                                <div class="d-flex justify-content-center flex-wrap gap-1 mb-2" style="min-height: 45px; align-content: flex-start;">
                                     <span class="badge rounded-pill @(item.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") px-2 border @(item.IsActive ? "border-success" : "border-secondary")"
-                                          style="cursor:pointer;" onclick="toggleFeature(@item.Id, 'Active')" id="active-badge-@item.Id">
+                                          style="cursor:pointer; height:fit-content;" onclick="toggleFeature(@item.Id, 'Active')" id="active-badge-@item.Id">
                                         @(item.IsActive ? "上架中" : "已下架")
                                     </span>
                                     @if (item.IsTakeOut)
                                     {
-                                        <span class="badge rounded-pill bg-info-subtle text-info px-2 border border-info">外帶</span>
+                                        <span class="badge rounded-pill bg-info-subtle text-info px-2 border border-info" style="height:fit-content;">外帶</span>
                                     }
                                     @if (item.IsLimited)
                                     {
-                                        <span class="badge rounded-pill bg-warning-subtle text-warning px-2 border border-warning">限定</span>
+                                        var today = DateOnly.FromDateTime(DateTime.Today);
+                                        bool isExpired = item.EndDate.HasValue && item.EndDate.Value < today;
+                                        <div class="w-100 mt-1" style="font-size: 0.7rem; line-height: 1.2;">
+                                            <span class="@(isExpired ? "text-danger" : "text-muted") opacity-75">
+                                                <i class="far fa-calendar-alt me-1"></i>
+                                                @(item.StartDate?.ToString("MM/dd") ?? "??") ~ @(item.EndDate?.ToString("MM/dd") ?? "??")
+                                            </span>
+                                        </div>
                                     }
                                 </div>
                                 <div class="d-flex gap-2">
@@ -239,7 +281,7 @@
                                         <i class="fas fa-edit me-1"></i>編輯
                                     </a>
                                     <button class="btn btn-outline-danger btn-sm px-2" onclick="disableDish(@item.Id)">
-                                        <i class="fas fa-trash-alt"></i>
+                                        <i class="fas fa-trash-alt me-1"></i>下架
                                     </button>
                                 </div>
                             </div>
@@ -278,6 +320,30 @@
                 transform: translateY(-5px);
                 box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
             }
+
+        /* 分類 Tab 樣式 */
+        #categoryTabs .nav-link {
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6c757d;
+            background: #f0f0f0;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        #categoryTabs .nav-link:hover {
+            background: #343a40;
+            color: #fff;
+        }
+
+        #categoryTabs .nav-link.active {
+            background: #212529;
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            font-weight: 600;
+        }
 
         .dish-card-inner {
             transition: all 0.2s ease-in-out;
@@ -357,7 +423,9 @@
         let filteredCards = [];
         let isBatchMode = false;
         let isSortMode = false;
+        let isSortableInitialized = false;
         let sortableInstance = null;
+        let selectedCategory = ''; // 新增：追蹤目前選中的分類
 
         document.addEventListener("DOMContentLoaded", () => {
             const savedPage = sessionStorage.getItem("dish_currentPage");
@@ -366,7 +434,13 @@
             const savedStatus = sessionStorage.getItem("dish_status");
             const savedScrollPosition = sessionStorage.getItem("dish_scrollPosition");
 
-            if (savedCategory) document.getElementById("categoryFilter").value = savedCategory;
+            if (savedCategory) {
+                selectedCategory = savedCategory;
+                // 更新 Tab 視覺狀態
+                document.querySelectorAll("#categoryTabs .nav-link").forEach(btn => {
+                    btn.classList.toggle("active", (btn.textContent.trim() === savedCategory) || (savedCategory === '' && btn.textContent.trim() === '全部'));
+                });
+            }
             if (savedSearch) document.getElementById("searchInput").value = savedSearch;
             if (savedStatus) document.getElementById("statusFilter").value = savedStatus;
                     const isNewDish = new URLSearchParams(window.location.search).get("newDish");
@@ -392,18 +466,26 @@
             });
         });
 
+        function filterByCategory(cat, btn) {
+            selectedCategory = cat;
+            
+            // 更新 UI 狀態
+            document.querySelectorAll("#categoryTabs .nav-link").forEach(el => el.classList.remove("active"));
+            btn.classList.add("active");
+
+            filterCards(true);
+        }
 
         function filterCards(resetPage = true) {
-            const category = document.getElementById("categoryFilter").value;
             const search = document.getElementById("searchInput").value.toLowerCase();
             const status = document.getElementById("statusFilter").value;
 
-            sessionStorage.setItem("dish_category", category);
+            sessionStorage.setItem("dish_category", selectedCategory);
             sessionStorage.setItem("dish_search", search);
             sessionStorage.setItem("dish_status", status);
 
             filteredCards = Array.from(document.querySelectorAll(".dish-card")).filter(card => {
-                const matchCategory = !category || card.dataset.category === category;
+                const matchCategory = !selectedCategory || card.dataset.category === selectedCategory;
                 const matchSearch = !search || card.dataset.name.includes(search);
 
                 let matchStatus = true;
@@ -435,19 +517,17 @@
             const start = (currentPage - 1) * PAGE_SIZE;
             const end = start + PAGE_SIZE;
             filteredCards.slice(start, end).forEach(c => c.style.display = "");
+document.getElementById("pageInfo").textContent =
+    `目前顯示：${total} 筆餐點中的第 ${Math.min(start + 1, total)} ~ ${Math.min(end, total)} 筆`;
 
-            document.getElementById("pageInfo").textContent =
-                `目前顯示：${total} 筆餐點中的第 ${Math.min(start + 1, total)} ~ ${Math.min(end, total)} 筆`;
+renderPaginationButtons("pagination", totalPages);
 
-            renderPaginationButtons("pagination", totalPages);
-            renderPaginationButtons("topPagination", totalPages);
-
-            // 如果只有一頁，隱藏上方分頁
-            const topPaginationWrapper = document.getElementById("topPaginationWrapper");
-            if (topPaginationWrapper) {
-                topPaginationWrapper.classList.toggle("d-none", totalPages <= 1);
-            }
-        }
+// 如果只有一頁，隱藏下方分頁控制項 (可選)
+const paginationContainer = document.getElementById("pagination")?.parentElement?.parentElement;
+if (paginationContainer) {
+    paginationContainer.classList.toggle("d-none", totalPages <= 1);
+}
+}
 
         function renderPaginationButtons(elementId, totalPages) {
             const container = document.getElementById(elementId);

@@ -55,14 +55,22 @@
     }
 
     /* --- DataTable 表格 --- */
-    #user-table td {
-        vertical-align: middle;
-        font-size: 1rem;           /* min 16px */
+    /* --- 表格列固定高度（與 Coupons/Index 一致） --- */
+    #user-table tbody tr {
+        height: 52px !important;
+    }
+
+    #user-table tbody tr td {
+        vertical-align: middle !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1rem; /* min 16px */
     }
 
     #user-table thead th {
         background-color: #f8f9fa;
-        font-size: 1rem;           /* min 16px */
+        font-size: 1rem; /* min 16px */
         font-weight: 600;
         color: #495057;
         white-space: nowrap;
@@ -164,7 +172,8 @@
     /* --- 搜尋列：label + input 同行 (inline-flex) --- */
     .search-field {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 0.5rem;
     }
 

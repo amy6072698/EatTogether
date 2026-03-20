@@ -17,7 +17,8 @@ namespace EatTogether.Models.Extensions
 				MinSpend = vm.MinSpend.Value,
 				StartDate = vm.StartDate.Value,
 				EndDate = vm.EndDate.Value,
-				RewardItem = vm.RewardItem,
+				RewardDishId = vm.RewardDishId.Value,
+				RewardDishName = vm.RewardDishName,
 				DiscountType = vm.DiscountType,
 				DiscountValue = vm.DiscountValue.Value,
 				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
@@ -34,7 +35,7 @@ namespace EatTogether.Models.Extensions
 				MinSpend = dto.MinSpend,
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
-				RewardItem = dto.RewardItem,
+				RewardDishId = dto.RewardDishId,
 				DiscountType = dto.DiscountType,
 				DiscountValue = dto.DiscountValue,
 				Status = CalculateStatus(dto.StartDate, dto.EndDate)
@@ -71,7 +72,8 @@ namespace EatTogether.Models.Extensions
 				MinSpend = dto.MinSpend,
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
-				RewardItem = dto.RewardItem,
+				RewardDishId = dto.RewardDishId,
+				RewardDishName = dto.RewardDishName,
 				DiscountType = dto.DiscountType,
 				DiscountValue = dto.DiscountValue,
 				Status = dto.Status
@@ -88,7 +90,7 @@ namespace EatTogether.Models.Extensions
 				MinSpend = entity.MinSpend,
 				StartDate = entity.StartDate,
 				EndDate = entity.EndDate,
-				RewardItem = entity.RewardItem,
+				RewardDishId = entity.RewardDishId,
 				DiscountType = entity.DiscountType,
 				DiscountValue = entity.DiscountValue,
 				Status = entity.Status
@@ -116,7 +118,8 @@ namespace EatTogether.Models.Extensions
 				MinSpend = vm.MinSpend.Value,
 				StartDate = vm.StartDate.Value,
 				EndDate = vm.EndDate.Value,
-				RewardItem = vm.RewardItem,
+				RewardDishId= vm.RewardDishId,
+				RewardDishName = vm.RewardDishName,
 				DiscountType = vm.DiscountType,
 				DiscountValue = vm.DiscountValue.Value,
 				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
@@ -133,7 +136,8 @@ namespace EatTogether.Models.Extensions
 				MinSpend = dto.MinSpend,
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
-				RewardItem = dto.RewardItem,
+				RewardDishId = dto.RewardDishId,
+				RewardDishName = dto.RewardDishName,
 				DiscountType = dto.DiscountType,
 				DiscountValue = dto.DiscountValue,
 				Status = dto.Status
@@ -150,7 +154,7 @@ namespace EatTogether.Models.Extensions
 				MinSpend = dto.MinSpend,
 				StartDate = dto.StartDate,
 				EndDate = dto.EndDate,
-				RewardItem = dto.RewardItem,
+				RewardDishId = dto.RewardDishId,
 				DiscountType = dto.DiscountType,
 				DiscountValue = dto.DiscountValue,
 				Status = CalculateStatus(dto.StartDate, dto.EndDate)
@@ -167,7 +171,7 @@ namespace EatTogether.Models.Extensions
 				MinSpend = entity.MinSpend,
 				StartDate = entity.StartDate,
 				EndDate = entity.EndDate,
-				RewardItem = entity.RewardItem,
+				RewardDishId = entity.RewardDishId,
 				DiscountType = entity.DiscountType,
 				DiscountValue = entity.DiscountValue,
 				Status = entity.Status

@@ -334,6 +334,8 @@
         <input type="hidden" name="TableId" value="@Model.TableId" />
         <input type="hidden" name="InOrOut" value="@Model.InOrOut.ToString().ToLower()" />
         <input type="hidden" name="Note" value="@Model.Note" />
+        <input type="hidden" name="PeopleNum" value="@Model.PeopleNum" />
+        <input type="hidden" name="IsAddOrder" value="@Model.IsAddOrder.ToString().ToLower()" />
         <input type="hidden" name="DiscountAmount" id="discountAmount" value="@(bestEvent?.CalculatedDiscount ?? 0)" />
         <input type="hidden" name="EventId" id="eventIdInput" value="@bestEvent?.Id" />
 
@@ -438,15 +440,15 @@
             }
 
             @* 活動贈品預覽（NT$0，不可增減） *@
-            @foreach (var giftEv in Model.ApplicableEvents.Where(e => e.DiscountType == "Gift" && !string.IsNullOrEmpty(e.RewardItem)))
+            @foreach (var giftEv in Model.ApplicableEvents.Where(e => e.DiscountType == "Gift" && !string.IsNullOrEmpty(e.RewardDishName)))
             {
-                <div class="item-row gift-preview-row" data-gift-name="@giftEv.RewardItem">
+                <div class="item-row gift-preview-row" data-gift-name="@giftEv.RewardDishName">
                     <div>
                         <div class="item-name">
-                            🎁 @giftEv.RewardItem
+                            🎁 @giftEv.RewardDishName
                             <span style="font-size:0.72rem;background:#27ae60;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">活動贈品</span>
                         </div>
-                        <div class="item-unit" style="color:#27ae60;">@giftEv.Title</div>
+                        <div class="item-unit" style="color:#27ae60;">@giftEv.Title・@giftEv.Summary</div>
                     </div>
                     <div class="item-price" style="color:#27ae60;font-weight:700;">NT$ 0</div>
                 </div>
@@ -454,6 +456,8 @@
             <div id="dynamicGiftRows"></div>
         </div>
 
+        @if (!Model.IsAddOrder)
+        {
         <!-- 優惠券 -->
         <div class="card">
             <div class="section-title">優惠折扣碼</div>
@@ -470,6 +474,14 @@
             <div class="section-title" style="color:#27ae60;">🎉 活動優惠</div>
             <div id="eventsList"></div>
         </div>
+        }
+        else
+        {
+            <div style="background:#fff8e1;border:1.5px solid #f0c040;border-radius:10px;
+                        padding:10px 14px;font-size:0.9rem;color:#7d5a00;font-weight:600;">
+                ➕ 加點中 — 活動及優惠券不重複套用
+            </div>
+        }
 
         <!-- 金額 -->
         <div class="card">
@@ -535,6 +547,18 @@
     </div>
 </div>
 
+<!-- 贈品將消失警告 Modal -->
+<div id="giftLossModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:28px 28px 20px;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:10px;color:#c0392b;">⚠️ 贈品將一起取消</div>
+        <div id="giftLossModalMsg" style="font-size:0.92rem;color:#444;line-height:1.6;margin-bottom:20px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button id="giftLossCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;color:#555;font-size:0.9rem;cursor:pointer;">保留餐點</button>
+            <button id="giftLossConfirm" style="padding:8px 20px;border-radius:8px;border:none;background:#c0392b;color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;">確定移除</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const unitPrices = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.UnitPrice)))];
     const qtys       = [@Html.Raw(string.Join(",", Model.Items.Select(i => i.Qty)))];
@@ -542,16 +566,52 @@
 
     // 伺服器端預載活動資料
     const serverEvents = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-        Model.ApplicableEvents,
-        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
-    ));
+                Model.ApplicableEvents,
+                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+        ));
 
     // 活動相關狀態（初始值由伺服器端提供）
     let currentEventId        = @(bestEvent != null ? bestEvent.Id.ToString() : "null");
     let eventCouponDiscount   = 0;
     let eventActivityDiscount = @(bestEvent?.CalculatedDiscount ?? 0);
 
+    // 記錄目前顯示中的贈品活動（供 changeQty 偵測消失用）
+    let activeGiftEvents = [];
+
     function changeQty(idx, delta) {
+        // 只有減少時才需要檢查贈品
+        if (delta < 0) {
+            _changeQtyWithGiftCheck(idx, delta);
+        } else {
+            _applyQtyChange(idx, delta);
+        }
+    }
+
+    async function _changeQtyWithGiftCheck(idx, delta) {
+        // 計算變更後金額
+        const newQty      = Math.max(0, qtys[idx] + delta);
+        const newOriginal = qtys.reduce((sum, q, i) => sum + (i === idx ? newQty : q) * unitPrices[i], 0);
+
+        // 找目前有哪些贈品會因為金額不足而消失
+        const losingGifts = activeGiftEvents.filter(ev => ev.minSpend > newOriginal);
+
+        if (losingGifts.length > 0) {
+            // 彈出警告
+            const giftNames = losingGifts.map(ev => ev.rewardDishName).join('、');
+            const minSpend  = Math.max(...losingGifts.map(ev => ev.minSpend));
+            const confirmed = await showGiftLossModal(giftNames, minSpend);
+
+            if (!confirmed) {
+                // 保留餐點：不做任何變更
+                return;
+            }
+            // 確定移除：繼續套用變更（贈品會在 recalculate 自動消失）
+        }
+
+        _applyQtyChange(idx, delta);
+    }
+
+    function _applyQtyChange(idx, delta) {
         qtys[idx] = Math.max(0, qtys[idx] + delta);
 
         document.getElementById('qty-display-' + idx).textContent = qtys[idx];
@@ -726,6 +786,9 @@
     }
 
     function updateGiftRows(giftEvents) {
+        // 同步記錄目前活躍的贈品活動
+        activeGiftEvents = giftEvents || [];
+
         // 1. 隱藏所有靜態贈品列（Razor 預渲染的）
         document.querySelectorAll('.gift-preview-row').forEach(row => {
             row.style.display = 'none';
@@ -736,11 +799,11 @@
 
         // 2. 為每個符合條件的贈品活動建立或顯示贈品列
         giftEvents.forEach(ev => {
-            if (!ev.rewardItem) return;
+            if (!ev.rewardDishName) return;
 
             // 優先找靜態列（Razor 已渲染的）
             const staticRow = [...document.querySelectorAll('.gift-preview-row')]
-                .find(r => r.dataset.giftName?.trim() === ev.rewardItem.trim());
+                .find(r => r.dataset.giftName?.trim() === ev.rewardDishName.trim());
 
             if (staticRow) {
                 staticRow.style.display = '';
@@ -748,14 +811,14 @@
                 // 動態建立
                 const div = document.createElement('div');
                 div.className = 'item-row gift-preview-row';
-                div.dataset.giftName = ev.rewardItem;
+                div.dataset.giftName = ev.rewardDishName;
                 div.innerHTML = `
                     <div>
                         <div class="item-name">
-                            🎁 ${ev.rewardItem}
+                            🎁 ${ev.rewardDishName}
                             <span style="font-size:0.72rem;background:#27ae60;color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px;">活動贈品</span>
                         </div>
-                        <div class="item-unit" style="color:#27ae60;">${ev.title}</div>
+                        <div class="item-unit" style="color:#27ae60;">${ev.title}・${ev.summary}</div>
                     </div>
                     <div class="item-price" style="color:#27ae60;font-weight:700;">NT$ 0</div>`;
                 container.appendChild(div);
@@ -788,7 +851,7 @@
             const btnOk   = document.getElementById('giftModalConfirm');
             const btnCancel = document.getElementById('giftModalCancel');
 
-            msg.textContent = `活動將免費贈送「${giftName}」，您已加入了這道餐點，是否還需要保留原本點的這份（需付費）？`;
+            msg.textContent = `活動將免費贈送「${giftName}」，您已加入了這道餐點，是否還需要保留原本點的那份（需付費）？`;
             modal.style.display = 'flex';
 
             const cleanup = (result) => {
@@ -803,6 +866,39 @@
             btnCancel.addEventListener('click', onCancel);
         });
     }
+
+    // 贈品消失警告 Modal
+    function showGiftLossModal(giftName, minSpend) {
+        return new Promise(resolve => {
+            const modal      = document.getElementById('giftLossModal');
+            const msg        = document.getElementById('giftLossModalMsg');
+            const btnConfirm = document.getElementById('giftLossConfirm');
+            const btnCancel  = document.getElementById('giftLossCancel');
+
+            msg.innerHTML = `移除後金額將低於 NT$ ${minSpend}，贈品「${giftName}」將一起取消。<br><br>要移除餐點並取消贈品，還是保留餐點？`;
+            modal.style.display = 'flex';
+
+            const cleanup = (result) => {
+                modal.style.display = 'none';
+                btnConfirm.removeEventListener('click', onConfirm);
+                btnCancel.removeEventListener('click', onCancel);
+                resolve(result);
+            };
+            const onConfirm = () => cleanup(true);   // 確定移除（移除餐點+贈品）
+            const onCancel  = () => cleanup(false);  // 保留餐點（還原數量）
+            btnConfirm.addEventListener('click', onConfirm);
+            btnCancel.addEventListener('click', onCancel);
+        });
+    }
+
+    // 頁面載入：渲染活動優惠卡（使用伺服器端資料）
+    (function initEvents() {
+        const originalAmount = @Model.OriginalAmount;
+        if (serverEvents && serverEvents.length > 0) {
+            const matched = serverEvents.filter(e => e.minSpend <= originalAmount);
+            renderEvents(matched);
+        }
+    })();
 
     // 頁面載入：檢查贈品是否與已點餐點重複，詢問是否保留付費那份
     (async function checkGiftDuplicates() {

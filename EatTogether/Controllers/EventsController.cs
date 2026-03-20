@@ -24,7 +24,9 @@ namespace EatTogether.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Create()
 		{
-			return View();
+			var vm = new EventCreateViewModel();
+			vm.DishOptions = await _service.GetDishOptionsAsync();
+			return View(vm);
 		}
 
 		// POST: Event/Create
@@ -34,6 +36,7 @@ namespace EatTogether.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				vm.DishOptions = await _service.GetDishOptionsAsync();
 				return View(vm);
 			}
 
@@ -66,7 +69,7 @@ namespace EatTogether.Controllers
 			}
 
 			var vm = dto.ToEditVm();
-
+			vm.DishOptions = await _service.GetDishOptionsAsync();  // 補這行
 			return View(vm);
 
 		}
@@ -78,6 +81,7 @@ namespace EatTogether.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				vm.DishOptions = await _service.GetDishOptionsAsync();
 				return View(vm);
 			}
 			var dto = vm.ToEditDto();
@@ -107,7 +111,7 @@ namespace EatTogether.Controllers
 		{
 			var vm = await _service.GetCopyCreateVm(id);
 			if (vm == null) return NotFound();
-
+			vm.DishOptions = await _service.GetDishOptionsAsync();
 			return View("Create", vm);
 		}
 

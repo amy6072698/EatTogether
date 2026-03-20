@@ -66,5 +66,10 @@ namespace EatTogether.Models.Services
 		{
 			await _repo.BatchDeleteAsync(ids);
 		}
+
+		public async Task UpdateOrderAsync(IEnumerable<int> orderedIds)
+		{
+			await _repo.UpdateOrderAsync(orderedIds);
+		}
 	}
 }

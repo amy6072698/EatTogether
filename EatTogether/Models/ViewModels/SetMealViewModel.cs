@@ -25,7 +25,8 @@ namespace EatTogether.Models.ViewModels
         public bool IsActive { get; set; } = true;
 
         [Display(Name = "套餐定價")]
-        [Range(0, 99999, ErrorMessage = "定價請填 0~99999")]
+        [Required(ErrorMessage = "套餐定價為必填")]
+        [Range(1, 99999, ErrorMessage = "定價請填 1~99999")]
         public decimal? SetPrice { get; set; }
 
         [StringLength(300, ErrorMessage = "描述最多 300 字")]

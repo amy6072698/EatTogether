@@ -2,6 +2,12 @@
 @model UserIndexViewModel
 @{
     ViewData["Title"] = "員工管理";
+    // 從 JWT Claims 取出目前登入者的權限清單
+    bool canStaffView = User.HasClaim("Permission", "Staff_View");
+    bool canStaffManage = User.HasClaim("Permission", "Staff_Manage");
+
+    // 「員工管理」群組：有 Staff_View 或 Staff_Manage 其一即顯示
+    bool showStaffGroup = canStaffView || canStaffManage;
 }
 
 <div class="container-fluid px-4 user-index">
@@ -9,51 +15,40 @@
     <!-- 頁面標題列 -->
     <div class="d-flex align-items-start justify-content-between mt-4 mb-4">
         <h1 class="fw-bold">員工管理</h1>
-        <div class="d-flex align-items-center gap-2">
-            <select id="sort-select" class="form-select form-select-sm" style="width:auto;">
-                <option value="HireDateDesc">到職日期（最新）</option>
-                <option value="HireDateAsc">到職日期（最舊）</option>
-                <option value="CreatedAtDesc">建立時間（最新）</option>
-            </select>
-            @* TODO: 後端連線後依 Staff_Manage 權限決定是否渲染 *@
-            <button id="btn-open-create" class="btn btn-sm btn-primary">
-                <i class="fa-solid fa-plus me-1"></i>新增
-            </button>
-        </div>
     </div>
+
+
 
     <!-- 搜尋列 -->
     <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fa-solid fa-magnifying-glass me-1"></i>搜尋員工</div>
+        </div>
         <div class="card-body py-3">
-            <div class="row g-2 align-items-end">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-2 col-sm-6">
                     <div class="search-field">
                         <label class="search-label" for="search-emp-no">員工編號</label>
-                        <input type="text" class="form-control form-control-sm" id="search-emp-no" />
+                        <input type="text" class="form-control form-control-sm" id="search-emp-no" placeholder="搜尋員工編號..." />
                     </div>
                 </div>
                 <div class="col-md-2 col-sm-6">
                     <div class="search-field">
                         <label class="search-label" for="search-name">姓名</label>
-                        <input type="text" class="form-control form-control-sm" id="search-name" />
+                        <input type="text" class="form-control form-control-sm" id="search-name" placeholder="搜尋姓名..." />
                     </div>
                 </div>
                 <div class="col-md-2 col-sm-6">
                     <div class="search-field">
                         <label class="search-label" for="search-account">帳號</label>
-                        <input type="text" class="form-control form-control-sm" id="search-account" />
+                        <input type="text" class="form-control form-control-sm" id="search-account" placeholder="搜尋帳號..." />
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <div class="search-field">
                         <label class="search-label" for="search-email">Email</label>
-                        <input type="text" class="form-control form-control-sm" id="search-email" />
+                        <input type="text" class="form-control form-control-sm" id="search-email" placeholder="搜尋Email..." />
                     </div>
-                </div>
-                <div class="col-auto">
-                    <button id="btn-search" class="btn btn-sm btn-primary">
-                        <i class="fa-solid fa-magnifying-glass me-1"></i>查詢
-                    </button>
                 </div>
                 <div class="col-auto d-flex align-items-center pb-1">
                     <div class="form-check mb-0">
@@ -61,13 +56,37 @@
                         <label class="form-check-label" for="search-active-only">在職</label>
                     </div>
                 </div>
+                <div class="col-auto" style="margin-bottom: 1px;">
+                    <button id="btn-search" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i>查詢
+                    </button>
+                    <button id="btn-reset" class="btn btn-sm btn-outline-secondary ms-2">
+                        重置
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- 員工資料表格 -->
-    <div class="card">
-        <div class="card-body">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fa-solid fa-users me-1"></i>員工列表</div>
+            <div class="d-flex gap-2">
+                <select id="sort-select" class="form-select form-select-sm" style="width:auto;">
+                    <option value="HireDateDesc">到職日期（最新）</option>
+                    <option value="HireDateAsc">到職日期（最舊）</option>
+                    <option value="CreatedAtDesc">建立時間（最新）</option>
+                </select>
+                @if (canStaffManage)
+                {
+                    <button id="btn-open-create" class="btn btn-sm btn-success">
+                        <i class="fa-solid fa-plus me-1"></i>新增員工
+                    </button>
+                }
+            </div>
+        </div>
+        <div class="card-body table-responsive">
             <table id="user-table" class="table table-bordered table-hover w-100">
                 <thead>
                     <tr>
@@ -80,7 +99,10 @@
                         <th>建立時間</th>
                         <th>角色</th>
                         <th>狀態</th>
-                        <th class="text-center">操作</th>
+                        @if (canStaffManage)
+                        {
+                            <th class="text-center">操作</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -114,31 +136,34 @@
                                     @row.StatusText
                                 </span>
                             </td>
-                            <td>
+                            @if (canStaffManage)
+                            {
+                                <td>
                                 <div class="action-btn-group">
-                                    @* @if (row.CanEdit)
-                                    { *@
+                                    @if (row.CanEdit)
+                                    {
                                     <button class="btn btn-sm btn-outline-primary btn-edit-user"
                                             data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="編輯">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    @* }
+                                    }
                                     @if (row.CanResign)
-                                    { *@
+                                    {
                                     <button class="btn btn-sm btn-outline-danger btn-resign-user"
                                             data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="離職">
                                         <i class="fa-solid fa-user-minus"></i>
                                     </button>
-                                    @* }
+                                    }
                                     @if (row.CanReinstate)
-                                    { *@
+                                    {
                                     <button class="btn btn-sm btn-outline-success btn-reinstate-user"
                                             data-id="@row.Id" data-name="@row.Name" data-emp-no="@row.EmployeeNumber" title="復職">
                                         <i class="fa-solid fa-user-plus"></i>
                                     </button>
-                                    @* } *@
+                                    }
                                 </div>
                             </td>
+                            }
 
                         </tr>
                     }
@@ -218,8 +243,8 @@
                                     <div class="position-relative flex-grow-1">
                                         <input type="password" class="form-control pe-5" id="create-password"
                                                placeholder="至少 6 碼，含英文與數字" maxlength="100" autocomplete="new-password" />
-                                        <button type="button" class="toggle-password btn btn-link position-absolute end-0 top-0 translate-middle-y pe-2 mt-3"
-                                                data-target="create-password" style="color:#6c757d;">
+                                        <button type="button" class="toggle-password btn btn-link position-absolute end-0 top-0 translate-middle-y pe-2"
+                                                data-target="create-password" style="color:#6c757d; margin-top: 17px;">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                     </div>
@@ -363,7 +388,7 @@
                                         <input type="password" class="form-control pe-5" id="edit-password"
                                                placeholder="留空表示不修改" maxlength="100" autocomplete="new-password" />
                                         <button type="button" class="toggle-password btn btn-link position-absolute end-0 top-0 translate-middle-y pe-2 mt-3"
-                                                data-target="edit-password" style="color:#6c757d;">
+                                                data-target="edit-password" style="color:#6c757d; margin-top: 17px;">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                     </div>

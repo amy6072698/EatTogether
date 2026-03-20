@@ -36,7 +36,7 @@ namespace EatTogether.Models.ViewModels
 				Id = vm.Id,
 				CategoryId = vm.CategoryId,
 				DishName = vm.DishName,
-				Price = vm.Price,
+				Price = vm.Price ?? 0,
 				IsActive = vm.IsActive,
 				Description = vm.Description,
 				ImageUrl = vm.ImageUrl,

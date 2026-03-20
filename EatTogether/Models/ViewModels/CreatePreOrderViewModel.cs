@@ -7,6 +7,8 @@ namespace EatTogether.Models.ViewModels
     {
         public int TableId { get; set; }
         public bool InOrOut { get; set; } = true;   // 預設內用
+        public int? PeopleNum { get; set; }
+        public bool IsAddOrder { get; set; }
         public List<SelectListItem> TableOptions { get; set; } = new();
         public string? Note { get; set; }
         public int DiscountAmount { get; set; }

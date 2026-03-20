@@ -108,5 +108,30 @@ namespace EatTogether.Controllers
                 .ToList();
             return Json(tables);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetManualEvents(int? tableId, int? preOrderId)
+        {
+            var events = await _service.GetManualEventsForOrderAsync(tableId, preOrderId);
+            return Json(events);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyEvent(int? tableId, int? preOrderId, int? eventId)
+        {
+            var vm = await _service.ApplyEventToOrderAsync(tableId, preOrderId, eventId);
+            if (vm == null) return Json(new { success = false, error = "找不到訂單" });
+            return Json(new { success = true, data = vm });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyCoupon(int? tableId, int? preOrderId, string couponCode)
+        {
+            var (success, error, vm) = await _service.ApplyCouponToOrderAsync(tableId, preOrderId, couponCode);
+            if (!success) return Json(new { success = false, error });
+            return Json(new { success = true, data = vm });
+        }
     }
 }
