@@ -345,6 +345,13 @@ namespace EatTogether.Models.Services
         {
             var all = await _preOrderRepo.GetAllAsync();  // 需補 GetAllAsync
 
+            // 若未指定日期範圍，預設只顯示當日
+            if (!query.DateFrom.HasValue && !query.DateTo.HasValue)
+            {
+                query.DateFrom = DateTime.Today;
+                query.DateTo   = DateTime.Today;
+            }
+
             // 篩選
             var filtered = all.AsQueryable();
 
@@ -794,12 +801,26 @@ namespace EatTogether.Models.Services
             var discountResult = await ComputeDiscountAsync(tableOrders, originalAmount);
             int discountAmount = discountResult.Amount;
 
-            // 優惠券/活動標籤：只顯示仍有效的那筆
+            // 優惠券/活動標籤：用 FK scalar 判斷（避免 EF 導覽屬性在同一請求內未載入的問題）
             var couponOrder = tableOrders.FirstOrDefault(p =>
-                p.Coupon != null && !discountResult.InvalidCouponOrderIds.Contains(p.Id));
+                p.CouponId.HasValue && !discountResult.InvalidCouponOrderIds.Contains(p.Id));
             var eventOrder  = tableOrders.FirstOrDefault(p =>
-                p.Event != null &&
+                p.EventId.HasValue &&
                 !discountResult.InvalidEventOrderIds.Contains(p.Id));
+
+            // 若導覽屬性因 EF 同一請求 identity map 未更新而為 null，直接查 DB 補值
+            string? eventTitle  = eventOrder?.Event?.Title;
+            string? couponName  = couponOrder?.Coupon?.Name;
+            if (eventOrder?.EventId.HasValue == true && string.IsNullOrEmpty(eventTitle))
+            {
+                var evDto = await _eventRepo.GetEditByIdAsync(eventOrder.EventId.Value);
+                eventTitle = evDto?.Title;
+            }
+            if (couponOrder?.CouponId.HasValue == true && string.IsNullOrEmpty(couponName))
+            {
+                var coupons = await _couponRepo.GetCouponsByIdsAsync(new[] { couponOrder.CouponId!.Value });
+                couponName = coupons.FirstOrDefault()?.Name;
+            }
 
             var subOrders = tableOrders.Select(p => new SubOrderSummary
             {
@@ -826,9 +847,9 @@ namespace EatTogether.Models.Services
                 TotalAmount = originalAmount - discountAmount,
                 HasUnserved = allItems.Any(d => d.Status == 0 && !d.IsBilled),
                 CouponId   = couponOrder?.CouponId,
-                CouponName = couponOrder?.Coupon?.Name,
+                CouponName = couponName,
                 EventId    = eventOrder?.EventId,
-                EventTitle = eventOrder?.Event?.Title,
+                EventTitle = eventTitle,
                 Items      = allItems,
                 SubOrders  = subOrders
             };

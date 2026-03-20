@@ -56,11 +56,16 @@ namespace EatTogether.Models.Repositories
                 .CountAsync();
         }
 
-        public async Task<List<PreOrder>> GetActiveByTableIdAsync(int tableId) =>
-            await _context.PreOrders
+        public async Task<List<PreOrder>> GetActiveByTableIdAsync(int tableId)
+        {
+            var today = DateTime.Today;
+            return await _context.PreOrders
                 .Include(p => p.PreOrderDetails)
-                .Where(p => p.TableId == tableId && p.DoneOrCancel == 0)
+                .Where(p => p.TableId == tableId
+                         && p.DoneOrCancel == 0
+                         && p.OrderAt.Date == today)
                 .ToListAsync();
+        }
 
         public async Task CancelAllByTableIdAsync(int tableId)
         {

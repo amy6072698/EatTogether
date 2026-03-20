@@ -759,13 +759,13 @@
         <div class="left-header">
             <div class="left-title">💳 結帳</div>
             <div class="tab-wrap">
-                <button class="tab-btn active" onclick="switchTab('dine')">🪑 內用</button>
-                <button class="tab-btn" onclick="switchTab('take')">🥡 外帶</button>
+                <button class="tab-btn" onclick="switchTab('dine')">🪑 內用</button>
+                <button class="tab-btn active" onclick="switchTab('take')">🥡 外帶</button>
             </div>
         </div>
 
         <!-- 內用：桌號格子 -->
-        <div class="table-grid" id="dineGrid">
+        <div class="table-grid" id="dineGrid" style="display:none;">
             @foreach (var table in Model.Tables)
             {
                 if (table.HasOrder)
@@ -794,7 +794,7 @@
         </div>
 
         <!-- 外帶：清單 -->
-        <div class="takeout-list" id="takeList">
+        <div class="takeout-list" id="takeList" style="display:block;">
             @foreach (var order in takeOrders)
             {
                 <div class="takeout-item @(order.HasUnserved ? "unserved" : "")"
@@ -1745,7 +1745,13 @@
         }
     }
     } else {
-        switchTab('dine');
+        switchTab('take');
+        // 自動載入第一筆外帶訂單
+        const firstTakeoutId = @(takeOrders.Any() ? takeOrders.First().PreOrderId.ToString() : "0");
+        if (firstTakeoutId > 0) {
+            const el = document.getElementById('tbtn-' + firstTakeoutId);
+            if (el) loadDetail(firstTakeoutId, el);
+        }
     }
     });
         let splitMode = false;
