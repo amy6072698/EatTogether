@@ -19,5 +19,8 @@ namespace EatTogether.Models.DTOs
 
         /// <summary>給前端顯示的折扣描述，例如「折抵 NT$ 100」或「贈送：招牌甜點」</summary>
         public string DiscountDescription { get; set; }
+
+        /// <summary>此活動是否已套用在目前訂單中</summary>
+        public bool IsInUse { get; set; }
     }
 }
