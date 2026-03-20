@@ -120,16 +120,9 @@ namespace EatTogether.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplyEvent(int? tableId, int? preOrderId, int? eventId)
         {
-            try
-            {
-                var vm = await _service.ApplyEventToOrderAsync(tableId, preOrderId, eventId);
-                if (vm == null) return Json(new { success = false, error = "找不到訂單" });
-                return Json(new { success = true, data = vm });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = $"套用失敗：{ex.Message}" });
-            }
+            var (success, error, vm) = await _service.ApplyEventToOrderAsync(tableId, preOrderId, eventId);
+            if (!success) return Json(new { success = false, error });
+            return Json(new { success = true, data = vm });
         }
 
         [HttpPost]

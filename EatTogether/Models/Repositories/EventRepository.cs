@@ -156,10 +156,11 @@ namespace EatTogether.Models.Repositories
                 .AsNoTracking()
                 .Include(e => e.RewardDish)
                 .Where(e => e.Status == 1
-                         && e.IsAutoDiscount == 0
                          && e.StartDate < tomorrow
                          && e.EndDate   >= today
-                         && e.MinSpend  <= amount)
+                         && e.MinSpend  <= amount
+                         // Gift 型活動需廚房出餐，不論 IsAutoDiscount 設定都允許手動選擇
+                         && (e.IsAutoDiscount == 0 || e.DiscountType == "Gift"))
                 .OrderByDescending(e => e.MinSpend)
                 .ToListAsync();
 

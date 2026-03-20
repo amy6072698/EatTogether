@@ -40,6 +40,8 @@ namespace EatTogether.Models.Repositories
             await _context.PreOrders
                      .Include(p => p.PreOrderDetails)
                      .Include(p => p.Table)
+                     .Include(p => p.Event)
+                     .Include(p => p.Coupon)
                      .Where(p => p.DoneOrCancel == doneOrCancel)
                      .ToListAsync();
         public async Task AddAsync(PreOrder preOrder)

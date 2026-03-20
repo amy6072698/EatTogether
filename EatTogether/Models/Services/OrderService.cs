@@ -42,7 +42,7 @@ namespace EatTogether.Models.Services
         // Checkout discount selection
         Task<List<EventApplicableDto>> GetManualEventsForOrderAsync(int? tableId, int? preOrderId);
         Task<List<CouponDto>> GetApplicableCouponsForOrderAsync(int? tableId, int? preOrderId);
-        Task<PaymentCheckoutViewModel?> ApplyEventToOrderAsync(int? tableId, int? preOrderId, int? eventId);
+        Task<(bool Success, string? Error, PaymentCheckoutViewModel? Data)> ApplyEventToOrderAsync(int? tableId, int? preOrderId, int? eventId);
         Task<(bool Success, string? Error, PaymentCheckoutViewModel? Data)> ApplyCouponToOrderAsync(int? tableId, int? preOrderId, string couponCode);
         Task<PaymentCheckoutViewModel?> ApplyCouponByIdToOrderAsync(int? tableId, int? preOrderId, int? couponId);
     }
@@ -1076,56 +1076,71 @@ namespace EatTogether.Models.Services
             return null;
         }
 
-        public async Task<PaymentCheckoutViewModel?> ApplyEventToOrderAsync(int? tableId, int? preOrderId, int? eventId)
+        private static void CancelPendingGifts(PreOrder order)
+        {
+            foreach (var g in order.PreOrderDetails
+                .Where(d => d.UnitPrice == 0 && d.SubTotal == 0
+                         && d.DoneOrCancel == 0
+                         && d.ProductName.Contains("活動贈品")).ToList())
+                g.DoneOrCancel = 2;
+        }
+
+        /// <summary>
+        /// 檢查某筆訂單「目前活動」的贈品是否已出餐（精確比對品名，避免舊活動遺留項目誤判）。
+        /// </summary>
+        private async Task<bool> IsCurrentEventGiftServedAsync(PreOrder order)
+        {
+            if (!order.EventId.HasValue) return false;
+            var giftInfo = await _eventRepo.GetEventGiftInfoAsync(order.EventId.Value);
+            if (giftInfo?.DiscountType != "Gift" || string.IsNullOrEmpty(giftInfo?.RewardDishName))
+                return false;
+
+            var expectedName = $"🎁 {giftInfo.Value.RewardDishName}（活動贈品）";
+            return order.PreOrderDetails.Any(d =>
+                d.DoneOrCancel == 1 && d.ProductName == expectedName);
+        }
+
+        public async Task<(bool Success, string? Error, PaymentCheckoutViewModel? Data)> ApplyEventToOrderAsync(int? tableId, int? preOrderId, int? eventId)
         {
             var orders = await GetOrdersForContextAsync(tableId, preOrderId);
-            if (!orders.Any()) return null;
+            if (!orders.Any()) return (false, "找不到訂單", null);
 
             if (!eventId.HasValue)
             {
-                // ── 清除模式：移除所有活動與對應贈品 ──────────────────────────
+                // ── 清除模式：移除所有活動與對應待出贈品 ─────────────────────
                 foreach (var o in orders)
                 {
-                    foreach (var g in o.PreOrderDetails
-                        .Where(d => d.UnitPrice == 0 && d.SubTotal == 0
-                                 && d.DoneOrCancel == 0
-                                 && d.ProductName.Contains("活動贈品")).ToList())
-                        g.DoneOrCancel = 2;
-
+                    if (await IsCurrentEventGiftServedAsync(o))
+                        return (false, "贈品已出餐，無法清除活動", null);
+                    CancelPendingGifts(o);
                     o.EventId        = null;
                     o.DiscountAmount = 0;
                 }
             }
             else
             {
-                // ── Toggle 模式：已套用則移除，未套用則新增 ──────────────────
+                // ── Toggle 模式：已套用則移除，未套用則新增/覆蓋 ─────────────
                 var existingOrder = orders.FirstOrDefault(o => o.EventId == eventId);
                 if (existingOrder != null)
                 {
                     // 已套用 → 移除（toggle off）
-                    foreach (var g in existingOrder.PreOrderDetails
-                        .Where(d => d.UnitPrice == 0 && d.SubTotal == 0
-                                 && d.DoneOrCancel == 0
-                                 && d.ProductName.Contains("活動贈品")).ToList())
-                        g.DoneOrCancel = 2;
-
+                    if (await IsCurrentEventGiftServedAsync(existingOrder))
+                        return (false, "贈品已出餐，無法取消活動", null);
+                    CancelPendingGifts(existingOrder);
                     existingOrder.EventId        = null;
                     existingOrder.DiscountAmount = 0;
                 }
                 else
                 {
-                    // 未套用 → 新增
-                    // 優先找沒有 EventId 的訂單，否則用第一筆（覆蓋）
+                    // 未套用 → 找空位；沒有空位則覆蓋第一筆
                     var target = orders.FirstOrDefault(o => !o.EventId.HasValue) ?? orders.First();
 
-                    // 若該筆原有不同活動，先取消其贈品
+                    // 若覆蓋同一筆中的舊活動，先確認舊活動的贈品沒有已出餐
                     if (target.EventId.HasValue)
                     {
-                        foreach (var g in target.PreOrderDetails
-                            .Where(d => d.UnitPrice == 0 && d.SubTotal == 0
-                                     && d.DoneOrCancel == 0
-                                     && d.ProductName.Contains("活動贈品")).ToList())
-                            g.DoneOrCancel = 2;
+                        if (await IsCurrentEventGiftServedAsync(target))
+                            return (false, "贈品已出餐，無法更換活動", null);
+                        CancelPendingGifts(target);
                     }
 
                     target.EventId = eventId;
@@ -1151,9 +1166,11 @@ namespace EatTogether.Models.Services
 
             await _preOrderRepo.SaveChangesAsync();
 
-            if (tableId.HasValue)    return await GetCheckoutByTableAsync(tableId.Value);
-            if (preOrderId.HasValue) return await GetCheckoutDetailAsync(preOrderId.Value);
-            return null;
+            PaymentCheckoutViewModel? vm = tableId.HasValue
+                ? await GetCheckoutByTableAsync(tableId.Value)
+                : preOrderId.HasValue ? await GetCheckoutDetailAsync(preOrderId.Value) : null;
+
+            return (true, null, vm);
         }
 
         public async Task<(bool Success, string? Error, PaymentCheckoutViewModel? Data)> ApplyCouponToOrderAsync(int? tableId, int? preOrderId, string couponCode)
