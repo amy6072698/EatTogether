@@ -19,7 +19,7 @@ namespace EatTogether.Models.DTOs
 		public int? RewardDishId { get; set; }
 		public string RewardDishName { get; set; }  // 顯示用，從 Dishes 帶過來
 
-		public List<SelectListItem> DishOptions { get; set; }
+		//public List<SelectListItem> DishOptions { get; set; }
 
 		public string DiscountType { get; set; }
 

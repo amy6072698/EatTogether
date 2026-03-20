@@ -35,18 +35,30 @@
                             <span asp-validation-for="MinSpend" class="text-danger"></span>
                         </div>
                         @* <div class="form-group mb-3">
-                            <label asp-for="RewardItem" class="control-label"></label>    <span class="form-text">※非贈品活動可留白</span>
-                            <input asp-for="RewardItem" class="form-control" />
-                            <span asp-validation-for="RewardItem" class="text-danger"></span>
-                        </div> *@
-                        <div class="form-group mb-3">
                             <label asp-for="RewardDishId" class="control-label"></label>
-                            <span class="form-text">※非贈品活動可留白</span>
+                            <span class="form-text">※非贈品活動無需填寫</span>
                             <select asp-for="RewardDishId" class="form-control"
                                     asp-items="Model.DishOptions">
                                 <option value="">-- 無贈品 --</option>
                             </select>
                             <span asp-validation-for="RewardDishId" class="text-danger"></span>
+                        </div> *@
+                        <div class="form-group mb-3">
+                            <label asp-for="RewardDishId" class="control-label"></label>
+                            <span class="form-text">※非贈品活動無需填寫</span>
+                            <select asp-for="RewardDishId" class="form-control" id="rewardDishSelect">
+                                <option value="">-- 無贈品 --</option>
+
+                                @foreach (var dish in Model.DishOptions)
+                                {
+                                    var price = ((Dictionary<int, decimal>)ViewBag.DishPrices)[int.Parse(dish.Value)];
+                                    <option value="@dish.Value"
+                                            data-price="@price"
+                                            selected="@(Model.RewardDishId?.ToString() == dish.Value ? "selected" : null)">
+                                        @dish.Text
+                                    </option>
+                                }
+                            </select>                       
                         </div>
                         <div class="form-group mb-3">
                             <label asp-for="DiscountType" class="control-label"></label><span class="text-danger">*</span>
@@ -100,4 +112,14 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $('#rewardDishSelect').on('change', function () {
+            var price = $(this).find(':selected').data('price');
+            if (price !== undefined && price !== '') {
+                $('#DiscountValue').val(price);  // 自動填入價格
+            } else {
+                $('#DiscountValue').val('');     // 選「無贈品」時清空
+            }
+        });
+    </script>
 }

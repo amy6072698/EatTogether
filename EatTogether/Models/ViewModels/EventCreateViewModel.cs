@@ -1,4 +1,5 @@
 ﻿using EatTogether.Models.EfModels;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
@@ -40,13 +41,15 @@ namespace EatTogether.Models.ViewModels
 			set => _endDate = value?.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
 		}
 
-
+		[Display(Name = "贈品")]
 		public int? RewardDishId { get; set; }
 
 		[Display(Name = "贈品")]
-		public string RewardDishName { get; set; }
+		[BindNever]
+		public string? RewardDishName { get; set; }
 
-		public List<SelectListItem> DishOptions { get; set; }
+		[BindNever]
+		public List<SelectListItem>? DishOptions { get; set; }
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]
@@ -55,7 +58,7 @@ namespace EatTogether.Models.ViewModels
 
 		[Display(Name = "折扣金額")]
 		[Required(ErrorMessage = "{0}必填")]
-		public decimal? DiscountValue { get; set; }
+		public decimal DiscountValue { get; set; }
 
 		[Display(Name = "狀態")]
 		public int Status { get; set; }

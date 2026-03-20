@@ -71,7 +71,7 @@ namespace EatTogether.Controllers
 					}
 
 					// 執行存檔 (建立唯一檔名防止覆蓋)
-					string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "articles");
+					string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "articles");
 					if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
 					string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(vm.CoverImageFile.FileName);
@@ -83,7 +83,7 @@ namespace EatTogether.Controllers
 					}
 
 					// 將檔案路徑存入 VM (稍後轉給 DTO 存入資料庫)
-					vm.CoverImageUrl = "/uploads/articles/" + uniqueFileName;
+					vm.CoverImageUrl = "/images/articles/" + uniqueFileName;
 
 				}
 
@@ -151,7 +151,7 @@ namespace EatTogether.Controllers
 						return View(vm);
 					}
 
-					string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "articles");
+					string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "articles");
 					if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 					string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(vm.CoverImageFile.FileName);
 					string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -159,7 +159,7 @@ namespace EatTogether.Controllers
 					{
 						await vm.CoverImageFile.CopyToAsync(fileStream);
 					}
-					vm.CoverImageUrl = "/uploads/articles/" + uniqueFileName;
+					vm.CoverImageUrl = "/images/articles/" + uniqueFileName;
 				}
 				else
 				{

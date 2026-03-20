@@ -17,10 +17,10 @@ namespace EatTogether.Models.Extensions
 				MinSpend = vm.MinSpend.Value,
 				StartDate = vm.StartDate.Value,
 				EndDate = vm.EndDate.Value,
-				RewardDishId = vm.RewardDishId.Value,
+				RewardDishId = vm.RewardDishId,
 				RewardDishName = vm.RewardDishName,
 				DiscountType = vm.DiscountType,
-				DiscountValue = vm.DiscountValue.Value,
+				DiscountValue = vm.DiscountValue,
 				Status = CalculateStatus(vm.StartDate.Value, vm.EndDate.Value)
 			};
 		}

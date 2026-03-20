@@ -36,6 +36,7 @@
         bool inDish = ctrl is "Categories" or "Dishes" or "SetMeals";
         bool inOrder = ctrl is "PreOrders" or "Payments";
         bool inCoupon = ctrl == "Coupons";
+        bool inArticle = ctrl is "ArticlesCategories" or "Articles";
 
         // 從 JWT Claims 取出目前登入者的權限清單
         bool canStaffView = User.HasClaim("Permission", "Staff_View");
@@ -49,6 +50,8 @@
         bool canCouponManage = User.HasClaim("Permission", "Coupon_Manage");
         bool canEventManage = User.HasClaim("Permission", "Event_Manage");
         bool canReportManage = User.HasClaim("Permission", "Report_Manage");
+        bool canArticleManage = User.HasClaim("Permission", "Article_Manage");
+
 
         // 「員工管理」群組：有 Staff_View 或 Staff_Manage 其一即顯示
         bool showStaffGroup = canStaffView || canStaffManage;
@@ -203,7 +206,7 @@
                             }
 
                             @* ── 行銷管理 ── *@
-                            @if (canCouponManage || canEventManage)
+                            @if (canCouponManage)
                             {
                                 <div class="sb-sidenav-menu-heading">行銷管理</div>
                             }
@@ -223,13 +226,31 @@
                                 </div>
                             }
 
-                            @if (canEventManage)
+                            @* ── 活動管理 ── *@
+                            @if (canEventManage || canArticleManage)
                             {
+                                <div class="sb-sidenav-menu-heading">活動管理</div>
                                 <a class="nav-link @(ctrl == "Events" ? "active" : "")" asp-controller="Events" asp-action="Index">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-calendar-week"></i></div>
                                     活動管理
                                 </a>
+
+                                <a class="nav-link @(inArticle ? "" : "collapsed")" href="#" data-bs-toggle="collapse" data-bs-target="#collapseArticle" aria-expanded="@(inArticle ? "true" : "false")" aria-controls="collapseArticle">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-feather-pointed"></i></div>
+                                    文章管理
+                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                </a>
+                                <div class="collapse @(inArticle ? "show" : "")" id="collapseArticle" aria-labelledby="headingArticle" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link @(ctrl == "Articles" && action == "Index" ? "active" : "")" asp-controller="Articles" asp-action="Index">文章列表</a>
+                                        <a class="nav-link @(ctrl == "ArticleCategories" && action == "Index" ? "active" : "")" asp-controller="ArticleCategories" asp-action="Index">文章類別</a>
+                                    </nav>
+                                </div>
                             }
+
+
+
+
 
                             @* ── 報表管理 ── *@
                             @if (canReportManage)

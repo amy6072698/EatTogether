@@ -6,10 +6,10 @@
     bool isRunning = Model.Status == 1;
 }
 
-@if (ViewData["SuccessMessage"] != null)
+@if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @ViewData["SuccessMessage"]
+        @TempData["SuccessMessage"]
         @* <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> *@
     </div>
 }
@@ -61,20 +61,26 @@
                         </div>
                         <div class="form-group mb-3">
                             <label asp-for="RewardDishId" class="control-label"></label>
-                            <span class="form-text">※非贈品活動可留白</span>
+                            <span class="form-text">※非贈品活動無需填寫</span>
 
                             @if (isEnded)
                             {
-                                @* 已結束：只顯示文字，不可編輯 *@
                                 <input type="text" class="form-control" value="@(Model.RewardDishName ?? "-")" readonly />
                                 <input asp-for="RewardDishId" type="hidden" />
                             }
                             else
                             {
-                                @* 未開始 / 進行中：顯示下拉選單 *@
-                                <select asp-for="RewardDishId" class="form-control"
-                                        asp-items="Model.DishOptions">
+                                <select asp-for="RewardDishId" class="form-control" id="rewardDishSelect">
                                     <option value="">-- 無贈品 --</option>
+                                    @foreach (var dish in Model.DishOptions)
+                                    {
+                                        var price = ((Dictionary<int, decimal>)ViewBag.DishPrices)[int.Parse(dish.Value)];
+                                        <option value="@dish.Value"
+                                                data-price="@price"
+                                                selected="@(Model.RewardDishId?.ToString() == dish.Value ? "selected" : null)">
+                                            @dish.Text
+                                        </option>
+                                    }
                                 </select>
                             }
 
@@ -101,8 +107,11 @@
                     <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label asp-for="StartDate" class="control-label"></label>
-                            <input type="date" asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" readonly="@(isEnded || isRunning ? "readonly" : null)" />
-                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                            @* <input type="date" asp-for="StartDate" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" readonly="@(isEnded || isRunning ? "readonly" : null)" /> *@
+                            <input type="date" asp-for="StartDate" class="form-control"
+                                   min="@(!isRunning ? DateTime.Today.ToString("yyyy-MM-dd") : null)"
+                                   readonly="@(isEnded || isRunning ? "readonly" : null)" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>                            
                         </div>
                         <div class="form-group mb-3">
                             <label asp-for="EndDate" class="control-label"></label>
@@ -211,6 +220,19 @@
             showModal();
 
         });
+
+        $('#rewardDishSelect').on('change', function () {
+            var price = $(this).find(':selected').data('price');
+            if (price !== undefined && price !== '') {
+                $('#DiscountValue').val(price);
+            } else {
+                $('#DiscountValue').val('');
+            }
+        });
+
+
+
+
 
         function showModal(){
             //停用modal

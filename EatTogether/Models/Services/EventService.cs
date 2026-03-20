@@ -33,6 +33,7 @@ namespace EatTogether.Models.Services
 			}
 		}
 
+		//取得贈品選單
 		public async Task<List<SelectListItem>> GetDishOptionsAsync()
 		{
 			return await _context.Dishes
@@ -43,6 +44,14 @@ namespace EatTogether.Models.Services
 					Text = d.DishName
 				})
 				.ToListAsync();
+		}
+
+		//取得贈品金額
+		public async Task<Dictionary<int, decimal>> GetDishPricesAsync()
+		{
+			return await _context.Dishes
+				.Where(d => d.IsActive)
+				.ToDictionaryAsync(d => d.Id, d => d.Price);
 		}
 
 

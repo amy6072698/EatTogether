@@ -124,6 +124,7 @@ namespace EatTogether.Models.Extensions
 				Title = dto.Title,
 				Description = dto.Description,
 				CoverImageUrl = dto.CoverImageUrl,
+				ExistingCoverImageUrl = dto.CoverImageUrl,
 				PublishDate = dto.PublishDate,
 				ExpiryDate = dto.ExpiryDate,
 				IsPinned = dto.IsPinned,

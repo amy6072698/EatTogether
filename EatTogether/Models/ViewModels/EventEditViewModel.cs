@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace EatTogether.Models.ViewModels
@@ -40,11 +41,13 @@ namespace EatTogether.Models.ViewModels
 
 		public int? RewardDishId { get; set; }
 
-		public List<SelectListItem> DishOptions { get; set; }
+		[BindNever]
+		public List<SelectListItem>? DishOptions { get; set; }
 
 
 		[Display(Name = "贈品")]
-		public string RewardDishName { get; set; }
+		[BindNever]
+		public string? RewardDishName { get; set; }
 
 		[Display(Name = "折扣類別")]
 		[StringLength(20)]
