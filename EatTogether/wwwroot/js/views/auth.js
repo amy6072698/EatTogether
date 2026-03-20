@@ -44,19 +44,35 @@ async function apiFetch(url, options = {}) {
 function initPasswordToggles() {
     document.querySelectorAll('.toggle-password').forEach(btn => {
         btn.addEventListener('click', function () {
-            const targetId = this.dataset.target;
-            const input = document.querySelector(`#${targetId}`);
-            if (!input) return;
-
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            // 🔥 檢查是否已經綁定過事件
+            if (btn.dataset.initialized === 'true') {
+                return; // 已綁定，跳過
             }
+
+            btn.addEventListener('click', function () {
+                const targetId = this.dataset.target;
+                const input = document.querySelector(`#${targetId}`);
+                if (!input) return;
+
+                // 切換密碼顯示/隱藏
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+
+                // 更新 icon
+                const icon = this.querySelector('i');
+                if (icon) {
+                    const newIcon = document.createElement('i');
+                    newIcon.className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                    icon.replaceWith(newIcon);
+                }
+            });
+
+            // 🔥 標記為已初始化
+            btn.dataset.initialized = 'true';
         });
     });
+
+    console.log('✅ initPasswordToggles 執行完畢');
 }
 
 /* ============================================================
@@ -579,19 +595,42 @@ function initResetPasswordPage() {
    頁面初始化路由
    ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-    const container = document.querySelector('[data-auth-page]');
-    if (!container) return;
-
-    const page = container.dataset.authPage;
-
-    switch (page) {
-        case 'login':
-            initLoginPage();
-            initForgotPasswordModal();
-            initForceChangePasswordModal();
-            break;
-        case 'reset-password':
-            initResetPasswordPage();
-            break;
+    // 根據頁面判斷要初始化哪個功能
+    // 登入頁面
+    if (document.querySelector('#login-form')) {
+        initLoginPage();
     }
+
+    // 忘記密碼 Modal
+    const forgotLink = document.querySelector('#forgot-password-link');
+    if (forgotLink) {
+        initForgotPasswordModal();
+    }
+
+    // 強制改密碼 Modal
+    const forceModal = document.querySelector('#forceChangePasswordModal');
+    if (forceModal) {
+        initForceChangePasswordModal();
+    }
+
+    // 重設密碼頁面
+    const resetForm = document.querySelector('#reset-password-form');
+    if (resetForm) {
+        initResetPasswordPage();
+    }
+    //const container = document.querySelector('[data-auth-page]');
+    //if (!container) return;
+
+    //const page = container.dataset.authPage;
+
+    //switch (page) {
+    //    case 'login':
+    //        initLoginPage();
+    //        initForgotPasswordModal();
+    //        initForceChangePasswordModal();
+    //        break;
+    //    case 'reset-password':
+    //        initResetPasswordPage();
+    //        break;
+    //}
 });

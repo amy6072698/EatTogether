@@ -30,10 +30,10 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-secondary">套餐定價</label>
+                                <label class="form-label fw-bold text-secondary">套餐定價 <span class="text-danger">*</span></label>
                                 <div class="input-group input-group-lg shadow-sm">
                                     <span class="input-group-text bg-light border-light-subtle">$</span>
-                                    <input asp-for="SetPrice" class="form-control border-light-subtle" placeholder="0" min="0" step="1" />
+                                    <input asp-for="SetPrice" class="form-control border-light-subtle" placeholder="請輸入價格" />
                                 </div>
                                 <span asp-validation-for="SetPrice" class="text-danger small"></span>
                             </div>

@@ -53,6 +53,15 @@ let userTable = null;
    DataTables 初始化
    ============================================================ */
 function initDataTable() {
+    // 動態判斷表格欄位數量
+    const columnCount = document.querySelectorAll('#user-table thead th').length;
+    const hasActionColumn = columnCount === 10; // 10欄表示有「操作」欄
+
+    // 根據欄位數量設定不可排序的欄位
+    const nonSortableColumns = hasActionColumn
+        ? [0, 1, 2, 3, 4, 7, 8, 9]  // 有操作欄時
+        : [0, 1, 2, 3, 4, 7, 8];     // 無操作欄時
+
     userTable = $('#user-table').DataTable({
         language: {
             url: 'https://cdn.datatables.net/plug-ins/2.3.7/i18n/zh-HANT.json'
@@ -65,8 +74,8 @@ function initDataTable() {
             "<'row align-items-center mt-2'<'col-auto'i><'col'p>>",
         columnDefs: [
             // 停用欄位標題點擊排序，但保留第 5（到職日期）、第 6（建立時間）欄可程式控制排序
-            { orderable: false, targets: [0, 1, 2, 3, 4, 7, 8, 9] },
-            { orderable: true,  targets: [5, 6] }
+            { orderable: false, targets: nonSortableColumns },
+            { orderable: true, targets: [5, 6] }
         ]
     });
 
@@ -83,6 +92,7 @@ function initDataTable() {
    ============================================================ */
 function initSearch() {
     const btnSearch = document.querySelector('#btn-search');
+    const btnReset = document.querySelector('#btn-reset'); 
     const chkActiveOnly = document.querySelector('#search-active-only');
 
     if (chkActiveOnly) {
@@ -107,6 +117,33 @@ function initSearch() {
             }
         });
     }
+
+    // 重置按鈕功能
+    if (btnReset) {  // 👈 從這裡開始新增（約第 120 行）
+        btnReset.addEventListener('click', function () {
+            // 清空所有搜尋輸入框
+            const empNoInput = document.querySelector('#search-emp-no');
+            const nameInput = document.querySelector('#search-name');
+            const accountInput = document.querySelector('#search-account');
+            const emailInput = document.querySelector('#search-email');
+            const activeCheckbox = document.querySelector('#search-active-only');
+
+            if (empNoInput) empNoInput.value = '';
+            if (nameInput) nameInput.value = '';
+            if (accountInput) accountInput.value = '';
+            if (emailInput) emailInput.value = '';
+            if (activeCheckbox) activeCheckbox.checked = false;
+
+            // 清空 DataTables 的搜尋條件並重新繪製
+            if (userTable) {
+                userTable.column(0).search('')
+                    .column(1).search('')
+                    .column(2).search('')
+                    .column(3).search('')
+                    .draw();
+            }
+        });
+    }  // 👈 到這裡結束（約第 143 行）
 }
 
 /* ============================================================
@@ -235,16 +272,6 @@ function showFieldError(inputEl, message) {
     errorEl.textContent = message;
     errorEl.style.display = 'block';
 
-    //let errorEl = inputEl.closest('.input-with-check, .position-relative, div')?.querySelector('.invalid-feedback');
-    //if (!errorEl || errorEl.closest('.input-with-check')) {
-    //    errorEl = inputEl.parentElement.querySelector('.invalid-feedback');
-    //}
-    //if (!errorEl) {
-    //    errorEl = document.createElement('div');
-    //    errorEl.className = 'invalid-feedback';
-    //    inputEl.parentElement.appendChild(errorEl);
-    //}
-    //errorEl.textContent = message;
 }
 
 function clearAllFieldErrors(formEl) {
@@ -257,11 +284,6 @@ function clearAllFieldErrors(formEl) {
     const roleErr = formEl.querySelector('#role-error, #edit-role-error');
     if (roleErr) roleErr.textContent = '';
 
-    //if (!formEl) return;
-    //formEl.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-    //formEl.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-    //const roleErr = formEl.querySelector('#role-error, #edit-role-error');
-    //if (roleErr) roleErr.textContent = '';
 }
 
 /* ============================================================

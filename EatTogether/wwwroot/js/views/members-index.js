@@ -71,6 +71,7 @@ function initDataTable() {
    ============================================================ */
 function initSearch() {
     const btnSearch = document.querySelector('#btn-search');
+    const btnReset = document.querySelector('#btn-reset');
     const statusSelect = document.querySelector('#search-status');
 
     // 狀態下拉：改變後立即送出
@@ -81,6 +82,28 @@ function initSearch() {
     // 查詢按鈕
     if (btnSearch) {
         btnSearch.addEventListener('click', () => submitSearch());
+    }
+
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            // 清空所有搜尋欄位
+            const nameInput = document.querySelector('#search-name');
+            const accountInput = document.querySelector('#search-account');
+            const emailInput = document.querySelector('#search-email');
+            const phoneInput = document.querySelector('#search-phone');
+            const statusSelect = document.querySelector('#search-status');
+            const sortSelect = document.querySelector('#sort-select');
+
+            if (nameInput) nameInput.value = '';
+            if (accountInput) accountInput.value = '';
+            if (emailInput) emailInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+            if (statusSelect) statusSelect.value = '';
+            if (sortSelect) sortSelect.value = '';
+
+            // 重新導向到無參數的頁面（顯示所有資料）
+            window.location.href = '/Members/Index';
+        });
     }
 }
 

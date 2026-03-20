@@ -166,5 +166,21 @@ namespace EatTogether.Models.Repositories
 
 			await _context.SaveChangesAsync();
 		}
+
+		public async Task UpdateOrderAsync(IEnumerable<int> orderedIds)
+		{
+			var categories = await _context.Categories.ToListAsync();
+			int order = 1;
+			foreach (var id in orderedIds)
+			{
+				var category = categories.FirstOrDefault(c => c.Id == id);
+				if (category != null)
+				{
+					category.DisplayOrder = order++;
+					category.UpdatedAt = DateTime.Now;
+				}
+			}
+			await _context.SaveChangesAsync();
+		}
 	}
 }

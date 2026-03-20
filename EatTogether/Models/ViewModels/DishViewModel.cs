@@ -21,9 +21,9 @@ namespace EatTogether.Models.ViewModels
         public string DishName { get; set; } = null!;
 
         [Required(ErrorMessage = "價格為必填")]
-        [Range(0, 99999, ErrorMessage = "價格請填 0~99999")]
+        [Range(1, 99999, ErrorMessage = "價格請填 1~99999")]
         [Display(Name = "價格")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         [Display(Name = "是否啟用")]
         public bool IsActive { get; set; } = true;
