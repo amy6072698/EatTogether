@@ -21,7 +21,7 @@ namespace EatTogether.Models.Repositories
         Task UpdateStatusAsync(int id, int doneOrCancel);
 
         // Payment
-        Task CancelUnservedDetailsAsync(int preOrderId);
+        Task CancelUnservedDetailsAsync(int preOrderId, ISet<int>? excludeDetailIds = null);
         Task<PreOrder?> GetByIdAsync(int id);
         Task CancelEntireOrderAsync(int preOrderId);
         Task UpdateDetailBilledAsync(int detailId);
@@ -108,14 +108,18 @@ namespace EatTogether.Models.Repositories
         }
 
         // Payment -----------------------------------------------------------------------------------------
-        public async Task CancelUnservedDetailsAsync(int preOrderId)
+        public async Task CancelUnservedDetailsAsync(int preOrderId, ISet<int>? excludeDetailIds = null)
         {
-            var details = await _context.PreOrderDetails
-                .Where(d => d.PreOrderId == preOrderId && d.DoneOrCancel == 0)
-                .ToListAsync();
+            var query = _context.PreOrderDetails
+                .Where(d => d.PreOrderId == preOrderId && d.DoneOrCancel == 0);
+
+            if (excludeDetailIds?.Count > 0)
+                query = query.Where(d => !excludeDetailIds.Contains(d.Id));
+
+            var details = await query.ToListAsync();
 
             foreach (var d in details)
-                d.DoneOrCancel = 2;  // 改成已取消
+                d.DoneOrCancel = 2;
 
             await _context.SaveChangesAsync();
         }

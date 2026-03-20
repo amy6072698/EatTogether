@@ -3,6 +3,7 @@
     public class PaymentDetailItemViewModel
     {
         public int DetailId { get; set; }
+        public int PreOrderId { get; set; }
         public string ProductName { get; set; }
         public int Qty { get; set; }
         public int UnitPrice { get; set; }

@@ -5,6 +5,9 @@ namespace EatTogether.Models.Repositories
     public interface ICouponRepository
     {
         Task<IEnumerable<CouponDto>> GetAllAsync();
+        Task<List<CouponDto>> GetApplicableCouponsAsync(int amount);
+        /// <summary>依 ID 清單取回優惠券 DTO（不限門檻），用於顯示使用中但已不符目前金額門檻的優惠券。</summary>
+        Task<List<CouponDto>> GetCouponsByIdsAsync(IEnumerable<int> ids);
         Task<CouponDto?> GetByIdAsync(int id);
         Task<CouponDto?> GetByCodeAsync(string code);
         Task CreateAsync(CouponDto dto);

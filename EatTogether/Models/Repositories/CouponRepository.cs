@@ -22,6 +22,32 @@ namespace EatTogether.Models.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<CouponDto>> GetApplicableCouponsAsync(int amount)
+        {
+            var today = DateTime.Today;
+            return await _context.Coupons
+                .AsNoTracking()
+                .Where(c => !c.IsDisabled
+                         && c.StartDate <= today
+                         && (c.EndDate == null || c.EndDate >= today)
+                         && c.MinSpend <= amount)
+                .OrderByDescending(c => c.MinSpend)
+                .Select(c => c.ToDto())
+                .ToListAsync();
+        }
+
+        public async Task<List<CouponDto>> GetCouponsByIdsAsync(IEnumerable<int> ids)
+        {
+            var idSet = ids.ToHashSet();
+            if (idSet.Count == 0) return new List<CouponDto>();
+
+            return await _context.Coupons
+                .AsNoTracking()
+                .Where(c => idSet.Contains(c.Id))
+                .Select(c => c.ToDto())
+                .ToListAsync();
+        }
+
         public async Task<CouponDto?> GetByIdAsync(int id)
         {
             var c = await _context.Coupons.FindAsync(id);

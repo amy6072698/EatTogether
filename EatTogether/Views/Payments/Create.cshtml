@@ -271,6 +271,7 @@
         flex: 1;
         overflow-y: auto;
         padding: 16px 24px;
+        min-height: 0;
     }
 
     .detail-table {
@@ -520,6 +521,21 @@
         border-left-color: #f5c6cb;
     }
 
+    .detail-table tr.child-item-row.child-served td {
+        background: #f0fff8;
+        color: #27ae60;
+        border-bottom-color: #b7f5d8;
+    }
+
+        .detail-table tr.child-item-row.child-served td:first-child {
+            border-left-color: #27ae60;
+        }
+
+    .badge-partial {
+        background: #ffe0cc;
+        color: #b5470a;
+    }
+
     .badge-setmeal {
         background: #e67e22;
         color: #fff;
@@ -687,26 +703,32 @@
     </div>
 </div>
 
-<!-- Coupon Input Modal -->
-<div class="modal-overlay" id="couponInputModal">
-    <div class="modal-box" style="width:380px;">
-        <div class="modal-title">🎫 輸入優惠券</div>
-        <div style="margin:16px 0;text-align:left;">
-            <div style="font-size:0.82rem;color:#888;margin-bottom:6px;">優惠券代碼</div>
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="couponCodeInput"
-                       style="flex:1;padding:10px 12px;border:2px solid #ddd;border-radius:8px;
-                              font-family:inherit;font-size:0.95rem;outline:none;"
-                       placeholder="請輸入折扣碼"
-                       onfocus="this.style.borderColor='#c0392b'"
-                       onblur="this.style.borderColor='#ddd'"
-                       onkeydown="if(event.key==='Enter')doApplyCoupon()" />
-            </div>
-            <div id="couponInputMsg" style="margin-top:8px;font-size:0.85rem;display:none;"></div>
-        </div>
+<!-- Coupon Selection Modal -->
+<div class="modal-overlay" id="couponSelectModal">
+    <div class="modal-box" style="width:420px;max-height:80vh;overflow-y:auto;">
+        <div class="modal-title">🎫 選擇優惠券</div>
+        <div id="couponListArea" style="margin:16px 0;text-align:left;"></div>
         <div class="modal-actions">
-            <button class="modal-btn-cancel" onclick="document.getElementById('couponInputModal').classList.remove('show')">關閉</button>
-            <button class="modal-btn-confirm" onclick="doApplyCoupon()">套用</button>
+            <button class="modal-btn-cancel" onclick="document.getElementById('couponSelectModal').classList.remove('show')">關閉</button>
+            <button class="modal-btn-confirm" id="clearCouponBtn" style="background:#888;" onclick="doApplyCouponById(null)">清除優惠券</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Single Order Modal -->
+<div class="modal-overlay" id="cancelOrderSelectModal">
+    <div class="modal-box" style="width:420px;max-height:80vh;overflow-y:auto;">
+        <div class="modal-title">✕ 選擇要取消的訂單</div>
+        <div id="cancelOrderListArea" style="margin:16px 0;text-align:left;"></div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel"
+                    onclick="document.getElementById('cancelOrderSelectModal').classList.remove('show')">
+                關閉
+            </button>
+            <button class="modal-btn-confirm" onclick="cancelEntireOrderAll()"
+                    style="background:#c0392b;">
+                取消全部
+            </button>
         </div>
     </div>
 </div>
@@ -800,7 +822,7 @@
             <p id="emptyRightText">請選擇訂單</p>
         </div>
 
-        <div id="checkoutContent" style="display:none;flex-direction:column;height:100%;">
+        <div id="checkoutContent" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
 
             <div class="right-header">
                 <div>
@@ -825,7 +847,7 @@
                                 style="padding:7px 16px;border:2px solid #c0392b;border-radius:8px;
                                                background:#fff;color:#c0392b;font-family:inherit;
                                                font-weight:700;font-size:0.85rem;cursor:pointer;display:none;"
-                                onclick="cancelEntireOrder()">
+                                onclick="openCancelOrderModal()">
                             ✕ 整單取消
                         </button>
                     }
@@ -865,35 +887,49 @@
             </div>
 
             <div class="amount-section">
-                <div id="couponTag" style="display:none; margin-bottom:10px; padding:10px 14px;
-                                background:#fff8e1; border:1px solid #f0c040;
-                                border-radius:10px;">
-                    <div style="font-size:0.75rem;color:#b7770d;font-weight:700;margin-bottom:4px;">優惠券</div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#b7770d;">
-                            🎫 <span id="couponTagName"></span>
+                <!-- 合併優惠折疊區 -->
+                <div id="discountSummary" style="display:none; margin-bottom:10px;">
+                    <button type="button" id="discountToggleBtn" onclick="toggleDiscountDetail()"
+                            style="width:100%;display:flex;align-items:center;justify-content:space-between;
+                                   padding:9px 14px;border:1.5px solid #b5cfa3;border-radius:10px;
+                                   background:#f4fdf7;cursor:pointer;font-family:inherit;font-size:0.88rem;
+                                   font-weight:600;color:#27ae60;transition:all 0.15s;">
+                        <span>🎁 優惠使用中
+                            <span id="discountCount"
+                                  style="background:#27ae60;color:#fff;border-radius:50%;
+                                         padding:1px 7px;font-size:0.75rem;margin-left:4px;"></span>
+                        </span>
+                        <span id="discountArrow">▼</span>
+                    </button>
+                    <div id="discountDetail" style="display:none; border:1.5px solid #b5cfa3; border-top:none;
+                         border-radius:0 0 10px 10px; padding:6px 10px; background:#f9fdf9;">
+                        <div id="summaryEventRow" style="display:none; padding:6px 4px;
+                             align-items:center; justify-content:space-between;">
+                            <span style="font-size:0.88rem;color:#27ae60;font-weight:600;">🎉 <span id="summaryEventName"></span></span>
+                            <button type="button" onclick="doApplyEvent(null)"
+                                    style="border:none;background:none;color:#aaa;cursor:pointer;font-size:0.9rem;padding:0 4px;"
+                                    title="移除活動">✕</button>
                         </div>
-                        <button type="button" onclick="doApplyCouponClear()"
-                                style="border:none;background:none;color:#b7770d;cursor:pointer;font-size:1rem;padding:0 4px;"
-                                title="移除優惠券">✕</button>
+                        <div id="summaryCouponRow" style="display:none; padding:6px 4px;
+                             align-items:center; justify-content:space-between;">
+                            <span style="font-size:0.88rem;color:#b7770d;font-weight:600;">🎫 <span id="summaryCouponName"></span></span>
+                            <button type="button" onclick="doApplyCouponById(null)"
+                                    style="border:none;background:none;color:#aaa;cursor:pointer;font-size:0.9rem;padding:0 4px;"
+                                    title="移除優惠券">✕</button>
+                        </div>
                     </div>
                 </div>
-                <div id="eventTag" style="display:none; margin-bottom:10px; padding:10px 14px;
-                                background:#f0fff4; border:1px solid #52c788;
-                                border-radius:10px;">
-                    <div style="font-size:0.75rem;color:#27ae60;font-weight:700;margin-bottom:4px;">🎉 活動優惠</div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:#27ae60;">
-                            <span id="eventTagName"></span>
-                        </div>
-                        <button type="button" onclick="doApplyEvent(null)"
-                                style="border:none;background:none;color:#27ae60;cursor:pointer;font-size:1rem;padding:0 4px;"
-                                title="移除活動">✕</button>
-                    </div>
+                <!-- Toast 通知（折扣套用時顯示） -->
+                <div id="discountToast"
+                     style="display:none; margin-bottom:8px; padding:9px 16px;
+                            background:#1a1a1a; color:#fff; border-radius:10px;
+                            font-size:0.85rem; font-weight:600; text-align:center;
+                            opacity:0; transition:opacity 0.4s;">
+                    <span id="discountToastText"></span>
                 </div>
                 <!-- 結帳頁手動選擇活動/優惠券 -->
                 <div id="discountBtnRow" style="display:none;gap:8px;margin-bottom:12px;">
-                    <button type="button" onclick="openEventModal()"
+                    <button type="button" id="selectEventBtn" onclick="openEventModal()"
                             style="flex:1;padding:7px 0;border:1.5px solid #27ae60;border-radius:8px;
                                    background:#fff;color:#27ae60;font-family:inherit;font-weight:600;
                                    font-size:0.82rem;cursor:pointer;transition:all 0.15s;"
@@ -907,7 +943,7 @@
                                    font-size:0.82rem;cursor:pointer;transition:all 0.15s;"
                             onmouseover="this.style.background='#fff8e1'"
                             onmouseout="this.style.background='#fff'">
-                        🎫 輸入優惠券
+                        🎫 選擇優惠券
                     </button>
                 </div>
                 <div class="amount-row">
@@ -1036,10 +1072,9 @@
             data.inOrOut ? `🪑 ${data.tableName || ''}` : `🥡 外帶`;
         document.getElementById('rightSubtitle').textContent = data.orderNumber || '-';
 
-        // 4. 判斷是否「整單都沒有已出餐餐點」（排除子項目，以父項目/套餐標題為單位）
-        const hasServedItems = data.items && data.items
-            .filter(i => !i.parentDetailId)
-            .some(item => item.status !== 0 && item.status !== 2 && item.isBilled !== true);
+        // 4. 判斷是否有「已出餐」的餐點（含套餐子項目）
+        const hasServedItems = data.items &&
+            data.items.some(item => !item.isBilled && item.status === 1);
 
         const warningArea = document.getElementById('unservedWarning');
         const warningText = warningArea.querySelector('p');
@@ -1070,19 +1105,19 @@
             if (cancelOrderBtn) cancelOrderBtn.style.display = '';
         }
 
-        // 5b. 依據餐點完成狀態控制 整單取消/更換桌位/拆單結帳 的顯示
+        // 5b. 依據餐點完成狀態控制 更換桌位 的顯示；整單取消由 section 5 決定
+        //     allCompleted = 所有父層餐點均已取消(2) 或已結帳(isBilled)，才真正「完成」
         const topLevelItems = data.items ? data.items.filter(i => !i.parentDetailId) : [];
         const allCompleted = topLevelItems.length > 0 &&
-            topLevelItems.every(item => item.status === 1 || item.status === 2);
+            topLevelItems.every(item => item.status === 2 || item.isBilled === true);
 
         const editTableBtn = document.getElementById('editTableBtn');
         if (allCompleted) {
-            // 全部完成(完成或取消) → 隱藏整單取消和更換桌位
+            // 全部已取消或已結帳 → 隱藏整單取消和更換桌位
             if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
             if (editTableBtn) editTableBtn.style.display = 'none';
         } else {
-            // 尚有未完成餐點 → 整單取消和更換桌位都要顯示
-            if (cancelOrderBtn) cancelOrderBtn.style.display = '';
+            // 尚有可操作餐點 → 顯示更換桌位；整單取消由上方 section 5 的狀態決定，不在此覆蓋
             if (editTableBtn) editTableBtn.style.display = '';
         }
 
@@ -1144,8 +1179,19 @@
             if (isSetMeal)   tr.classList.add('is-setmeal-row');
 
             let badge = '';
-            if (isSetMeal)          badge += `<span class="status-badge badge-setmeal">套餐</span>`;
-            if (isUnserved)         badge += `<span class="status-badge badge-unserved">未出餐</span>`;
+            if (isSetMeal) {
+                badge += `<span class="status-badge badge-setmeal">套餐</span>`;
+                if (isUnserved) {
+                    // 套餐父列未完成時，看子列是否有部分已出餐
+                    const childrenOfThis = data.items.filter(c => c.parentDetailId === item.detailId);
+                    const anyChildServed = childrenOfThis.some(c => c.status === 1);
+                    badge += anyChildServed
+                        ? `<span class="status-badge badge-partial">部分出餐</span>`
+                        : `<span class="status-badge badge-unserved">未出餐</span>`;
+                }
+            } else if (isUnserved) {
+                badge += `<span class="status-badge badge-unserved">未出餐</span>`;
+            }
             if (isCancelled)        badge += `<span class="status-badge badge-cancel">已取消</span>`;
             if (item.isInvalidGift) badge += `<span class="status-badge" style="background:#e74c3c;color:#fff;">⚠️ 需補差價</span>`;
 
@@ -1171,16 +1217,25 @@
                 const children = data.items.filter(c => c.parentDetailId === item.detailId);
                 children.forEach(child => {
                     const childCancelled = child.status === 2;
+                    const childServed    = child.status === 1;
                     const childTr = document.createElement('tr');
                     childTr.classList.add('child-item-row');
                     if (childCancelled) childTr.classList.add('status-cancel');
+                    if (childServed)    childTr.classList.add('child-served');
                     // 儲存 parentDetailId 供拆單使用
                     childTr.dataset.parentId = item.detailId;
                     childTr.dataset.detailId = child.detailId;
+
+                    const childBadge = childCancelled
+                        ? `<span class="status-badge badge-cancel">已取消</span>`
+                        : childServed
+                            ? `<span class="status-badge badge-billed">已出餐</span>`
+                            : `<span class="status-badge badge-unserved">待出餐</span>`;
+
                     childTr.innerHTML = `
                         <td class="split-check-col"></td>
                         <td style="padding-left:28px;">
-                            <span style="color:#e67e22;margin-right:4px;">└</span>${child.productName}
+                            <span style="color:#e67e22;margin-right:4px;">└</span>${child.productName}${childBadge}
                         </td>
                         <td>${child.qty}</td>
                         <td style="color:#ccc;">—</td>
@@ -1200,24 +1255,44 @@
         document.getElementById('amtDiscount').textContent = data.discountAmount.toLocaleString();
         document.getElementById('amtTotal').textContent    = data.totalAmount.toLocaleString();
 
-        // 8. 優惠券標籤顯示
-        const couponTag  = document.getElementById('couponTag');
-        const couponName = document.getElementById('couponTagName');
-        if (data.couponName) {
-            couponName.textContent  = data.couponName;
-            couponTag.style.display = 'block';
+        // 8. 合併優惠折疊區
+        const hasEvent  = !!data.eventTitle;
+        const hasCoupon = !!data.couponName;
+        const discountSummary = document.getElementById('discountSummary');
+        const discountDetail  = document.getElementById('discountDetail');
+        const summaryEventRow  = document.getElementById('summaryEventRow');
+        const summaryCouponRow = document.getElementById('summaryCouponRow');
+        if (hasEvent || hasCoupon) {
+            discountSummary.style.display = 'block';
+            document.getElementById('discountCount').textContent = (hasEvent ? 1 : 0) + (hasCoupon ? 1 : 0);
+            if (hasEvent) {
+                document.getElementById('summaryEventName').textContent = data.eventTitle;
+                summaryEventRow.style.display = 'flex';
+            } else {
+                summaryEventRow.style.display = 'none';
+            }
+            if (hasCoupon) {
+                document.getElementById('summaryCouponName').textContent = data.couponName;
+                summaryCouponRow.style.display = 'flex';
+            } else {
+                summaryCouponRow.style.display = 'none';
+            }
         } else {
-            couponTag.style.display = 'none';
+            discountSummary.style.display = 'none';
+            discountDetail.style.display  = 'none';
+            discountDetailOpen = false;
+            document.getElementById('discountArrow').textContent = '▼';
         }
 
-        // 9. 活動標籤顯示
-        const eventTag  = document.getElementById('eventTag');
-        const eventName = document.getElementById('eventTagName');
-        if (data.eventTitle) {
-            eventName.textContent  = data.eventTitle;
-            eventTag.style.display = 'block';
-        } else {
-            eventTag.style.display = 'none';
+        // 9. 折扣按鈕列：非拆單模式才顯示；選擇活動只在有未出餐時才啟用
+        const discountBtnRow = document.getElementById('discountBtnRow');
+        if (discountBtnRow) {
+            discountBtnRow.style.display = splitMode ? 'none' : 'flex';
+        }
+        const selectEventBtn = document.getElementById('selectEventBtn');
+        if (selectEventBtn) {
+            // 只有仍有未出餐餐點才可選活動（避免送出免費餐點但廚房沒收到）
+            selectEventBtn.style.display = data.hasUnserved ? '' : 'none';
         }
 
         // 9. 更新全域變數與付款狀態
@@ -1407,6 +1482,13 @@
         const actionText = confirmBtn.textContent;
 
         const isFullCancel = actionText === '是，整單取消';
+
+        // 整單取消 + 多筆訂單 → 開啟選擇哪一單的 Modal
+        if (isFullCancel && currentTableId && currentData?.subOrders?.length > 1) {
+            openCancelOrderModal();
+            return;
+        }
+
         const title   = isFullCancel ? '確定要整單取消嗎？' : '確定要取消未出餐並結帳嗎？';
         const message = isFullCancel ? '所有餐點都會取消，此操作無法復原。' : '未出餐的餐點將會取消，已完成的餐點會正常結帳。';
         const label   = isFullCancel ? '整單取消' : '確認';
@@ -1453,8 +1535,7 @@
                 document.getElementById('amtTotal').textContent = '-';
                 document.getElementById('unservedWarning').style.display = 'none';
                 document.getElementById('checkoutBtn').classList.remove('show');
-                document.getElementById('couponTag').style.display = 'none';
-                document.getElementById('eventTag').style.display  = 'none';
+                document.getElementById('discountSummary').style.display = 'none';
                 setTimeout(() => window.location.href = "/Payments/Create", 1500);
             } else {
                 // 取消未出餐並結帳，正常重新渲染明細
@@ -1466,12 +1547,92 @@
         }
     }
 
-    function cancelEntireOrder() {
+    // 開啟「選擇取消哪一單」的 Modal（多筆）或直接取消（單筆 / 外帶）
+    function openCancelOrderModal() {
+        // 外帶訂單或只有一筆 → 直接整單取消
+        if (!currentTableId || !currentData?.subOrders || currentData.subOrders.length <= 1) {
+            cancelEntireOrderAll();
+            return;
+        }
+
+        // 多筆訂單 → 顯示選擇 Modal
+        const area = document.getElementById('cancelOrderListArea');
+        area.innerHTML = currentData.subOrders.map(o => {
+            const unservedBadge = o.hasUnserved
+                ? `<span style="font-size:0.75rem;background:#fff3cd;color:#856404;
+                              border-radius:8px;padding:2px 8px;margin-left:6px;font-weight:700;">未出餐</span>`
+                : '';
+            return `
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                         padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;
+                         margin-bottom:8px;background:#fff;">
+                <div>
+                    <div style="font-weight:700;font-size:0.92rem;color:#1a1a1a;">
+                        ${o.orderNumber}${unservedBadge}
+                    </div>
+                    <div style="font-size:0.82rem;color:#888;margin-top:3px;">
+                        NT$ ${o.amount.toLocaleString()}
+                    </div>
+                </div>
+                <button type="button"
+                        onclick="cancelSingleOrder(${o.preOrderId})"
+                        style="padding:6px 14px;border:1.5px solid #c0392b;border-radius:8px;
+                               background:#fff;color:#c0392b;font-family:inherit;
+                               font-weight:700;font-size:0.82rem;cursor:pointer;">
+                    取消此單
+                </button>
+            </div>`;
+        }).join('');
+
+        document.getElementById('cancelOrderSelectModal').classList.add('show');
+    }
+
+    // 取消單一 PreOrder，取消後若桌上還有其他訂單則重新渲染；否則重整頁面
+    function cancelSingleOrder(preOrderId) {
+        document.getElementById('cancelOrderSelectModal').classList.remove('show');
+        showConfirm(
+            '此筆訂單的所有餐點都會取消，此操作無法復原。',
+            async () => {
+                try {
+                    const res = await fetch('/PreOrders/CancelOrder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: `preOrderId=${preOrderId}`
+                    });
+                    if (!res.ok) throw new Error();
+                    const result = await res.json();
+                    if (!result.success) throw new Error();
+
+                    // 重新載入該桌資料
+                    const fresh = await fetch(`/Payments/GetDetailByTable?tableId=${currentTableId}`);
+                    if (fresh.ok) {
+                        const data = await fresh.json();
+                        currentData = data;
+                        renderDetail(data);
+                    } else {
+                        // 已無剩餘訂單
+                        setTimeout(() => window.location.href = '/Payments/Create', 500);
+                    }
+                } catch {
+                    showAlert('執行失敗，請檢查網路連線。', '❌ 錯誤');
+                }
+            },
+            '確定要取消此筆訂單嗎？',
+            '取消此單',
+            '返回'
+        );
+    }
+
+    // 取消整桌（或外帶單筆）所有訂單
+    function cancelEntireOrderAll() {
+        document.getElementById('cancelOrderSelectModal').classList.remove('show');
         showConfirm(
             '所有餐點（包含已完成）都會取消，此操作無法復原。',
             async () => {
                 try {
-                    // 內用：取消整桌所有訂單；外帶：取消單筆
                     const url  = currentTableId ? '/PreOrders/CancelAllByTable' : '/PreOrders/CancelOrder';
                     const body = currentTableId ? `tableId=${currentTableId}` : `preOrderId=${currentPreOrderId}`;
                     const res = await fetch(url, {
@@ -1497,8 +1658,7 @@
                     document.getElementById('amtTotal').textContent    = '-';
                     document.getElementById('unservedWarning').style.display = 'none';
                     document.getElementById('checkoutBtn').classList.remove('show');
-                    document.getElementById('couponTag').style.display = 'none';
-                    document.getElementById('eventTag').style.display  = 'none';
+                    document.getElementById('discountSummary').style.display = 'none';
                     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
                     if (cancelOrderBtn) cancelOrderBtn.style.display = 'none';
                     setTimeout(() => window.location.href = "/Payments/Create", 1500);
@@ -1506,8 +1666,8 @@
                     showAlert('執行失敗，請檢查網路連線。', '❌ 錯誤');
                 }
             },
-            '確定要整單取消嗎？',
-            '整單取消',
+            '確定要整桌全部取消嗎？',
+            '整桌取消',
             '返回'
         );
     }
@@ -1585,7 +1745,7 @@
         }
     }
     } else {
-        switchTab('take');
+        switchTab('dine');
     }
     });
         let splitMode = false;
@@ -1669,11 +1829,15 @@
 
             listArea.innerHTML = events.map(ev => `
                 <div onclick="doApplyEvent(${ev.id})"
-                     style="padding:12px 14px;border:2px solid #e8e8e8;border-radius:10px;
-                            margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
+                     style="padding:12px 14px;border:2px solid ${ev.isInUse ? '#27ae60' : '#e8e8e8'};
+                            border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;
+                            background:${ev.isInUse ? '#f0fff4' : '#fff'};"
                      onmouseover="this.style.borderColor='#27ae60';this.style.background='#f0fff4'"
-                     onmouseout="this.style.borderColor='#e8e8e8';this.style.background='#fff'">
-                    <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;">${ev.title}</div>
+                     onmouseout="this.style.borderColor='${ev.isInUse ? '#27ae60' : '#e8e8e8'}';this.style.background='${ev.isInUse ? '#f0fff4' : '#fff'}'">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                        <span style="font-weight:700;color:#1a1a1a;">${ev.title}</span>
+                        ${ev.isInUse ? '<span style="font-size:0.72rem;background:#27ae60;color:#fff;padding:1px 7px;border-radius:10px;font-weight:600;">使用中</span>' : ''}
+                    </div>
                     <div style="font-size:0.82rem;color:#27ae60;font-weight:600;">${ev.discountDescription}</div>
                     ${ev.summary ? `<div style="font-size:0.78rem;color:#888;margin-top:2px;">${ev.summary}</div>` : ''}
                     <div style="font-size:0.75rem;color:#bbb;margin-top:2px;">最低消費 NT$ ${ev.minSpend}</div>
@@ -1697,6 +1861,8 @@
             if (result.success) {
                 currentData = result.data;
                 renderDetail(result.data);
+                if (eventId != null && result.data.eventTitle)
+                    showDiscountToast(`已套用「${result.data.eventTitle}」活動`);
             } else {
                 showAlert(result.error || '套用失敗', '❌ 錯誤');
             }
@@ -1705,60 +1871,83 @@
         }
     }
 
-    function openCouponModal() {
-        document.getElementById('couponCodeInput').value = '';
-        const msg = document.getElementById('couponInputMsg');
-        msg.style.display = 'none';
-        msg.textContent = '';
-        document.getElementById('couponInputModal').classList.add('show');
-        setTimeout(() => document.getElementById('couponCodeInput').focus(), 100);
+    async function openCouponModal() {
+        const listArea = document.getElementById('couponListArea');
+        listArea.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">載入中...</div>';
+        document.getElementById('couponSelectModal').classList.add('show');
+
+        try {
+            const res = await fetch(`/Payments/GetApplicableCoupons?${getDiscountContext()}`);
+            const coupons = await res.json();
+
+            if (!coupons || coupons.length === 0) {
+                listArea.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">目前消費金額無可套用的優惠券</div>';
+                return;
+            }
+
+            listArea.innerHTML = coupons.map(c => `
+                <div onclick="doApplyCouponById(${c.id})"
+                     style="padding:12px 14px;border:2px solid ${c.isInUse ? '#b7770d' : '#e8e8e8'};
+                            border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;
+                            background:${c.isInUse ? '#fff8e1' : '#fff'};"
+                     onmouseover="this.style.borderColor='#b7770d';this.style.background='#fff8e1'"
+                     onmouseout="this.style.borderColor='${c.isInUse ? '#b7770d' : '#e8e8e8'}';this.style.background='${c.isInUse ? '#fff8e1' : '#fff'}'">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                        <span style="font-weight:700;color:#1a1a1a;">${c.name}</span>
+                        ${c.isInUse ? '<span style="font-size:0.72rem;background:#b7770d;color:#fff;padding:1px 7px;border-radius:10px;font-weight:600;">使用中</span>' : ''}
+                    </div>
+                    <div style="font-size:0.82rem;color:#b7770d;font-weight:600;">${c.discountDescription}</div>
+                    ${c.minSpend > 0 ? `<div style="font-size:0.75rem;color:#bbb;margin-top:2px;">最低消費 NT$ ${c.minSpend}</div>` : ''}
+                </div>`).join('');
+        } catch {
+            listArea.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;">載入失敗，請重試</div>';
+        }
     }
 
-    async function doApplyCoupon() {
-        const code = document.getElementById('couponCodeInput').value.trim();
-        const msg  = document.getElementById('couponInputMsg');
-        if (!code) { msg.style.display='block'; msg.style.color='#c0392b'; msg.textContent='請輸入優惠券代碼'; return; }
-
+    async function doApplyCouponById(couponId) {
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        const body = `${getDiscountContext()}&couponCode=${encodeURIComponent(code)}`;
+        const body = `${getDiscountContext()}&couponId=${couponId ?? ''}`;
         try {
-            const res = await fetch('/Payments/ApplyCoupon', {
+            const res = await fetch('/Payments/ApplyCouponById', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
                 body
             });
             const result = await res.json();
+            document.getElementById('couponSelectModal').classList.remove('show');
             if (result.success) {
-                document.getElementById('couponInputModal').classList.remove('show');
                 currentData = result.data;
                 renderDetail(result.data);
+                if (couponId != null && result.data.couponName)
+                    showDiscountToast(`已套用「${result.data.couponName}」優惠券`);
             } else {
-                msg.style.display = 'block';
-                msg.style.color   = '#c0392b';
-                msg.textContent   = result.error || '套用失敗';
+                showAlert(result.error || '套用失敗', '❌ 錯誤');
             }
         } catch {
-            msg.style.display = 'block';
-            msg.style.color   = '#c0392b';
-            msg.textContent   = '套用失敗，請重試';
+            showAlert('套用失敗，請重試', '❌ 錯誤');
         }
     }
 
-    async function doApplyCouponClear() {
-        // Remove coupon by re-applying with empty code? No — use a separate clear mechanism.
-        // We preserve the event and clear the coupon by calling ApplyEvent with current eventId.
-        // Get the current eventId from currentData (stored in renderDetail).
-        const currentEventId = currentData?.eventTitle ? null : null; // We need eventId not title
-        // Simpler: call a dedicated clear by passing eventId=currentEventId, couponId=null
-        // Since we don't have eventId from the VM directly, we re-apply event to clear coupon.
-        // Best approach: server-side clear coupon = ApplyCoupon with code="" won't work.
-        // Let's just reload and clear via ApplyEvent with preserving nothing for coupon.
-        // We'll handle this by having the server clear only the coupon:
-        // POST /Payments/ClearCoupon → calls ApplyEventToOrderAsync with existing eventId
-        // Actually, the simplest: call ApplyEvent(currentEventId) - but we need the eventId.
-        // For now, let's store eventId in a data attribute when rendering.
-        const eventId = document.getElementById('eventTag').dataset.eventId || null;
-        await doApplyEvent(eventId ? parseInt(eventId) : null);
+    // ── 折疊優惠區 ────────────────────────────────────────────────────────
+    let discountDetailOpen = false;
+    function toggleDiscountDetail() {
+        discountDetailOpen = !discountDetailOpen;
+        document.getElementById('discountDetail').style.display = discountDetailOpen ? 'block' : 'none';
+        document.getElementById('discountArrow').textContent = discountDetailOpen ? '▲' : '▼';
+    }
+
+    function showDiscountToast(text) {
+        const toast = document.getElementById('discountToast');
+        document.getElementById('discountToastText').textContent = text;
+        toast.style.display = 'block';
+        // 強制 reflow 讓 transition 生效
+        toast.getBoundingClientRect();
+        toast.style.opacity = '1';
+        clearTimeout(toast._fadeTimer);
+        toast._fadeTimer = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { toast.style.display = 'none'; }, 450);
+        }, 2000);
     }
 
     async function doSplitCheckout() {
@@ -1820,8 +2009,7 @@
             document.getElementById('amtTotal').textContent    = '-';
             document.getElementById('checkoutBtn').classList.remove('show');
             document.getElementById('unservedWarning').style.display = 'none';
-            document.getElementById('couponTag').style.display = 'none';
-            document.getElementById('eventTag').style.display  = 'none';
+            document.getElementById('discountSummary').style.display = 'none';
             // 1.5 秒後 reload 更新左側桌子狀態
             setTimeout(() => window.location.href = "/Payments/Create", 1500);
         }

@@ -14,6 +14,9 @@
         public int ReceivedCount { get; set; }
         public bool IsDisabled { get; set; }
 
+        /// <summary>此優惠券是否已套用在目前訂單中</summary>
+        public bool IsInUse { get; set; }
+
         // 計算屬性
         public string DiscountTypeText => DiscountType == 0 ? "折金額" : "打折";
 

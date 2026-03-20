@@ -120,9 +120,16 @@ namespace EatTogether.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplyEvent(int? tableId, int? preOrderId, int? eventId)
         {
-            var vm = await _service.ApplyEventToOrderAsync(tableId, preOrderId, eventId);
-            if (vm == null) return Json(new { success = false, error = "找不到訂單" });
-            return Json(new { success = true, data = vm });
+            try
+            {
+                var vm = await _service.ApplyEventToOrderAsync(tableId, preOrderId, eventId);
+                if (vm == null) return Json(new { success = false, error = "找不到訂單" });
+                return Json(new { success = true, data = vm });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"套用失敗：{ex.Message}" });
+            }
         }
 
         [HttpPost]
@@ -132,6 +139,29 @@ namespace EatTogether.Controllers
             var (success, error, vm) = await _service.ApplyCouponToOrderAsync(tableId, preOrderId, couponCode);
             if (!success) return Json(new { success = false, error });
             return Json(new { success = true, data = vm });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApplicableCoupons(int? tableId, int? preOrderId)
+        {
+            var coupons = await _service.GetApplicableCouponsForOrderAsync(tableId, preOrderId);
+            return Json(coupons);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyCouponById(int? tableId, int? preOrderId, int? couponId)
+        {
+            try
+            {
+                var vm = await _service.ApplyCouponByIdToOrderAsync(tableId, preOrderId, couponId);
+                if (vm == null) return Json(new { success = false, error = "找不到訂單" });
+                return Json(new { success = true, data = vm });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"套用失敗：{ex.Message}" });
+            }
         }
     }
 }
