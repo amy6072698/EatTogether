@@ -3,7 +3,9 @@
 @{
     ViewData["Title"] = "文章編輯";
     bool isDraft = Model.Status == 0;       // 0 = 草稿
-    bool isPublished = Model.Status == 1;   // 1 = 已發佈
+    bool isUnpublished = Model.Status == 2;
+    bool isScheduled = Model.Status == 1 && Model.PublishDate.HasValue && Model.PublishDate.Value.Date > DateTime.Today;
+    bool isPublished = Model.Status == 1 && !isScheduled;
 }
 
 @section Styles{
@@ -30,6 +32,11 @@
             color: #6c757d;
             font-size: 1rem;
             line-height: 1.5;
+        }
+
+        .badge-skb {
+            background-color: #A3D0E2;
+            color: #fff;
         }
     </style>
 }
@@ -58,9 +65,13 @@
                     {
                         <span class="badge bg-success ms-2">已發佈</span>
                     }
+                    else if (isScheduled)
+                    {
+                        <span class="badge badge-skb ms-2">待上架</span>
+                    }
                     else
                     {
-                        <span class="badge bg-dark ms-2">已結束</span>
+                        <span class="badge bg-dark ms-2">已下架</span>
                     }
                 </h5>
 
@@ -101,13 +112,13 @@
 
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label">標題</label>
-                    <input asp-for="Title" class="form-control" placeholder="請輸入文章標題" />
+                    <input asp-for="Title" class="form-control" placeholder="請輸入文章標題"  />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">內文</label>
-                    <input type="hidden" asp-for="Description" id="hiddenDescription" data-val="false" />
+                    <input type="hidden" asp-for="Description" id="hiddenDescription" data-val="false"  />
                     <div id="editor" style="height: 400px;">
                         @Html.Raw(Model.Description)
                     </div>
@@ -150,12 +161,12 @@
                             <div class="readonly-field">
                                 @Model.PublishDate?.ToString("yyyy/MM/dd")
                             </div>
-                            <input type="hidden" asp-for="PublishDate" />
+                            <input type="hidden" asp-for="PublishDate"/>
                         }
                         else
                         {
                             <input asp-for="PublishDate" class="form-control"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"/>
                             <span asp-validation-for="PublishDate" class="text-danger"></span>
                         }
                     </div>
@@ -163,7 +174,7 @@
                     <div class="col-md-3">
                         <label asp-for="ExpiryDate" class="form-label">下架日期</label>
                         <input asp-for="ExpiryDate" class="form-control"
-                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")"/>
                     </div>
                 </div>
 

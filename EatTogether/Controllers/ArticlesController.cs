@@ -1,12 +1,13 @@
 ﻿using EatTogether.Models.Extensions;
 using EatTogether.Models.Services;
 using EatTogether.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EatTogether.Controllers
 {
-	//[Authorize]
+	[Authorize]
 	public class ArticlesController : Controller
 	{
 		private readonly ArticleService _service;
@@ -87,7 +88,7 @@ namespace EatTogether.Controllers
 
 				}
 
-				// 3. 呼叫 Service 存檔 (將 VM 轉為 DTO)
+				// 呼叫 Service 存檔 (將 VM 轉為 DTO)
 				try
 				{
 					var dto = vm.ToCreateDto(); 
@@ -188,6 +189,7 @@ namespace EatTogether.Controllers
 		}
 
 		// Unpublish action
+		/// <summary>下架文章(軟刪除)</summary>
 		[HttpGet]
 		public async Task<IActionResult> Unpublish(int id)
 		{
@@ -197,6 +199,7 @@ namespace EatTogether.Controllers
 		}
 
 		// DeleteDraft action
+		/// <summary>刪除草稿(硬刪除)</summary>
 		[HttpGet]
 		public async Task<IActionResult> DeleteDraft(int id)
 		{
