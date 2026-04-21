@@ -739,3 +739,8 @@ appsettings.Production.json
 
 # macOS（如果組員有用 Mac）
 .DS_Store
+
+# Claude Code
+.claude/
+mydocs/
+CLAUDE.md
