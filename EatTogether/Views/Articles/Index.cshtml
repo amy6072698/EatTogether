@@ -58,6 +58,12 @@
             background-color: #A3D0E2;
             color: #fff;
         }
+
+        #ArticleTable th,
+        #ArticleTable td {
+            border: 1px solid #dee2e6 !important;
+        }
+
     </style>
 }
 
@@ -86,7 +92,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" data-status="草稿">草稿</button> |
                 <button type="button" class="btn btn-sm btn-outline-dark filter-btn" data-status="已下架">已下架</button>
             </div>
-            <table id="ArticleTable" class="table w-100">
+            <table id="ArticleTable" class="table table-bordered w-100">
                 <thead>
                     <tr>
                         <th>標題</th>
@@ -155,6 +161,7 @@
                                 {
                                     data: "statusLabel",
                                     width: "8%",
+                                    className: "text-center",
                                     render: function(data, type) {
                                         if (type === 'filter' || type === 'sort') return data;
                                         if (data === '已發佈') return '<span class="badge bg-success">已發佈</span>';

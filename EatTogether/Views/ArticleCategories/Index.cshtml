@@ -11,6 +11,20 @@
     </div>
 }
 
+
+@section Styles {
+
+    <style>
+
+        #ArticleCategoryTable th,
+        #ArticleCategoryTable td {
+            border: 1px solid #dee2e6 !important;
+        }
+
+    </style>
+}
+
+
 <div class="container-fluid mt-4" style="max-width: 90%;">
     <h1>文章類別</h1>
     <ol class="breadcrumb mb-4">
@@ -30,7 +44,7 @@
 
 
         <div class="card-body w-100">
-            <table id="ArticleCategoryTable" class="table w-100">
+            <table id="ArticleCategoryTable" class="table table-bordered w-100">
                 <thead>
                     <tr>
                         <th>排序</th>

@@ -78,6 +78,12 @@
             background: #f0f0f0;
             color: #555;
         }
+
+        #StatsTable th,
+        #StatsTable td {
+            border: 1px solid #dee2e6 !important;
+        }
+
     </style>
 }
 
@@ -131,7 +137,7 @@
         </div>
 
         <div class="card-body w-100">
-            <table id="StatsTable" class="table w-100">
+            <table id="StatsTable" class="table table-bordered w-100">
                 <thead>
                     <tr>
                         <th>排名</th>
@@ -185,6 +191,7 @@
                     { data: "categoryName" },
                     {
                         data: "statusLabel",
+                        className: "text-center",
                         render: function (data, type) {
                             if (type === 'filter' || type === 'sort') return data;
                             if (data === '已發佈') return '<span class="badge bg-success">已發佈</span>';
